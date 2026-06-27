@@ -929,30 +929,38 @@
       }
 
       list.innerHTML = jobs.map((j, i) => `
-        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.02);'}">
-          <div style="min-width: 140px;">
-            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">📅 Dátum</div>
-            <div style="font-size: 13px; color: var(--text); font-weight: 500;">${j.datumFormazva || j.datum?.slice(0,16).replace('T',' ') || '-'}</div>
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.02);'}">
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <div style="flex: 1; min-width: 250px;">
+              <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">🗺 Útvonal</div>
+              <div style="font-size: 15px; color: #fff; font-weight: 700;">${j.honnan || '?'} → ${j.hova || '?'}</div>
+            </div>
+            <div style="min-width: 160px;">
+              <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">📦 Áru</div>
+              <div style="font-size: 13px; color: var(--text);">${j.aru || '-'}</div>
+            </div>
+            <div style="min-width: 70px; text-align: center;">
+              <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">⚖️ Tonna</div>
+              <div style="font-size: 14px; font-weight: 700; color: var(--orange);">${j.tonna || 0} t</div>
+            </div>
+            <div style="min-width: 70px; text-align: center;">
+              <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">🛣️ Km</div>
+              <div style="font-size: 14px; font-weight: 700; color: var(--orange);">${formatNum(Math.round(j.km || 0))}</div>
+            </div>
+            <div style="min-width: 80px; text-align: center;">
+              <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">🚦 Sebesség</div>
+              <div style="font-size: 12px; padding: 3px 8px; border-radius: 999px; background: ${j.sebességTípus === 'verseny' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)'}; color: ${j.sebességTípus === 'verseny' ? '#f87171' : '#4ade80'}; font-weight: 600;">${j.sebességTípus || 'valós'}</div>
+            </div>
           </div>
-          <div style="flex: 1; min-width: 200px;">
-            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">🗺 Útvonal</div>
-            <div style="font-size: 13px; color: #fff; font-weight: 600;">${j.honnan || '?'} → ${j.hova || '?'}</div>
-          </div>
-          <div style="min-width: 120px;">
-            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">📦 Áru</div>
-            <div style="font-size: 13px; color: var(--text);">${j.aru || '-'}</div>
-          </div>
-          <div style="min-width: 70px; text-align: center;">
-            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">⚖️ Tonna</div>
-            <div style="font-size: 14px; font-weight: 700; color: var(--orange);">${j.tonna || 0} t</div>
-          </div>
-          <div style="min-width: 70px; text-align: center;">
-            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">🛣️ Km</div>
-            <div style="font-size: 14px; font-weight: 700; color: var(--orange);">${formatNum(Math.round(j.km || 0))}</div>
-          </div>
-          <div style="min-width: 80px; text-align: center;">
-            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">🚦 Sebesség</div>
-            <div style="font-size: 12px; padding: 3px 8px; border-radius: 999px; background: ${j.sebességTípus === 'verseny' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)'}; color: ${j.sebességTípus === 'verseny' ? '#f87171' : '#4ade80'}; font-weight: 600;">${j.sebességTípus || 'valós'}</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <div>
+              <span style="font-size: 11px; color: var(--muted);">📥 Felvétel: </span>
+              <span style="font-size: 12px; color: var(--text);">${j.felvételIdeje || j.datumFormazva || '-'}</span>
+            </div>
+            <div>
+              <span style="font-size: 11px; color: var(--muted);">📤 Leadás: </span>
+              <span style="font-size: 12px; color: var(--text);">${j.leadásIdeje || j.datumFormazva || '-'}</span>
+            </div>
           </div>
         </div>`).join('');
     }
