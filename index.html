@@ -79,6 +79,7 @@
 
     /* ─── CONTENT WRAPPER ─── */
     .container { max-width: 1120px; margin: 0 auto; padding: 64px 24px; }
+    .container-wide { max-width: 1600px; margin: 0 auto; padding: 64px 24px; }
     .section-eyebrow {
       font-size: 11px; font-weight: 600; letter-spacing: 0.15em;
       text-transform: uppercase; color: var(--orange); margin-bottom: 8px;
@@ -802,28 +803,61 @@
 
   <!-- ══════════ PAGE: FUVAROK ══════════ -->
   <div class="page" id="page-fuvarok">
-    <div class="container">
+    <div class="container-wide">
       <p class="section-eyebrow">Sofőr statisztikák</p>
       <h2 class="section-title">Fuvarok</h2>
 
-      <!-- Sofőr lista -->
-      <div id="drivers-view">
-        <div class="drivers-grid" id="driversGrid">
-          <div style="color: var(--muted); font-size: 14px;">Adatok betöltése...</div>
-        </div>
-      </div>
+      <div style="display: flex; gap: 24px; align-items: flex-start;">
 
-      <!-- Fuvar részletek -->
-      <div id="jobs-view" style="display:none;">
-        <button class="back-btn" onclick="showDrivers()">← Vissza a sofőrökhöz</button>
-        <div class="detail-header" id="detailHeader"></div>
-        <div class="stats-grid" id="statsGrid"></div>
-        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
-          <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
-            <h4 style="font-size: 15px; font-weight: 600; color: #fff;">📋 Fuvar előzmények</h4>
-            <span id="jobCount" style="font-size: 12px; color: var(--muted);"></span>
+        <!-- Sofőr lista oldalsáv -->
+        <div id="drivers-sidebar" style="min-width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; flex-shrink: 0;">
+          <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase;">🚗 Sofőrök</div>
+          <div id="driversList" style="padding: 8px 0;">
+            <div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>
           </div>
-          <div id="jobsList"></div>
+        </div>
+
+        <!-- Jobb oldal: sofőr részletek vagy üdvözlő -->
+        <div style="flex: 1; min-width: 0;">
+
+          <!-- Sofőr fuvar részletek -->
+          <div id="jobs-view">
+
+            <!-- Fejléc -->
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px;">
+              <div id="detailAvatar" style="width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #e85d04, #f48c06); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #fff; flex-shrink: 0;"></div>
+              <div>
+                <div id="detailName" style="font-size: 20px; font-weight: 800; color: #fff;"></div>
+                <div id="detailSub" style="font-size: 13px; color: var(--muted); margin-top: 2px;"></div>
+              </div>
+            </div>
+
+            <!-- Statisztika kártyák -->
+            <div id="statsGrid" class="stats-grid" style="margin-bottom: 16px;"></div>
+
+            <!-- Fuvar táblázat -->
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
+              <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                <div style="font-size: 15px; font-weight: 700; color: #fff;">📋 Fuvar előzmények</div>
+                <div id="jobCount" style="font-size: 12px; color: var(--muted); background: rgba(255,255,255,0.06); padding: 3px 10px; border-radius: 999px;"></div>
+              </div>
+
+              <!-- Táblázat fejléc -->
+              <div style="display: grid; grid-template-columns: 36px minmax(180px,1fr) 130px 110px 70px 70px 90px 110px 110px; gap: 0; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);">
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600;">#</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600;">ÚTVONAL / ÁRU</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600;">FELVÉTEL / LEADÁS</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">FOGYASZTÁS</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">TONNA</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">KM</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">SEBESSÉG</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BEVÉTEL</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BÜNTETÉS</div>
+              </div>
+
+              <div id="jobsList" style="max-height: 600px; overflow-y: auto;"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -864,50 +898,68 @@
     }
 
     async function renderDrivers() {
-      const grid = document.getElementById('driversGrid');
-      grid.innerHTML = '<div style="color: var(--muted); font-size: 14px;">Adatok betöltése...</div>';
+      const list = document.getElementById('driversList');
+      list.innerHTML = '<div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>';
 
       const ok = await loadJsonBin();
       if (!ok || !allData) {
-        grid.innerHTML = '<div style="color: var(--muted); font-size: 14px;">⚠️ Még nincs adat — a bot első fuvar után tölti fel!</div>';
+        list.innerHTML = '<div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">⚠️ Nincs adat</div>';
         return;
       }
 
       const drivers = Object.entries(allData).filter(([id]) => !id.startsWith('_'));
       if (!drivers.length) {
-        grid.innerHTML = '<div style="color: var(--muted); font-size: 14px;">⚠️ Még nincs adat — a bot első fuvar után tölti fel!</div>';
+        list.innerHTML = '<div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">⚠️ Nincs sofőr</div>';
         return;
       }
 
-      grid.innerHTML = drivers.map(([id, u]) => {
+      list.innerHTML = drivers.map(([id, u]) => {
         const name = u.truckyName || id;
-        const km = formatNum(Math.round(u.totalKm || 0));
         const jobs = allJobs[name] ? allJobs[name].length : 0;
+        const km = formatNum(Math.round(u.totalKm || 0));
         return `
-          <div class="driver-card" onclick="showDriverJobs('${name}')">
-            <div class="driver-avatar-big">${getInitials(name)}</div>
-            <div class="driver-name">${name}</div>
-            <div class="driver-km">🛣️ ${km} km</div>
-            <div style="font-size: 12px; color: var(--muted);">📋 ${jobs} fuvar</div>
+          <div class="driver-sidebar-item" onclick="showDriverJobs('${name}')" id="driver-${name.replace(/[^a-zA-Z0-9]/g,'_')}"
+            style="padding: 10px 18px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #e85d04, #f48c06); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0;">${getInitials(name)}</div>
+            <div style="overflow: hidden;">
+              <div style="font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</div>
+              <div style="font-size: 11px; color: var(--muted);">${km} km · ${jobs} fuvar</div>
+            </div>
           </div>`;
       }).join('');
+
+      // Hover effekt
+      document.querySelectorAll('.driver-sidebar-item').forEach(el => {
+        el.addEventListener('mouseenter', () => el.style.background = 'rgba(255,255,255,0.05)');
+        el.addEventListener('mouseleave', () => { if (!el.classList.contains('active')) el.style.background = ''; });
+      });
     }
 
     function showDriverJobs(driverName) {
-      document.getElementById('drivers-view').style.display = 'none';
+      // Aktív sofőr kiemelése
+      document.querySelectorAll('.driver-sidebar-item').forEach(el => {
+        el.style.borderLeft = '3px solid transparent';
+        el.style.background = '';
+        el.classList.remove('active');
+      });
+      const activeEl = document.getElementById('driver-' + driverName.replace(/[^a-zA-Z0-9]/g,'_'));
+      if (activeEl) {
+        activeEl.style.borderLeft = '3px solid #e85d04';
+        activeEl.style.background = 'rgba(232,93,4,0.08)';
+        activeEl.classList.add('active');
+      }
+
       document.getElementById('jobs-view').style.display = 'block';
 
       // Fejléc
-      const header = document.getElementById('detailHeader');
-      header.innerHTML = `
-        <div class="detail-avatar">${getInitials(driverName)}</div>
-        <div>
-          <h2>${driverName}</h2>
-          <p>Fuvar előzmények és statisztikák</p>
-        </div>`;
+      document.getElementById('detailAvatar').textContent = getInitials(driverName);
+      document.getElementById('detailName').textContent = driverName;
+
+      const u = Object.values(allData).find(d => d.truckyName === driverName) || {};
+      const jobs = allJobs[driverName] || [];
+      document.getElementById('detailSub').textContent = `${jobs.length} fuvar · ${formatNum(Math.round(u.totalKm || 0))} km összes`;
 
       // Statisztikák
-      const u = Object.values(allData).find(d => d.truckyName === driverName) || {};
       const stats = document.getElementById('statsGrid');
       stats.innerHTML = `
         <div class="stat-card"><div class="stat-label">Összes km</div><div class="stat-value orange">${formatNum(Math.round(u.totalKm || 0))} km</div></div>
@@ -915,10 +967,9 @@
         <div class="stat-card"><div class="stat-label">Összes bevétel</div><div class="stat-value">${formatNum(Math.round(u.totalRevenue || 0))} Ft</div></div>
         <div class="stat-card"><div class="stat-label">Havi km</div><div class="stat-value orange">${formatNum(Math.round(u.monthlyKm || 0))} km</div></div>
         <div class="stat-card"><div class="stat-label">Havi tonna</div><div class="stat-value">${formatNum(u.monthlyTons || 0)} t</div></div>
-        <div class="stat-card"><div class="stat-label">Átlag fogyasztás</div><div class="stat-value">${u.avgFuel || 0} L/100km</div></div>`;
+        <div class="stat-card"><div class="stat-label">Havi fogyasztás</div><div class="stat-value" style="color:#60a5fa;">${formatNum(Math.round(u.monthlyFuel || 0))} L</div></div>`;
 
       // Fuvarok
-      const jobs = allJobs[driverName] || [];
       const jobCount = document.getElementById('jobCount');
       jobCount.textContent = `${jobs.length} fuvar`;
 
@@ -930,55 +981,28 @@
 
       const sortedJobs = [...jobs].reverse();
       list.innerHTML = sortedJobs.map((j, i) => `
-        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.02);'}">
-          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-            <div style="min-width: 32px; text-align: center;">
-              <div style="font-size: 16px; font-weight: 800; color: var(--muted);">${i + 1}.</div>
-            </div>
-            <div style="flex: 1; min-width: 250px;">
-              <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">🗺 Útvonal</div>
-              <div style="font-size: 15px; color: #fff; font-weight: 700;">${j.honnan || '?'} → ${j.hova || '?'}</div>
-            </div>
-            <div style="min-width: 160px;">
-              <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">📦 Áru</div>
-              <div style="font-size: 13px; color: var(--text);">${j.aru || '-'}</div>
-            </div>
-            <div style="min-width: 70px; text-align: center;">
-              <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">⚖️ Tonna</div>
-              <div style="font-size: 14px; font-weight: 700; color: var(--orange);">${j.tonna || 0} t</div>
-            </div>
-            <div style="min-width: 70px; text-align: center;">
-              <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">🛣️ Km</div>
-              <div style="font-size: 14px; font-weight: 700; color: var(--orange);">${formatNum(Math.round(j.km || 0))}</div>
-            </div>
-            <div style="min-width: 80px; text-align: center;">
-              <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">🚦 Sebesség</div>
-              <div style="font-size: 12px; padding: 3px 8px; border-radius: 999px; background: ${j.sebességTípus === 'verseny' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)'}; color: ${j.sebességTípus === 'verseny' ? '#f87171' : '#4ade80'}; font-weight: 600;">${j.sebességTípus || 'valós'}</div>
-            </div>
+        <div style="display: grid; grid-template-columns: 36px minmax(180px,1fr) 130px 110px 70px 70px 90px 110px 110px; gap: 0; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: center; ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.015);'} transition: background 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background='${i % 2 === 0 ? '' : 'rgba(255,255,255,0.015)'}'">
+          <div style="font-size: 13px; font-weight: 700; color: var(--muted);">${i + 1}</div>
+          <div style="overflow: hidden;">
+            <div style="font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${j.honnan || '?'} → ${j.hova || '?'}</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📦 ${j.aru || '-'}</div>
           </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
-            <div>
-              <span style="font-size: 11px; color: var(--muted);">📥 Felvétel: </span>
-              <span style="font-size: 12px; color: var(--text);">${j.felvételIdeje || j.datumFormazva || '-'}</span>
-            </div>
-            <div>
-              <span style="font-size: 11px; color: var(--muted);">📤 Leadás: </span>
-              <span style="font-size: 12px; color: var(--text);">${j.leadásIdeje || j.datumFormazva || '-'}</span>
-            </div>
-            <div>
-              <span style="font-size: 11px; color: var(--muted);">💰 Bevétel: </span>
-              <span style="font-size: 12px; color: #4ade80; font-weight: 600;">${formatNum(j.bevételFt || 0)} Ft</span>
-            </div>
-            ${j.büntFt > 0 ? `<div>
-              <span style="font-size: 11px; color: var(--muted);">💸 Büntetés: </span>
-              <span style="font-size: 12px; color: #f87171; font-weight: 600;">${formatNum(j.büntFt || 0)} Ft</span>
-            </div>` : ''}
+          <div>
+            <div style="font-size: 12px; color: var(--text); white-space: nowrap;">📥 ${j.felvételIdeje || j.datumFormazva || '-'}</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap;">📤 ${j.leadásIdeje || '-'}</div>
           </div>
+          <div style="text-align: center; font-size: 12px; color: #60a5fa; font-weight: 600; white-space: nowrap;">${j.avgFuelJob ? j.avgFuelJob + ' L/100' : (j.üzemanyag ? j.üzemanyag + ' L' : '-')}</div>
+          <div style="text-align: center; font-size: 13px; font-weight: 700; color: var(--orange);">${j.tonna || 0} t</div>
+          <div style="text-align: center; font-size: 13px; font-weight: 700; color: var(--orange);">${formatNum(Math.round(j.km || 0))}</div>
+          <div style="text-align: center;">
+            <span style="font-size: 11px; padding: 3px 8px; border-radius: 999px; white-space: nowrap; background: ${j.sebességTípus === 'verseny' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)'}; color: ${j.sebességTípus === 'verseny' ? '#f87171' : '#4ade80'}; font-weight: 600;">${j.sebességTípus || 'valós'}</span>
+          </div>
+          <div style="text-align: right; font-size: 12px; font-weight: 700; color: #4ade80; white-space: nowrap;">${formatNum(j.bevételFt || 0)} Ft</div>
+          <div style="text-align: right; font-size: 12px; font-weight: 700; white-space: nowrap; color: ${j.büntFt > 0 ? '#f87171' : 'var(--muted)'};">${j.büntFt > 0 ? '-' + formatNum(j.büntFt) + ' Ft' : '-'}</div>
         </div>`).join('');
     }
 
     function showDrivers() {
-      document.getElementById('drivers-view').style.display = 'block';
       document.getElementById('jobs-view').style.display = 'none';
     }
 
