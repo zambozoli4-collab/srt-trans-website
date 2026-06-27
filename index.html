@@ -928,7 +928,8 @@
         return;
       }
 
-      list.innerHTML = jobs.map((j, i) => `
+      const sortedJobs = [...jobs].reverse();
+      list.innerHTML = sortedJobs.map((j, i) => `
         <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.02);'}">
           <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
             <div style="min-width: 32px; text-align: center;">
