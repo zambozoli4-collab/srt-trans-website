@@ -670,40 +670,16 @@
 
       <div id="tab-kepek" class="tab-panel active">
         <div style="max-height: 70vh; overflow-y: auto; padding-right: 4px;">
-          <div class="gallery-grid">
-            <div>
-              <a class="gallery-img" href="https://ibb.co/rGnXShS9" target="_blank">
-                <img src="https://i.ibb.co/rGnXShS9/ets2-20250821-151551-00.png" alt="SRT TRANS konvój 1" loading="lazy" />
-              </a>
-              <div style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px;">📅 2025. 08. 21.</div>
-            </div>
-            <div>
-              <a class="gallery-img" href="https://ibb.co/0jVntwdb" target="_blank">
-                <img src="https://i.ibb.co/0jVntwdb/20250822123147-1.jpg" alt="SRT TRANS konvój 2" loading="lazy" />
-              </a>
-              <div style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px;">📅 2025. 08. 22.</div>
-            </div>
-            <div>
-              <a class="gallery-img" href="https://ibb.co/FbsFJfxt" target="_blank">
-                <img src="https://i.ibb.co/FbsFJfxt/ets2-20250811-103953-00.png" alt="SRT TRANS konvój 3" loading="lazy" />
-              </a>
-              <div style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px;">📅 2025. 08. 11.</div>
-            </div>
+          <div id="kepekGrid" class="gallery-grid">
+            <div style="color: var(--muted); font-size: 14px;">Betöltés...</div>
           </div>
         </div>
       </div>
 
       <div id="tab-video" class="tab-panel">
         <div style="max-height: 70vh; overflow-y: auto; padding-right: 4px;">
-          <div class="gallery-grid">
-            <div>
-              <div class="video-wrap">
-                <iframe src="https://www.youtube.com/embed/kQdpjZMDXEw" title="SRT TRANS KFT. videó"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen loading="lazy"></iframe>
-              </div>
-              <div style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px;">📅 2025. 08. 22.</div>
-            </div>
+          <div id="videokGrid" class="gallery-grid">
+            <div style="color: var(--muted); font-size: 14px;">Betöltés...</div>
           </div>
         </div>
       </div>
@@ -933,6 +909,59 @@
       return Number(n || 0).toLocaleString('hu-HU');
     }
 
+    async function renderMedia() {
+      const kepekGrid = document.getElementById('kepekGrid');
+      const videokGrid = document.getElementById('videokGrid');
+
+      const ok = await loadJsonBin();
+
+      // Alapértelmezett képek (ha nincs még feltöltve Discordon)
+      const defaultKepek = [
+        { url: 'https://i.ibb.co/rGnXShS9/ets2-20250821-151551-00.png', datum: '2025. 08. 21.', nev: 'SRT TRANS konvój 1' },
+        { url: 'https://i.ibb.co/0jVntwdb/20250822123147-1.jpg', datum: '2025. 08. 22.', nev: 'SRT TRANS konvój 2' },
+        { url: 'https://i.ibb.co/FbsFJfxt/ets2-20250811-103953-00.png', datum: '2025. 08. 11.', nev: 'SRT TRANS konvój 3' },
+      ];
+      const defaultVideok = [
+        { youtubeId: 'kQdpjZMDXEw', cim: 'SRT TRANS KFT. videó', datum: '2025. 08. 22.' },
+      ];
+
+      const kepek = allData?._media?.kepek?.length ? allData._media.kepek : defaultKepek;
+      const videok = allData?._media?.videok?.length ? allData._media.videok : defaultVideok;
+
+      // Képek megjelenítése
+      if (!kepek.length) {
+        kepekGrid.innerHTML = '<div style="color: var(--muted);">Még nincs feltöltött kép.</div>';
+      } else {
+        kepekGrid.innerHTML = kepek.map(k => `
+          <div>
+            <a class="gallery-img" href="${k.url}" target="_blank">
+              <img src="${k.url}" alt="${k.nev || 'SRT TRANS'}" loading="lazy" style="width:100%; border-radius: 8px;" />
+            </a>
+            <div style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px;">
+              📅 ${k.datum}${k.feltolto ? ' · ' + k.feltolto : ''}
+            </div>
+          </div>`).join('');
+      }
+
+      // Videók megjelenítése
+      if (!videok.length) {
+        videokGrid.innerHTML = '<div style="color: var(--muted);">Még nincs feltöltött videó.</div>';
+      } else {
+        videokGrid.innerHTML = videok.map(v => `
+          <div>
+            <div class="video-wrap">
+              <iframe src="https://www.youtube.com/embed/${v.youtubeId}" title="${v.cim}"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen loading="lazy"></iframe>
+            </div>
+            <div style="text-align: center; font-size: 12px; color: var(--text); margin-top: 6px; font-weight: 600;">${v.cim}</div>
+            <div style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 2px;">
+              📅 ${v.datum}${v.feltolto ? ' · ' + v.feltolto : ''}
+            </div>
+          </div>`).join('');
+      }
+    }
+
     async function renderDrivers() {
       const list = document.getElementById('driversList');
       list.innerHTML = '<div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>';
@@ -1049,6 +1078,7 @@
       document.getElementById('nav-' + name).classList.add('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       if (name === 'fuvarok') renderDrivers();
+      if (name === 'kepek') renderMedia();
     }
 
     function switchTab(btn, panelId) {
