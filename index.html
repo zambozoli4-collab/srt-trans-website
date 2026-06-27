@@ -961,6 +961,14 @@
               <span style="font-size: 11px; color: var(--muted);">📤 Leadás: </span>
               <span style="font-size: 12px; color: var(--text);">${j.leadásIdeje || j.datumFormazva || '-'}</span>
             </div>
+            <div>
+              <span style="font-size: 11px; color: var(--muted);">💰 Bevétel: </span>
+              <span style="font-size: 12px; color: #4ade80; font-weight: 600;">${formatNum(j.bevételFt || 0)} Ft</span>
+            </div>
+            ${j.büntFt > 0 ? `<div>
+              <span style="font-size: 11px; color: var(--muted);">💸 Büntetés: </span>
+              <span style="font-size: 12px; color: #f87171; font-weight: 600;">${formatNum(j.büntFt || 0)} Ft</span>
+            </div>` : ''}
           </div>
         </div>`).join('');
     }
