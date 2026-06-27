@@ -514,7 +514,7 @@
         <button class="nav-btn" id="nav-fuvarok" onclick="showPage('fuvarok')">🚛 Fuvarok</button>
         <button class="nav-btn" id="nav-modok" onclick="showPage('modok')">📦 Módok</button>
         <button class="nav-btn" id="nav-terkep" onclick="showPage('terkep')">🗺 Térkép</button>
-        <button class="nav-btn" id="nav-kepek" onclick="showPage('kepek')">📷 Képek</button>
+        <button class="nav-btn" id="nav-kepek" onclick="showPage('kepek')">🎬 Média</button>
         <button class="nav-btn" id="nav-kozosseg" onclick="showPage('kozosseg')">💬 Közösség</button>
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Csapat</button>
       </nav>
@@ -544,7 +544,8 @@
       <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab(this, 'tab-kotelezo')">🔴 Kötelező módok</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-nem-kotelezo')">🟢 Nem kötelező módok</button>
-        <button class="tab-btn" onclick="switchTab(this, 'tab-egyeb')">🔵 Egyéb</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-egyeb')">🔵 Kiegészítők</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-alkalmazasok')">📡 Alkalmazások</button>
       </div>
 
       <div id="tab-kotelezo" class="tab-panel active">
@@ -562,13 +563,6 @@
             <h3>Céges festés & logó</h3>
             <p>Az SRT TRANS KFT. hivatalos festése, logója és vizuális elemek. Tagság esetén kötelező!</p>
             <a class="btn-dl" href="https://drive.google.com/drive/u/1/folders/1Ek2Y62muE99FabcLXMv79_OMsjue8sys" target="_blank">⬇ Letöltés</a>
-          </div>
-          <div class="mod-card">
-            <div class="mod-card-icon blue">🗺</div>
-            <span class="mod-card-tag tag-required">Kötelező</span>
-            <h3>ProMods térkép</h3>
-            <p>A ProMods kiegészítőkkel Európa sokkal részletesebb. Szerver használatához szükséges!</p>
-            <a class="btn-dl blue" href="https://drive.google.com/drive/folders/1RSXdhA0wwB4ekF6TKT6RzhjSw-sVTRtE?usp=drive_link" target="_blank">⬇ Letöltés</a>
           </div>
         </div>
       </div>
@@ -595,12 +589,24 @@
       <div id="tab-egyeb" class="tab-panel">
         <div class="mod-grid">
           <div class="mod-card">
+            <div class="mod-card-icon blue">🗺</div>
+            <span class="mod-card-tag tag-required">Kötelező</span>
+            <h3>ProMods térkép</h3>
+            <p>A ProMods kiegészítőkkel Európa sokkal részletesebb. Szerver használatához szükséges!</p>
+            <a class="btn-dl blue" href="https://drive.google.com/drive/folders/1RSXdhA0wwB4ekF6TKT6RzhjSw-sVTRtE?usp=drive_link" target="_blank">⬇ Letöltés</a>
+          </div>
+          <div class="mod-card">
             <div class="mod-card-icon blue">📦</div>
             <span class="mod-card-tag tag-extra">Extra</span>
             <h3>DLC csomag</h3>
             <p>Ajánlott DLC-k listája az optimális szerveres élményhez.</p>
             <a class="btn-dl blue" href="https://drive.google.com/drive/folders/1netGUDizc7tfyD6ShxIZJX5IJYrvVASh?usp=drive_link" target="_blank">⬇ Letöltés</a>
           </div>
+        </div>
+      </div>
+
+      <div id="tab-alkalmazasok" class="tab-panel">
+        <div class="mod-grid">
           <div class="mod-card">
             <div class="mod-card-icon blue">🚐</div>
             <span class="mod-card-tag tag-extra">Extra</span>
@@ -651,24 +657,54 @@
   </div>
 
   <!-- ══════════ PAGE: KÉPEK ══════════ -->
+  <!-- ══════════ PAGE: MÉDIA ══════════ -->
   <div class="page" id="page-kepek">
     <div class="container">
       <p class="section-eyebrow">Galéria</p>
-      <h2 class="section-title">Képek és videó</h2>
-      <div class="gallery-grid">
-        <a class="gallery-img" href="https://ibb.co/rGnXShS9" target="_blank">
-          <img src="https://i.ibb.co/rGnXShS9/ets2-20250821-151551-00.png" alt="SRT TRANS konvój 1" loading="lazy" />
-        </a>
-        <a class="gallery-img" href="https://ibb.co/0jVntwdb" target="_blank">
-          <img src="https://i.ibb.co/0jVntwdb/20250822123147-1.jpg" alt="SRT TRANS konvój 2" loading="lazy" />
-        </a>
-        <a class="gallery-img" href="https://ibb.co/FbsFJfxt" target="_blank">
-          <img src="https://i.ibb.co/FbsFJfxt/ets2-20250811-103953-00.png" alt="SRT TRANS konvój 3" loading="lazy" />
-        </a>
-        <div class="video-wrap">
-          <iframe src="https://www.youtube.com/embed/kQdpjZMDXEw" title="SRT TRANS KFT. videó"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen loading="lazy"></iframe>
+      <h2 class="section-title">Média</h2>
+
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab(this, 'tab-kepek')">🖼️ Képek</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-video')">🎬 Videó</button>
+      </div>
+
+      <div id="tab-kepek" class="tab-panel active">
+        <div style="max-height: 70vh; overflow-y: auto; padding-right: 4px;">
+          <div class="gallery-grid">
+            <div>
+              <a class="gallery-img" href="https://ibb.co/rGnXShS9" target="_blank">
+                <img src="https://i.ibb.co/rGnXShS9/ets2-20250821-151551-00.png" alt="SRT TRANS konvój 1" loading="lazy" />
+              </a>
+              <div style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px;">📅 2025. 08. 21.</div>
+            </div>
+            <div>
+              <a class="gallery-img" href="https://ibb.co/0jVntwdb" target="_blank">
+                <img src="https://i.ibb.co/0jVntwdb/20250822123147-1.jpg" alt="SRT TRANS konvój 2" loading="lazy" />
+              </a>
+              <div style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px;">📅 2025. 08. 22.</div>
+            </div>
+            <div>
+              <a class="gallery-img" href="https://ibb.co/FbsFJfxt" target="_blank">
+                <img src="https://i.ibb.co/FbsFJfxt/ets2-20250811-103953-00.png" alt="SRT TRANS konvój 3" loading="lazy" />
+              </a>
+              <div style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px;">📅 2025. 08. 11.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-video" class="tab-panel">
+        <div style="max-height: 70vh; overflow-y: auto; padding-right: 4px;">
+          <div class="gallery-grid">
+            <div>
+              <div class="video-wrap">
+                <iframe src="https://www.youtube.com/embed/kQdpjZMDXEw" title="SRT TRANS KFT. videó"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen loading="lazy"></iframe>
+              </div>
+              <div style="text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px;">📅 2025. 08. 22.</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
