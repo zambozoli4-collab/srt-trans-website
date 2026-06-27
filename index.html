@@ -925,8 +925,11 @@
         { youtubeId: 'kQdpjZMDXEw', cim: 'SRT TRANS KFT. videó', datum: '2025. 08. 22.' },
       ];
 
-      const kepek = allData?._media?.kepek?.length ? allData._media.kepek : defaultKepek;
-      const videok = allData?._media?.videok?.length ? allData._media.videok : defaultVideok;
+      // Alapértelmezett + feltöltött képek együtt
+      const feltoltottKepek = allData?._media?.kepek || [];
+      const feltoltottVideok = allData?._media?.videok || [];
+      const kepek = [...defaultKepek, ...feltoltottKepek];
+      const videok = [...defaultVideok, ...feltoltottVideok];
 
       // Képek megjelenítése
       if (!kepek.length) {
