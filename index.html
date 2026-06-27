@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SRT TRANS KFT.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070d18;
+      --surface: #0d1525;
+      --card: #111c30;
+      --card-hover: #16233a;
+      --border: rgba(255,255,255,0.08);
+      --orange: #f97316;
+      --orange-dim: rgba(249,115,22,0.15);
+      --blue: #3b82f6;
+      --blue-dim: rgba(59,130,246,0.12);
+      --muted: rgba(255,255,255,0.55);
+      --text: #e8f0fc;
+      --radius: 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── PAGES ─── */
+    .page { display: none; min-height: calc(100vh - 64px); }
+    .page.active { display: block; }
+
+    /* ─── BG per page ─── */
+    .bg-overlay {
+      position: fixed; inset: 0; z-index: -1;
+      background: #070d18;
+    }
+
+    /* ─── HEADER ─── */
+    .site-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(7,13,24,0.82);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 1120px; margin: 0 auto;
+      padding: 0 24px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px; font-weight: 800;
+      color: var(--orange); text-decoration: none; letter-spacing: 0.05em;
+    }
+    .logo span { color: var(--text); }
+    .nav { display: flex; gap: 4px; align-items: center; }
+    .nav-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 500;
+      padding: 6px 13px; border-radius: 8px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+    .nav-btn.active { color: var(--orange); background: var(--orange-dim); }
+    .btn-trucky {
+      background: var(--orange); color: #fff;
+      font-size: 13px; font-weight: 600;
+      padding: 8px 16px; border-radius: 8px;
+      text-decoration: none; transition: opacity 0.2s; white-space: nowrap;
+    }
+    .btn-trucky:hover { opacity: 0.85; }
+
+    /* ─── CONTENT WRAPPER ─── */
+    .container { max-width: 1120px; margin: 0 auto; padding: 64px 24px; }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--orange); margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 42px; font-weight: 800; color: #fff; line-height: 1.05; margin-bottom: 36px;
+    }
+
+    /* ══════════════ HOME PAGE ══════════════ */
+    .hero {
+      position: relative;
+      width: 100%;
+      min-height: 88vh;
+      display: flex;
+      align-items: flex-start;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: url('https://i.ibb.co/WY6WTLt/ets2-20250731-025009-00.png') center/cover no-repeat;
+      z-index: 0;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(7,13,24,0.1) 0%,
+        rgba(7,13,24,0.2) 35%,
+        rgba(7,13,24,0.75) 65%,
+        #070d18 100%
+      );
+    }
+    .hero-content {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 1120px; margin: 0 auto;
+      padding: 40px 60px 0;
+    }
+    .hero-eyebrow {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--orange); margin-bottom: 16px;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+    }
+    .hero h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(36px, 7vw, 110px);
+      font-weight: 800; line-height: 1;
+      color: #fff; margin-bottom: 28px;
+      text-shadow: 0 4px 32px rgba(0,0,0,0.7);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .hero h1 em { font-style: normal; color: var(--orange); }
+    .hero-lead {
+      font-size: 22px; color: rgba(255,255,255,0.85);
+      line-height: 2; margin-bottom: 32px;
+      max-width: 100%;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+    }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 999px;
+      font-size: 12px; font-weight: 600;
+      border: 1px solid rgba(249,115,22,0.4);
+      color: var(--orange); background: rgba(7,13,24,0.6);
+      backdrop-filter: blur(6px);
+      text-decoration: none; transition: background 0.2s; cursor: pointer;
+    }
+    .badge:hover { background: rgba(249,115,22,0.25); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn-primary {
+      background: var(--orange); color: #fff;
+      font-weight: 600; font-size: 15px; padding: 13px 26px;
+      border-radius: 10px; text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+      display: inline-flex; align-items: center; gap: 6px;
+      border: none; cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-outline {
+      background: rgba(255,255,255,0.1); color: #fff;
+      font-weight: 600; font-size: 15px; padding: 13px 26px;
+      border-radius: 10px; text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(6px);
+      transition: background 0.2s; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.18); }
+
+    /* Quick links on home */
+    .quick-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+      max-width: 1120px; margin: 0 auto; padding: 0 24px 64px;
+    }
+    .quick-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px 20px;
+      cursor: pointer; transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      text-align: center;
+    }
+    .quick-card:hover {
+      background: var(--card-hover);
+      border-color: rgba(249,115,22,0.3);
+      transform: translateY(-3px);
+    }
+    .quick-card-icon { font-size: 32px; margin-bottom: 10px; }
+    .quick-card h3 { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+    .quick-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* ══════════════ MÓDOK PAGE ══════════════ */
+    .tab-nav {
+      display: flex; gap: 4px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 5px;
+      margin-bottom: 32px; width: fit-content;
+    }
+    .tab-btn {
+      background: transparent; border: none;
+      color: var(--muted); font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 600;
+      padding: 9px 20px; border-radius: 10px; cursor: pointer;
+      transition: background 0.2s, color 0.2s; white-space: nowrap;
+    }
+    .tab-btn.active { background: var(--orange); color: #fff; }
+    .tab-btn:not(.active):hover { background: rgba(255,255,255,0.06); color: var(--text); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .mod-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .mod-card:hover { background: var(--card-hover); border-color: rgba(249,115,22,0.3); transform: translateY(-2px); }
+    .mod-card-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.25);
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .mod-card-icon.blue { background: var(--blue-dim); border-color: rgba(59,130,246,0.25); }
+    .mod-card h3 { font-size: 16px; font-weight: 600; color: #fff; }
+    .mod-card p { font-size: 14px; color: var(--muted); line-height: 1.6; flex: 1; }
+    .mod-card-tag {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; width: fit-content;
+    }
+    .tag-required { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .tag-optional { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+    .tag-extra { background: var(--blue-dim); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+    .btn-dl {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--orange); color: #fff;
+      font-size: 13px; font-weight: 600; padding: 9px 16px;
+      border-radius: 8px; text-decoration: none; margin-top: 4px;
+      transition: opacity 0.2s; width: fit-content;
+    }
+    .btn-dl.blue { background: var(--blue); }
+    .btn-dl:hover { opacity: 0.85; }
+
+    /* ══════════════ TÉRKÉP PAGE ══════════════ */
+    .map-wrap {
+      border-radius: 16px; overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5); position: relative;
+    }
+    .map-wrap iframe { width: 100%; height: 620px; display: block; border: none; }
+    .map-overlay-label {
+      position: absolute; top: 16px; left: 16px;
+      background: rgba(7,13,24,0.85); backdrop-filter: blur(8px);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; gap: 8px; pointer-events: none;
+    }
+    .map-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--orange); box-shadow: 0 0 0 3px rgba(249,115,22,0.3);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 3px rgba(249,115,22,0.3); }
+      50% { box-shadow: 0 0 0 7px rgba(249,115,22,0.1); }
+    }
+    .map-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 14px; color: var(--blue); font-size: 14px; font-weight: 500;
+      text-decoration: none;
+    }
+    .map-link:hover { text-decoration: underline; }
+    .map-info-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px;
+    }
+    .map-info-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+    }
+    .map-info-card h4 { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+    .map-info-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* ══════════════ KÉPEK PAGE ══════════════ */
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .gallery-img {
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s, transform 0.15s; display: block;
+    }
+    .gallery-img:hover { border-color: rgba(249,115,22,0.4); transform: scale(1.01); }
+    .gallery-img img { width: 100%; height: 210px; object-fit: cover; display: block; }
+    .video-wrap { grid-column: 1 / -1; }
+    .video-wrap iframe {
+      width: 100%; height: 420px; border-radius: 12px;
+      border: 1px solid var(--border); display: block;
+    }
+
+    /* ══════════════ KÖZÖSSÉG PAGE ══════════════ */
+    .discord-card {
+      background: linear-gradient(135deg, #1e2a47 0%, #111c30 100%);
+      border: 1px solid rgba(88,101,242,0.3);
+      border-radius: 20px; padding: 60px 48px; text-align: center;
+      position: relative; overflow: hidden; margin-bottom: 32px;
+    }
+    .discord-card::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 240px; height: 240px; border-radius: 50%;
+      background: rgba(88,101,242,0.12); pointer-events: none;
+    }
+    .discord-card h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 48px; font-weight: 800; color: #fff; margin-bottom: 12px;
+    }
+    .discord-card p { color: var(--muted); font-size: 16px; margin-bottom: 28px; }
+    .btn-discord {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #5865f2; color: #fff;
+      font-size: 15px; font-weight: 700; padding: 14px 32px;
+      border-radius: 12px; text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-discord:hover { opacity: 0.9; transform: translateY(-1px); }
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .info-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+    }
+    .info-card-icon { font-size: 28px; margin-bottom: 12px; }
+    .info-card h3 { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+    .info-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* ─── FOOTER ─── */
+    .site-footer {
+      border-top: 1px solid var(--border); padding: 24px;
+      text-align: center; color: var(--muted); font-size: 13px;
+    }
+
+    /* ══════════════ SZABÁLYZAT ══════════════ */
+    .rules-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px; max-width: 800px;
+    }
+    .rules-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+      padding-bottom: 20px; border-bottom: 1px solid var(--border);
+    }
+    .rules-header span { font-size: 28px; }
+    .rules-header h3 { font-size: 18px; font-weight: 600; color: #fff; }
+    .rules-list {
+      list-style: none; padding: 0; margin: 0 0 28px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .rules-list li {
+      display: flex; align-items: flex-start; gap: 14px;
+      font-size: 14px; color: var(--muted); line-height: 1.6;
+      padding: 12px 16px; background: rgba(255,255,255,0.03);
+      border-radius: 10px; border: 1px solid var(--border);
+      counter-increment: rules;
+    }
+    .rules-list { counter-reset: rules; }
+    .rules-list li::before {
+      content: counter(rules);
+      min-width: 26px; height: 26px;
+      background: var(--orange-dim); color: var(--orange);
+      border: 1px solid rgba(249,115,22,0.3);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+    }
+    .rules-notes { display: flex; flex-direction: column; gap: 12px; }
+    .rules-note {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 16px; border-radius: 10px;
+      background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.2);
+    }
+    .rules-note span { font-size: 20px; flex-shrink: 0; }
+    .rules-note p { font-size: 14px; color: #93c5fd; line-height: 1.6; }
+
+    /* ══════════════ CSAPAT PAGE ══════════════ */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .team-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px 24px;
+      text-align: center;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .team-card:hover { background: var(--card-hover); transform: translateY(-3px); }
+    .team-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+    }
+    .team-rank {
+      padding: 4px 14px; border-radius: 999px;
+      font-size: 12px; font-weight: 700;
+      border: 1px solid; letter-spacing: 0.04em;
+    }
+    .team-card h3 {
+      font-size: 18px; font-weight: 600; color: #fff;
+    }
+    .team-card p {
+      font-size: 14px; color: var(--muted); line-height: 1.6;
+    }
+
+    /* ══════════════ FUVAROK PAGE ══════════════ */
+    .drivers-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 40px;
+    }
+    .driver-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px 20px; cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    .driver-card:hover { background: var(--card-hover); border-color: rgba(249,115,22,0.4); transform: translateY(-3px); }
+    .driver-card.selected { border-color: var(--orange); background: var(--card-hover); }
+    .driver-avatar-big {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800; color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+    }
+    .driver-name { font-size: 16px; font-weight: 600; color: #fff; }
+    .driver-km { font-size: 13px; color: var(--orange); font-weight: 600; }
+    .driver-detail { display: none; }
+    .driver-detail.active { display: block; }
+    .detail-header {
+      display: flex; align-items: center; gap: 20px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; margin-bottom: 24px;
+    }
+    .detail-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; font-weight: 800; color: #fff;
+      font-family: 'Barlow Condensed', sans-serif; flex-shrink: 0;
+    }
+    .detail-header h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .detail-header p { font-size: 14px; color: var(--muted); }
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 16px;
+    }
+    .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+    .stat-value { font-size: 22px; font-weight: 700; color: #fff; font-family: 'Barlow Condensed', sans-serif; }
+    .stat-value.orange { color: var(--orange); }
+    .weekly-chart {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+    }
+    .weekly-chart h4 { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 16px; }
+    .bars { display: flex; gap: 8px; align-items: flex-end; height: 80px; }
+    .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .bar {
+      width: 100%; border-radius: 4px 4px 0 0;
+      background: var(--orange); min-height: 4px;
+      transition: height 0.4s ease;
+    }
+    .bar.empty { background: rgba(255,255,255,0.08); }
+    .bar-label { font-size: 10px; color: var(--muted); font-weight: 600; }
+    .back-btn {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 600; padding: 8px 16px;
+      border-radius: 8px; cursor: pointer; margin-bottom: 24px;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .back-btn:hover { background: var(--card); color: var(--text); }
+
+    /* ─── PAGE TRANSITION ─── */
+    .page { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; padding: 40px 20px; gap: 28px; }
+      .hero h1 { font-size: 52px; }
+      .hero-image { display: none; }
+      .quick-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-grid { grid-template-columns: 1fr; }
+      .video-wrap { grid-column: 1; }
+      .map-info-grid, .info-grid { grid-template-columns: 1fr; }
+      .discord-card { padding: 32px 20px; }
+      .nav { gap: 2px; }
+      .nav-btn { font-size: 12px; padding: 6px 8px; }
+      .tab-nav { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BG -->
+  <div class="bg-overlay"></div>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="logo" href="#" onclick="showPage('home'); return false;">SRT <span>TRANS KFT.</span></a>
+      <nav class="nav">
+        <button class="nav-btn active" id="nav-home" onclick="showPage('home')">🏠 Kezdőlap</button>
+        <button class="nav-btn" id="nav-fuvarok" onclick="showPage('fuvarok')">🚛 Fuvarok</button>
+        <button class="nav-btn" id="nav-modok" onclick="showPage('modok')">📦 Módok</button>
+        <button class="nav-btn" id="nav-terkep" onclick="showPage('terkep')">🗺 Térkép</button>
+        <button class="nav-btn" id="nav-kepek" onclick="showPage('kepek')">📷 Képek</button>
+        <button class="nav-btn" id="nav-kozosseg" onclick="showPage('kozosseg')">💬 Közösség</button>
+        <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Csapat</button>
+      </nav>
+      <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
+    </div>
+  </header>
+
+  <!-- ══════════ PAGE: HOME ══════════ -->
+  <div class="page active" id="page-home">
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <p class="hero-eyebrow">Euro Truck Simulator 2 · Magyar konvoj</p>
+        <h1>Éld át a <em>kamionos</em> életet!</h1>
+        <p class="hero-lead">2024 tavaszán alakult közösségünk mára 20 aktív tagból áll. Saját dedikált szerverünk, rendszeres konvojok, és egy összetartó, segítőkész csapat vár rád. Fő rendszerünk a Trucky, de van saját Pickup rendszerünk is, ahol valódi szerződések alapján fuvarozunk: legyen szó biológiai anyagokról, üzemanyagról, mezőgazdasági termékekről vagy gyümölcsszállításról. Ha jó társaságra és komoly ETS2-es élményre vágysz, nálunk a helyed!</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ══════════ PAGE: MÓDOK ══════════ -->
+  <div class="page" id="page-modok">
+    <div class="container">
+      <p class="section-eyebrow">Letöltések</p>
+      <h2 class="section-title">Módok a játékhoz</h2>
+
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab(this, 'tab-kotelezo')">🔴 Kötelező módok</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-nem-kotelezo')">🟢 Nem kötelező módok</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-egyeb')">🔵 Egyéb</button>
+      </div>
+
+      <div id="tab-kotelezo" class="tab-panel active">
+        <div class="mod-grid">
+          <div class="mod-card">
+            <div class="mod-card-icon">🚚</div>
+            <span class="mod-card-tag tag-required">Kötelező</span>
+            <h3>Konvoj módok</h3>
+            <p>Szerverre való felcsatlakozáshoz elengedhetetlen modcsomag. Ezt mindenképpen le kell töltened!</p>
+            <a class="btn-dl" href="https://drive.google.com/drive/u/1/folders/1w2ujNsOMxQmuBxERJB_rdjGdTNDMOSGr" target="_blank">⬇ Letöltés</a>
+          </div>
+          <div class="mod-card">
+            <div class="mod-card-icon">🎨</div>
+            <span class="mod-card-tag tag-required">Kötelező</span>
+            <h3>Céges festés & logó</h3>
+            <p>Az SRT TRANS KFT. hivatalos festése, logója és vizuális elemek. Tagság esetén kötelező!</p>
+            <a class="btn-dl" href="https://drive.google.com/drive/u/1/folders/1Ek2Y62muE99FabcLXMv79_OMsjue8sys" target="_blank">⬇ Letöltés</a>
+          </div>
+          <div class="mod-card">
+            <div class="mod-card-icon blue">🗺</div>
+            <span class="mod-card-tag tag-required">Kötelező</span>
+            <h3>ProMods térkép</h3>
+            <p>A ProMods kiegészítőkkel Európa sokkal részletesebb. Szerver használatához szükséges!</p>
+            <a class="btn-dl blue" href="https://drive.google.com/drive/folders/1RSXdhA0wwB4ekF6TKT6RzhjSw-sVTRtE?usp=drive_link" target="_blank">⬇ Letöltés</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-nem-kotelezo" class="tab-panel">
+        <div class="mod-grid">
+          <div class="mod-card">
+            <div class="mod-card-icon">✨</div>
+            <span class="mod-card-tag tag-optional">Nem kötelező</span>
+            <h3>Nem kötelező módok</h3>
+            <p>Extra vizuális és gameplay javítások. Csak ezeket a módokat használhatod a szerveren!</p>
+            <a class="btn-dl" href="https://drive.google.com/drive/u/1/folders/15iIiWAR40LEn9qsRbkf-k5xzEMuic5ye" target="_blank">⬇ Letöltés</a>
+          </div>
+          <div class="mod-card">
+            <div class="mod-card-icon">🌄</div>
+            <span class="mod-card-tag tag-optional">Nem kötelező</span>
+            <h3>Grafikai javítások</h3>
+            <p>Szebb égbolt, jobb textúrák és valószerűbb fényviszonyok — nem befolyásolják a szervert.</p>
+            <a class="btn-dl" href="https://drive.google.com/drive/u/1/folders/15iIiWAR40LEn9qsRbkf-k5xzEMuic5ye" target="_blank">⬇ Letöltés</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-egyeb" class="tab-panel">
+        <div class="mod-grid">
+          <div class="mod-card">
+            <div class="mod-card-icon blue">📦</div>
+            <span class="mod-card-tag tag-extra">Extra</span>
+            <h3>DLC csomag</h3>
+            <p>Ajánlott DLC-k listája az optimális szerveres élményhez.</p>
+            <a class="btn-dl blue" href="https://drive.google.com/drive/folders/1netGUDizc7tfyD6ShxIZJX5IJYrvVASh?usp=drive_link" target="_blank">⬇ Letöltés</a>
+          </div>
+          <div class="mod-card">
+            <div class="mod-card-icon blue">🚐</div>
+            <span class="mod-card-tag tag-extra">Extra</span>
+            <h3>Pickup csomag</h3>
+            <p>Extra járműcsomag személyes használatra, szerveres élmény kiegészítéséhez.</p>
+            <a class="btn-dl blue" href="https://www.dropbox.com/s/2ugg2vw01j2yap4/PICKUP.zip?dl=1" target="_blank">⬇ Letöltés</a>
+          </div>
+          <div class="mod-card">
+            <div class="mod-card-icon blue">📡</div>
+            <span class="mod-card-tag tag-extra">App</span>
+            <h3>Trucky alkalmazás</h3>
+            <p>Konvoj szervezéshez és szerver követéséhez nélkülözhetetlen app.</p>
+            <a class="btn-dl blue" href="https://truckyapp.com/client-download" target="_blank">⬇ Letöltés</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PAGE: TÉRKÉP ══════════ -->
+  <div class="page" id="page-terkep">
+    <div class="container">
+      <p class="section-eyebrow">ETS2 Világ</p>
+      <h2 class="section-title">Óriási európai térkép</h2>
+      <div class="map-wrap">
+        <iframe src="https://ets2.online/map/ets2" title="ETS2 interaktív térkép" loading="lazy" allowfullscreen></iframe>
+        <div class="map-overlay-label">
+          <div class="map-dot"></div>
+          ETS2 Interaktív Térkép
+        </div>
+      </div>
+      <a class="map-link" href="https://ets2.online/map/ets2" target="_blank">🔗 Megnyitás teljes méretben →</a>
+      <div class="map-info-grid">
+        <div class="map-info-card">
+          <h4>🌍 Európa</h4>
+          <p>Az alapjátékban 20+ ország és több száz város érhető el Európa-szerte.</p>
+        </div>
+        <div class="map-info-card">
+          <h4>🗺 ProMods</h4>
+          <p>A ProMods kiegészítővel a térkép több mint kétszeresére bővül, részletesebb úthálózattal.</p>
+        </div>
+        <div class="map-info-card">
+          <h4>📍 Útvonalak</h4>
+          <p>Az interaktív térképen tervezheted a konvoj útvonalát és megnézheted a legjobb parkolókat.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PAGE: KÉPEK ══════════ -->
+  <div class="page" id="page-kepek">
+    <div class="container">
+      <p class="section-eyebrow">Galéria</p>
+      <h2 class="section-title">Képek és videó</h2>
+      <div class="gallery-grid">
+        <a class="gallery-img" href="https://ibb.co/rGnXShS9" target="_blank">
+          <img src="https://i.ibb.co/rGnXShS9/ets2-20250821-151551-00.png" alt="SRT TRANS konvój 1" loading="lazy" />
+        </a>
+        <a class="gallery-img" href="https://ibb.co/0jVntwdb" target="_blank">
+          <img src="https://i.ibb.co/0jVntwdb/20250822123147-1.jpg" alt="SRT TRANS konvój 2" loading="lazy" />
+        </a>
+        <a class="gallery-img" href="https://ibb.co/FbsFJfxt" target="_blank">
+          <img src="https://i.ibb.co/FbsFJfxt/ets2-20250811-103953-00.png" alt="SRT TRANS konvój 3" loading="lazy" />
+        </a>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/kQdpjZMDXEw" title="SRT TRANS KFT. videó"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PAGE: KÖZÖSSÉG ══════════ -->
+  <div class="page" id="page-kozosseg">
+    <div class="container">
+      <p class="section-eyebrow">Csatlakozz</p>
+      <h2 class="section-title">Közösségünk</h2>
+      <div class="discord-card">
+        <h2>Discord szerver</h2>
+        <p>Kérdésed van? Szeretnél konvojozni? Lépj be a Discord szerverünkre és csatlakozz a csapathoz!</p>
+        <a class="btn-discord" href="https://discord.gg/kwgG7uspC6" target="_blank">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
+          </svg>
+          Csatlakozás a Discord szerverhez
+        </a>
+      </div>
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab(this, 'tab-kozosseg-info')">🚛 Általános</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-kozosseg-szabalyzat')">📋 Szabályzat</button>
+      </div>
+
+      <div id="tab-kozosseg-info" class="tab-panel active">
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-icon">🚛</div>
+            <h3>Konvojok</h3>
+            <p>Rendszeres közös meneteket szervezünk Európa útjain. A Discord-on értesülsz az időpontokról!</p>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">🏆</div>
+            <h3>Rangok</h3>
+            <p>2500 km megtétele után (amit Truckbook számol) megszerzed a rangot, a módokhoz és a 0-24-ben üzemelő szerverhez való hozzáférést.</p>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">🚦</div>
+            <h3>Sebesség</h3>
+            <p>Ügyelj rá, hogy a sebesség ne menjen 95 km/h fölé menet közben!</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-kozosseg-szabalyzat" class="tab-panel">
+        <div class="rules-box">
+          <div class="rules-header">
+            <span>📋</span>
+            <h3>SRT TRANS KFT. — Szerver szabályzat</h3>
+          </div>
+          <ol class="rules-list">
+            <li>Szigorúan tilos pornográf, felkavaró képek beküldése!</li>
+            <li>Tilos a pornográf tartalmú Discord profilkép használata!</li>
+            <li>Tilos a káromkodást és sértő szavakat tartalmazó nevek használata!</li>
+            <li>Szigorúan tilos a trollkodás, hangtorzító használata, közösség rombolása!</li>
+            <li>Szigorúan tilos valakit a kora, származása vagy hátrányossága miatt zaklatni!</li>
+            <li>Tilos a szobák helytelen használata!</li>
+            <li>Szigorúan tilos a ranggal való visszaélés!</li>
+            <li>Szigorúan tilos bármilyen hack használata!</li>
+            <li>Tilos egy fióknál több használata a szerveren!</li>
+            <li>Tilos a káromkodás, illemtelen szavak, kifejezések használata!</li>
+            <li>Tilos a spammelés (ugyanazon mondatok/szavak küldözgetése)!</li>
+            <li>Tilos a szobák helytelen használata!</li>
+            <li>Tilos a felhasználók fölösleges megjelölése!</li>
+            <li>Tilos az @everyone és a @here használata!</li>
+            <li>Tört verzió hirdetése tilos bármelyik szobában!</li>
+            <li>Személyes adatot tilos bármilyen módon megosztani, kivéve ha az illető engedélyt adott rá!</li>
+            <li>Ne vágj a másik szavába!</li>
+            <li>Ne beszélj fölöslegesen!</li>
+          </ol>
+          <div class="rules-notes">
+            <div class="rules-note">
+              <span>🏅</span>
+              <p>2500 km megtétele után (amit Truckbook számol) megszerzed a rangot, amely jogosultságot ad a módokhoz és a 0-24 órában üzemelő szerverhez.</p>
+            </div>
+            <div class="rules-note">
+              <span>🚦</span>
+              <p>Ügyelj rá, hogy menet közben a sebesség ne haladja meg a 95 km/h-t!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PAGE: CSAPAT ══════════ -->
+  <div class="page" id="page-csapat">
+    <div class="container">
+      <p class="section-eyebrow">Szerver működtetői</p>
+      <h2 class="section-title">A csapatunk</h2>
+      <div class="team-grid">
+
+        <div class="team-card">
+          <div class="team-avatar" style="background: linear-gradient(135deg, #f97316, #ea580c);">👑</div>
+          <div class="team-rank" style="background: rgba(249,115,22,0.15); color: #f97316; border-color: rgba(249,115,22,0.35);">Tulajdonos</div>
+          <h3>Cobra</h3>
+          <p>A szerver alapítója és vezetője. Minden fontos döntés az ő kezében van.</p>
+        </div>
+
+        <div class="team-card">
+          <div class="team-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">⭐</div>
+          <div class="team-rank" style="background: rgba(245,158,11,0.15); color: #f59e0b; border-color: rgba(245,158,11,0.35);">Tulajdonos helyettes</div>
+          <h3>Erik</h3>
+          <p>A tulajdonos jobbkeze, segíti a szerver mindennapi működését.</p>
+        </div>
+
+        <div class="team-card">
+          <div class="team-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">⭐</div>
+          <div class="team-rank" style="background: rgba(245,158,11,0.15); color: #f59e0b; border-color: rgba(245,158,11,0.35);">Tulajdonos helyettes</div>
+          <h3>Márk</h3>
+          <p>A tulajdonos jobbkeze, segíti a szerver mindennapi működését.</p>
+        </div>
+
+        <div class="team-card">
+          <div class="team-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">⭐</div>
+          <div class="team-rank" style="background: rgba(245,158,11,0.15); color: #f59e0b; border-color: rgba(245,158,11,0.35);">Tulajdonos helyettes</div>
+          <h3>Boby</h3>
+          <p>A tulajdonos jobbkeze, segíti a szerver mindennapi működését.</p>
+        </div>
+
+        <div class="team-card">
+          <div class="team-avatar" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">🛠</div>
+          <div class="team-rank" style="background: rgba(59,130,246,0.15); color: #60a5fa; border-color: rgba(59,130,246,0.35);">Rendszergazda</div>
+          <h3>Marcika ✌️</h3>
+          <p>A technikai háttér felelőse — szerverek, módok, rendszerek karbantartása.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PAGE: FUVAROK ══════════ -->
+  <div class="page" id="page-fuvarok">
+    <div class="container">
+      <p class="section-eyebrow">Sofőr statisztikák</p>
+      <h2 class="section-title">Fuvarok</h2>
+
+      <!-- Sofőr lista -->
+      <div id="drivers-view">
+        <div class="drivers-grid" id="driversGrid">
+          <div style="color: var(--muted); font-size: 14px;">Adatok betöltése...</div>
+        </div>
+      </div>
+
+      <!-- Fuvar részletek -->
+      <div id="jobs-view" style="display:none;">
+        <button class="back-btn" onclick="showDrivers()">← Vissza a sofőrökhöz</button>
+        <div class="detail-header" id="detailHeader"></div>
+        <div class="stats-grid" id="statsGrid"></div>
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+          <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+            <h4 style="font-size: 15px; font-weight: 600; color: #fff;">📋 Fuvar előzmények</h4>
+            <span id="jobCount" style="font-size: 12px; color: var(--muted);"></span>
+          </div>
+          <div id="jobsList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p>© 2025 SRT TRANS KFT. — Készítette: COBRA</p>
+  </footer>
+
+  <script>
+    const JSONBIN_BIN_ID = '6a3fbe69f5f4af5e2938b935';
+    const JSONBIN_API_KEY = '$2a$10$OB8kZNrtfNe0s7C2d6hb0.7VdkwwjQ8KnutyOOkjTwft0F9luq0kK';
+
+    let allData = null;
+    let allJobs = null;
+
+    async function loadJsonBin() {
+      try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+          headers: { 'X-Master-Key': JSONBIN_API_KEY }
+        });
+        const json = await res.json();
+        allData = json.record.data || {};
+        allJobs = json.record.jobs || {};
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function getInitials(name) {
+      return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    function formatNum(n) {
+      return Number(n || 0).toLocaleString('hu-HU');
+    }
+
+    async function renderDrivers() {
+      const grid = document.getElementById('driversGrid');
+      grid.innerHTML = '<div style="color: var(--muted); font-size: 14px;">Adatok betöltése...</div>';
+
+      const ok = await loadJsonBin();
+      if (!ok || !allData) {
+        grid.innerHTML = '<div style="color: var(--muted); font-size: 14px;">⚠️ Még nincs adat — a bot első fuvar után tölti fel!</div>';
+        return;
+      }
+
+      const drivers = Object.entries(allData).filter(([id]) => !id.startsWith('_'));
+      if (!drivers.length) {
+        grid.innerHTML = '<div style="color: var(--muted); font-size: 14px;">⚠️ Még nincs adat — a bot első fuvar után tölti fel!</div>';
+        return;
+      }
+
+      grid.innerHTML = drivers.map(([id, u]) => {
+        const name = u.truckyName || id;
+        const km = formatNum(Math.round(u.totalKm || 0));
+        const jobs = allJobs[name] ? allJobs[name].length : 0;
+        return `
+          <div class="driver-card" onclick="showDriverJobs('${name}')">
+            <div class="driver-avatar-big">${getInitials(name)}</div>
+            <div class="driver-name">${name}</div>
+            <div class="driver-km">🛣️ ${km} km</div>
+            <div style="font-size: 12px; color: var(--muted);">📋 ${jobs} fuvar</div>
+          </div>`;
+      }).join('');
+    }
+
+    function showDriverJobs(driverName) {
+      document.getElementById('drivers-view').style.display = 'none';
+      document.getElementById('jobs-view').style.display = 'block';
+
+      // Fejléc
+      const header = document.getElementById('detailHeader');
+      header.innerHTML = `
+        <div class="detail-avatar">${getInitials(driverName)}</div>
+        <div>
+          <h2>${driverName}</h2>
+          <p>Fuvar előzmények és statisztikák</p>
+        </div>`;
+
+      // Statisztikák
+      const u = Object.values(allData).find(d => d.truckyName === driverName) || {};
+      const stats = document.getElementById('statsGrid');
+      stats.innerHTML = `
+        <div class="stat-card"><div class="stat-label">Összes km</div><div class="stat-value orange">${formatNum(Math.round(u.totalKm || 0))} km</div></div>
+        <div class="stat-card"><div class="stat-label">Összes tonna</div><div class="stat-value">${formatNum(u.totalTons || 0)} t</div></div>
+        <div class="stat-card"><div class="stat-label">Összes bevétel</div><div class="stat-value">${formatNum(Math.round(u.totalRevenue || 0))} Ft</div></div>
+        <div class="stat-card"><div class="stat-label">Havi km</div><div class="stat-value orange">${formatNum(Math.round(u.monthlyKm || 0))} km</div></div>
+        <div class="stat-card"><div class="stat-label">Havi tonna</div><div class="stat-value">${formatNum(u.monthlyTons || 0)} t</div></div>
+        <div class="stat-card"><div class="stat-label">Átlag fogyasztás</div><div class="stat-value">${u.avgFuel || 0} L/100km</div></div>`;
+
+      // Fuvarok
+      const jobs = allJobs[driverName] || [];
+      const jobCount = document.getElementById('jobCount');
+      jobCount.textContent = `${jobs.length} fuvar`;
+
+      const list = document.getElementById('jobsList');
+      if (!jobs.length) {
+        list.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--muted);">Még nincs rögzített fuvar</div>';
+        return;
+      }
+
+      list.innerHTML = jobs.map((j, i) => `
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.02);'}">
+          <div style="min-width: 140px;">
+            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">📅 Dátum</div>
+            <div style="font-size: 13px; color: var(--text); font-weight: 500;">${j.datumFormazva || j.datum?.slice(0,16).replace('T',' ') || '-'}</div>
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">🗺 Útvonal</div>
+            <div style="font-size: 13px; color: #fff; font-weight: 600;">${j.honnan || '?'} → ${j.hova || '?'}</div>
+          </div>
+          <div style="min-width: 120px;">
+            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">📦 Áru</div>
+            <div style="font-size: 13px; color: var(--text);">${j.aru || '-'}</div>
+          </div>
+          <div style="min-width: 70px; text-align: center;">
+            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">⚖️ Tonna</div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--orange);">${j.tonna || 0} t</div>
+          </div>
+          <div style="min-width: 70px; text-align: center;">
+            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">🛣️ Km</div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--orange);">${formatNum(Math.round(j.km || 0))}</div>
+          </div>
+          <div style="min-width: 80px; text-align: center;">
+            <div style="font-size: 11px; color: var(--muted); margin-bottom: 3px;">🚦 Sebesség</div>
+            <div style="font-size: 12px; padding: 3px 8px; border-radius: 999px; background: ${j.sebességTípus === 'verseny' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)'}; color: ${j.sebességTípus === 'verseny' ? '#f87171' : '#4ade80'}; font-weight: 600;">${j.sebességTípus || 'valós'}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    function showDrivers() {
+      document.getElementById('drivers-view').style.display = 'block';
+      document.getElementById('jobs-view').style.display = 'none';
+    }
+
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      document.getElementById('nav-' + name).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (name === 'fuvarok') renderDrivers();
+    }
+
+    function switchTab(btn, panelId) {
+      btn.closest('.tab-nav').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(panelId).classList.add('active');
+    }
+  </script>
+
+</body>
+</html>
