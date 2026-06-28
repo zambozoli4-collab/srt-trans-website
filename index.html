@@ -663,13 +663,24 @@
       <p class="section-eyebrow">Galéria</p>
       <h2 class="section-title">Média</h2>
 
+      <!-- Admin panel -->
+      <div id="admin-panel-media" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+        <div id="admin-login-form-media" style="display: flex; gap: 8px; align-items: center;">
+          <input id="admin-password-media" type="password" placeholder="🔑 Admin jelszó" onkeydown="if(event.key==='Enter')adminLoginMedia()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none;" />
+          <button onclick="adminLoginMedia()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">Belépés</button>
+        </div>
+        <div id="admin-status-media" style="display: none; align-items: center; gap: 10px;">
+          <span style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Admin mód aktív</span>
+          <button onclick="adminLogoutMedia()" style="padding: 6px 12px; border-radius: 8px; background: rgba(239,68,68,0.15); color: #f87171; font-size: 12px; border: 1px solid rgba(239,68,68,0.3); cursor: pointer;">Kilépés</button>
+        </div>
+      </div>
+
       <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab(this, 'tab-kepek')">🖼️ Képek</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-video')">🎬 Videó</button>
       </div>
 
       <div id="tab-kepek" class="tab-panel active">
-        ${isAdminMode ? '' : ''}
         <div style="max-height: 70vh; overflow-y: auto; padding-right: 4px;">
           <div id="kepekGrid" class="gallery-grid">
             <div style="color: var(--muted); font-size: 14px;">Betöltés...</div>
@@ -922,7 +933,7 @@
       return Number(n || 0).toLocaleString('hu-HU');
     }
 
-    const ADMIN_PASSWORD = 'srt2024admin';
+    const ADMIN_PASSWORD = 'Tiszamogyorós';
     let adminMode = false;
     let currentDriver = null;
 
@@ -947,6 +958,29 @@
       document.getElementById('admin-status').style.display = 'none';
       document.getElementById('admin-password').value = '';
       if (currentDriver) showDriverJobs(currentDriver);
+    }
+
+    let mediaAdminMode = false;
+
+    function adminLoginMedia() {
+      const pw = document.getElementById('admin-password-media').value;
+      if (pw === ADMIN_PASSWORD) {
+        mediaAdminMode = true;
+        document.getElementById('admin-login-form-media').style.display = 'none';
+        document.getElementById('admin-status-media').style.display = 'flex';
+        renderMedia();
+      } else {
+        document.getElementById('admin-password-media').style.borderColor = '#f87171';
+        setTimeout(() => document.getElementById('admin-password-media').style.borderColor = '', 1500);
+      }
+    }
+
+    function adminLogoutMedia() {
+      mediaAdminMode = false;
+      document.getElementById('admin-login-form-media').style.display = 'flex';
+      document.getElementById('admin-status-media').style.display = 'none';
+      document.getElementById('admin-password-media').value = '';
+      renderMedia();
     }
 
     async function deleteMedia(tipus, idx) {
@@ -1018,7 +1052,7 @@
         kepekGrid.innerHTML = kepek.map((k, i) => `
           <div style="position: relative;">
             <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; z-index: 1;">${i + 1}.</div>
-            ${isAdminMode() && i >= 3 ? `<button onclick="deleteMedia('kep', ${i - 3})" style="position: absolute; top: 8px; right: 8px; background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; z-index: 1;">🗑️</button>` : ''}
+            ${mediaAdminMode && i >= 3 ? `<button onclick="deleteMedia('kep', ${i - 3})" style="position: absolute; top: 8px; right: 8px; background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; z-index: 1;">🗑️</button>` : ''}
             <a class="gallery-img" href="${k.url}" target="_blank">
               <img src="${k.url}" alt="${k.nev || 'SRT TRANS'}" loading="lazy" style="width:100%; border-radius: 8px;" />
             </a>
@@ -1037,7 +1071,7 @@
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
               <div style="background: rgba(0,0,0,0.7); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;">${i + 1}.</div>
               <div style="font-size: 13px; color: #fff; font-weight: 600; flex: 1;">${v.cim}</div>
-              ${isAdminMode() && i >= 1 ? `<button onclick="deleteMedia('video', ${i - 1})" style="background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px;">🗑️</button>` : ''}
+              ${mediaAdminMode && i >= 1 ? `<button onclick="deleteMedia('video', ${i - 1})" style="background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px;">🗑️</button>` : ''}
             </div>
             <div class="video-wrap">
               <iframe src="https://www.youtube.com/embed/${v.youtubeId}" title="${v.cim}"
