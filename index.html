@@ -630,12 +630,45 @@
   <div class="page" id="page-terkep">
     <div class="container">
       <p class="section-eyebrow">ETS2 Világ</p>
-      <h2 class="section-title">Térkép</h2>
+      <h2 class="section-title">Európa Világ Térképe</h2>
 
-      <div class="map-wrap" style="height: 70vh;">
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab(this, 'tab-trucky-map')">🚛 Trucky Világ Térkép</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-tmp-map')">🗺 TruckersMP Térkép</button>
+      </div>
+
+      <div id="tab-trucky-map" class="tab-panel active">
+        <div class="map-wrap" style="height: 70vh;">
           <iframe src="https://hub.truckyapp.com/map" title="Trucky térkép" loading="lazy" allowfullscreen style="border-radius: 12px;"></iframe>
         </div>
         <a class="map-link" href="https://hub.truckyapp.com/map" target="_blank">🔗 Megnyitás teljes méretben →</a>
+      </div>
+
+      <div id="tab-tmp-map" class="tab-panel">
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 32px; text-align: center; margin-bottom: 16px;">
+          <div style="font-size: 48px; margin-bottom: 16px;">🗺️</div>
+          <div style="font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px;">TruckersMP Térkép</div>
+          <div style="font-size: 14px; color: var(--muted); margin-bottom: 24px;">A TruckersMP térkép nem ágyazható be — kattints a gombra a megnyitáshoz!</div>
+          <a href="https://map.truckersmp.com" target="_blank" style="display: inline-block; padding: 12px 28px; background: #e85d04; color: #fff; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none;">🔗 Megnyitás TruckersMP térképen →</a>
+        </div>
+      </div>
+
+      <div class="map-info-grid">
+        <div class="map-info-card">
+          <h4>🌍 Európa</h4>
+          <p>Az alapjátékban 20+ ország és több száz város érhető el Európa-szerte.</p>
+        </div>
+        <div class="map-info-card">
+          <h4>🗺 ProMods</h4>
+          <p>A ProMods kiegészítővel a térkép több mint kétszeresére bővül, részletesebb úthálózattal.</p>
+        </div>
+        <div class="map-info-card">
+          <h4>📍 Útvonalak</h4>
+          <p>Az interaktív térképen tervezheted a konvoj útvonalát és megnézheted a legjobb parkolókat.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
       <div class="map-info-grid">
         <div class="map-info-card">
