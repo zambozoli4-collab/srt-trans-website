@@ -1197,7 +1197,7 @@
               <div style="font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</div>
               <div style="font-size: 11px; color: var(--muted);">${km} km · ${jobs} fuvar</div>
             </div>
-            ${isAdminMode() ? `<button onclick="event.stopPropagation(); deleteDriver('${id}', '${name}')" style="flex-shrink:0; padding:4px 7px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; border-radius:6px; cursor:pointer; font-size:12px;">🗑️</button>` : ''}
+            ${isAdminMode() ? `<button onclick="event.stopPropagation(); deleteDriver(this)" data-driver-id="${id.replace(/"/g,'&quot;')}" data-driver-name="${name.replace(/"/g,'&quot;')}" style="flex-shrink:0; padding:4px 7px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; border-radius:6px; cursor:pointer; font-size:12px;">🗑️</button>` : ''}
           </div>`;
       }).join('');
 
@@ -1208,8 +1208,10 @@
       });
     }
 
-    async function deleteDriver(driverId, driverName) {
+    async function deleteDriver(btn) {
       if (!adminMode) return;
+      const driverId = btn.dataset.driverId;
+      const driverName = btn.dataset.driverName;
       if (!confirm(`Biztosan törlöd ${driverName} sofőrt és összes fuvarát?`)) return;
       delete allData[driverId];
       delete allJobs[driverName];
@@ -1313,7 +1315,10 @@
 
     // Oldal visszaállítása frissítés után
     const startPage = window.location.hash.replace('#', '');
-    if (startPage && document.getElementById('page-' + startPage)) {
+    if (startPage === 'fuvarok-statisztika') {
+      showPage('fuvarok');
+      switchFuvarokView('statisztika');
+    } else if (startPage && document.getElementById('page-' + startPage)) {
       showPage(startPage);
     }
 
@@ -1613,6 +1618,8 @@
       btnS.style.background = !isFuvarok ? 'var(--orange)' : 'var(--card)';
       btnS.style.color = !isFuvarok ? '#fff' : 'var(--muted)';
       btnS.style.border = !isFuvarok ? 'none' : '1px solid var(--border)';
+      // Hash mentése hogy frissítés után visszajöjjön
+      window.location.hash = isFuvarok ? 'fuvarok' : 'fuvarok-statisztika';
       if (!isFuvarok) renderStatisztika();
     }
 
