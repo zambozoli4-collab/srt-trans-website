@@ -1501,7 +1501,7 @@
         kepekGrid.innerHTML = kepek.map((k, i) => `
           <div style="position: relative;">
             <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; z-index: 1;">${i + 1}.</div>
-            ${mediaAdminMode && i >= 3 ? `<button onclick="deleteMedia('kep', ${i - 3})" style="position: absolute; top: 8px; right: 8px; background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; z-index: 1;">🗑️</button>` : ''}
+            ${mediaAdminMode ? `<button onclick="deleteMedia('kep', ${i})" style="position: absolute; top: 8px; right: 8px; background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; z-index: 1;">🗑️</button>` : ''}
             <a class="gallery-img" href="${k.url}" target="_blank">
               <img src="${k.url}" alt="${k.nev || 'SRT TRANS'}" loading="lazy" style="width:100%; border-radius: 8px;" />
             </a>
