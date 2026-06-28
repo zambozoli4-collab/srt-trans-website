@@ -1286,7 +1286,8 @@
     }
 
     const ADMIN_PASSWORD = 'Tiszamogyorós1986'; // csak Cobra
-    const DEPUTY_PASSWORD = 'Tiszamogyoros'; // Eric, Boby
+    const BOBY_PASSWORD = 'Fahéj'; // Boby
+    const ERIC_PASSWORD = 'Rita'; // Eric
     let adminMode = false;
     let adminRole = null; // 'admin' vagy 'helyettes'
     let currentDriver = null;
@@ -1302,7 +1303,7 @@
         setTimeout(() => document.getElementById('admin-username').style.borderColor = '', 1500);
         return;
       }
-      if (pw !== ADMIN_PASSWORD && pw !== DEPUTY_PASSWORD) {
+      if (pw !== ADMIN_PASSWORD && pw !== BOBY_PASSWORD && pw !== ERIC_PASSWORD) {
         document.getElementById('admin-password').style.borderColor = '#f87171';
         setTimeout(() => document.getElementById('admin-password').style.borderColor = '', 1500);
         return;
@@ -1328,7 +1329,9 @@
 
       if (isCobraName && pw === ADMIN_PASSWORD) {
         adminRole = 'admin';
-      } else if (isDeputyName && pw === DEPUTY_PASSWORD) {
+      } else if ((nameLower.includes('boby') || nameLower.includes('bobydik')) && pw === BOBY_PASSWORD) {
+        adminRole = 'helyettes';
+      } else if ((nameLower.includes('eric') || nameLower.includes('eric19792')) && pw === ERIC_PASSWORD) {
         adminRole = 'helyettes';
       } else {
         // Nincs jogosultság
@@ -1382,7 +1385,9 @@
       if (!saved || !savedUser || !savedRole) return;
       const isCobraAuto = savedUser.includes('cobra');
       const isDeputyAuto = ['boby','bobydik','eric','eric19792'].some(n => savedUser.includes(n));
-      const pwOk = (isCobraAuto && saved === ADMIN_PASSWORD) || (isDeputyAuto && saved === DEPUTY_PASSWORD);
+      const isBobyAuto = ['boby','bobydik'].some(n => savedUser.includes(n));
+      const isEricAuto = ['eric','eric19792'].some(n => savedUser.includes(n));
+      const pwOk = (isCobraAuto && saved === ADMIN_PASSWORD) || (isBobyAuto && saved === BOBY_PASSWORD) || (isEricAuto && saved === ERIC_PASSWORD);
       if (pwOk) {
         adminMode = true;
         adminRole = savedRole;
@@ -1401,7 +1406,9 @@
       const nameLower = username.toLowerCase();
       const isCobraMedia = nameLower.includes('cobra');
       const isDeputyMedia = ['boby','bobydik','eric','eric19792'].some(n => nameLower.includes(n));
-      const pwOk = (isCobraMedia && pw === ADMIN_PASSWORD) || (isDeputyMedia && pw === DEPUTY_PASSWORD);
+      const isBobyMedia = ['boby','bobydik'].some(n => nameLower.includes(n));
+      const isEricMedia = ['eric','eric19792'].some(n => nameLower.includes(n));
+      const pwOk = (isCobraMedia && pw === ADMIN_PASSWORD) || (isBobyMedia && pw === BOBY_PASSWORD) || (isEricMedia && pw === ERIC_PASSWORD);
       const nameOk = isCobraMedia || isDeputyMedia;
 
       if (pwOk && nameOk) {
@@ -1445,7 +1452,9 @@
       if (!savedPw || !savedUser) return;
       const isCobraMedia = savedUser.includes('cobra');
       const isDeputyMedia = ['boby','bobydik','eric','eric19792'].some(n => savedUser.includes(n));
-      const pwOk = (isCobraMedia && savedPw === ADMIN_PASSWORD) || (isDeputyMedia && savedPw === DEPUTY_PASSWORD);
+      const isBobyMediaAuto = ['boby','bobydik'].some(n => savedUser.includes(n));
+      const isEricMediaAuto = ['eric','eric19792'].some(n => savedUser.includes(n));
+      const pwOk = (isCobraMedia && savedPw === ADMIN_PASSWORD) || (isBobyMediaAuto && savedPw === BOBY_PASSWORD) || (isEricMediaAuto && savedPw === ERIC_PASSWORD);
       if (pwOk && (isCobraMedia || isDeputyMedia)) {
         mediaAdminMode = true;
         document.getElementById('admin-login-form-media').style.display = 'none';
