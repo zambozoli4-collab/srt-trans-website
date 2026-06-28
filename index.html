@@ -822,7 +822,7 @@
       <!-- Admin panel -->
       <div id="admin-panel" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
         <div id="admin-login-form" style="display: flex; gap: 8px; align-items: center;">
-          <input id="admin-password" type="password" placeholder="🔑 Admin jelszó" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none;" />
+          <input id="admin-password" type="password" placeholder="🔑 Admin jelszó" onkeydown="if(event.key==='Enter')adminLogin()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none;" />
           <button onclick="adminLogin()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">Belépés</button>
         </div>
         <div id="admin-status" style="display: none; align-items: center; gap: 10px;">
@@ -923,6 +923,7 @@
 
     const ADMIN_PASSWORD = 'srt2024admin';
     let adminMode = false;
+    let currentDriver = null;
 
     function isAdminMode() { return adminMode; }
 
@@ -932,7 +933,6 @@
         adminMode = true;
         document.getElementById('admin-login-form').style.display = 'none';
         document.getElementById('admin-status').style.display = 'flex';
-        // Újrarajzoljuk a fuvarokat törlés gombokkal
         if (currentDriver) showDriverJobs(currentDriver);
       } else {
         document.getElementById('admin-password').style.borderColor = '#f87171';
@@ -951,13 +951,10 @@
     async function deleteJob(driverName, reversedIdx) {
       if (!adminMode) return;
       if (!confirm(`Biztosan törlöd a ${reversedIdx + 1}. fuvart?`)) return;
-
       const jobs = allJobs[driverName] || [];
       const sorted = [...jobs].reverse();
       sorted.splice(reversedIdx, 1);
       allJobs[driverName] = sorted.reverse();
-
-      // JSONBin frissítés
       try {
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method: 'PUT',
@@ -970,12 +967,7 @@
       }
     }
 
-    // Enter gomb jelszónál
-    document.getElementById('admin-password').addEventListener('keydown', e => {
-      if (e.key === 'Enter') adminLogin();
-    });
-
-    let currentDriver = null;
+    async function renderMedia() {
       const kepekGrid = document.getElementById('kepekGrid');
       const videokGrid = document.getElementById('videokGrid');
 
