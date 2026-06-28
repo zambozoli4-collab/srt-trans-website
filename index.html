@@ -1202,8 +1202,15 @@
       document.getElementById('page-' + name).classList.add('active');
       document.getElementById('nav-' + name).classList.add('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.location.hash = name;
       if (name === 'fuvarok') renderDrivers();
       if (name === 'kepek') renderMedia();
+    }
+
+    // Oldal visszaállítása frissítés után
+    const startPage = window.location.hash.replace('#', '');
+    if (startPage && document.getElementById('page-' + startPage)) {
+      showPage(startPage);
     }
 
     function switchTab(btn, panelId) {
