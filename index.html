@@ -1842,6 +1842,34 @@
         const videoBtn = document.querySelector('#page-kepek .tab-btn:nth-child(2)');
         if (videoBtn) videoBtn.click();
       }, 100);
+    } else if (startPage === 'kozosseg-info') {
+      showPage('kozosseg');
+    } else if (startPage === 'kozosseg-szabalyzat') {
+      showPage('kozosseg');
+      setTimeout(() => {
+        const btn = document.querySelector('#page-kozosseg .tab-btn:nth-child(2)');
+        if (btn) btn.click();
+      }, 100);
+    } else if (startPage === 'modok-kotelezo') {
+      showPage('modok');
+    } else if (startPage === 'modok-nem-kotelezo') {
+      showPage('modok');
+      setTimeout(() => {
+        const btn = document.querySelector('#page-modok .tab-btn:nth-child(2)');
+        if (btn) btn.click();
+      }, 100);
+    } else if (startPage === 'modok-egyeb') {
+      showPage('modok');
+      setTimeout(() => {
+        const btn = document.querySelector('#page-modok .tab-btn:nth-child(3)');
+        if (btn) btn.click();
+      }, 100);
+    } else if (startPage === 'modok-alkalmazasok') {
+      showPage('modok');
+      setTimeout(() => {
+        const btn = document.querySelector('#page-modok .tab-btn:nth-child(4)');
+        if (btn) btn.click();
+      }, 100);
     } else if (startPage && document.getElementById('page-' + startPage)) {
       showPage(startPage);
     }
@@ -2035,6 +2063,12 @@
       if (panelId === 'stat-tab-heti') window.location.hash = 'fuvarok-statisztika-heti';
       if (panelId === 'tab-kepek') window.location.hash = 'kepek-kepek';
       if (panelId === 'tab-video') window.location.hash = 'kepek-video';
+      if (panelId === 'tab-kotelezo') window.location.hash = 'modok-kotelezo';
+      if (panelId === 'tab-nem-kotelezo') window.location.hash = 'modok-nem-kotelezo';
+      if (panelId === 'tab-egyeb') window.location.hash = 'modok-egyeb';
+      if (panelId === 'tab-alkalmazasok') window.location.hash = 'modok-alkalmazasok';
+      if (panelId === 'tab-kozosseg-info') window.location.hash = 'kozosseg-info';
+      if (panelId === 'tab-kozosseg-szabalyzat') window.location.hash = 'kozosseg-szabalyzat';
     }
 
     function switchHetiTab(which) {
