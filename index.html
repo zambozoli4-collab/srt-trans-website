@@ -2592,7 +2592,11 @@
 
         if (!allData) await loadJsonBin(true);
         allData['_avatar_' + avatarId] = imageUrl;
-        await updateJsonBin();
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
+        });
       } catch(e) {
         el.innerHTML = origContent;
         el.style.background = origBg;
