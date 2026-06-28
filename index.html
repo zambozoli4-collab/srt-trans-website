@@ -1016,6 +1016,7 @@
     }
 
     const ADMIN_PASSWORD = 'Tiszamogyorós';
+    const DEPUTY_PASSWORD = 'Tiszamogyorós';
     let adminMode = false;
     let currentDriver = null;
 
@@ -1023,11 +1024,12 @@
 
     function adminLogin() {
       const pw = document.getElementById('admin-password').value;
-      if (pw === ADMIN_PASSWORD) {
+      if (pw === ADMIN_PASSWORD || pw === DEPUTY_PASSWORD) {
         adminMode = true;
+        sessionStorage.setItem('srt_admin_pw', pw); // megjegyzi frissítés után is
         document.getElementById('admin-login-form').style.display = 'none';
         document.getElementById('admin-status').style.display = 'flex';
-        renderDrivers(); // újrarajzolja a törlős gombokkal
+        renderDrivers();
         if (currentDriver) showDriverJobs(currentDriver);
       } else {
         document.getElementById('admin-password').style.borderColor = '#f87171';
@@ -1037,12 +1039,23 @@
 
     function adminLogout() {
       adminMode = false;
+      sessionStorage.removeItem('srt_admin_pw');
       document.getElementById('admin-login-form').style.display = 'flex';
       document.getElementById('admin-status').style.display = 'none';
       document.getElementById('admin-password').value = '';
-      renderDrivers(); // újrarajzolja törlős gombok nélkül
+      renderDrivers();
       if (currentDriver) showDriverJobs(currentDriver);
     }
+
+    // Automatikus bejelentkezés frissítés után
+    (function autoLogin() {
+      const saved = sessionStorage.getItem('srt_admin_pw');
+      if (saved === ADMIN_PASSWORD || saved === DEPUTY_PASSWORD) {
+        adminMode = true;
+        document.getElementById('admin-login-form').style.display = 'none';
+        document.getElementById('admin-status').style.display = 'flex';
+      }
+    })();
 
     let mediaAdminMode = false;
 
