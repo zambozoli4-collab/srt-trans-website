@@ -1027,6 +1027,7 @@
         adminMode = true;
         document.getElementById('admin-login-form').style.display = 'none';
         document.getElementById('admin-status').style.display = 'flex';
+        renderDrivers(); // újrarajzolja a törlős gombokkal
         if (currentDriver) showDriverJobs(currentDriver);
       } else {
         document.getElementById('admin-password').style.borderColor = '#f87171';
@@ -1039,6 +1040,7 @@
       document.getElementById('admin-login-form').style.display = 'flex';
       document.getElementById('admin-status').style.display = 'none';
       document.getElementById('admin-password').value = '';
+      renderDrivers(); // újrarajzolja törlős gombok nélkül
       if (currentDriver) showDriverJobs(currentDriver);
     }
 
@@ -1315,9 +1317,25 @@
 
     // Oldal visszaállítása frissítés után
     const startPage = window.location.hash.replace('#', '');
-    if (startPage === 'fuvarok-statisztika') {
+    if (startPage === 'fuvarok-statisztika' || startPage === 'fuvarok-statisztika-ranglista') {
       showPage('fuvarok');
       switchFuvarokView('statisztika');
+    } else if (startPage === 'fuvarok-statisztika-heti') {
+      showPage('fuvarok');
+      switchFuvarokView('statisztika');
+      // kis delay hogy a DOM felépüljön
+      setTimeout(() => {
+        const hetiBtn = document.querySelector('#view-statisztika-panel .tab-btn:nth-child(2)');
+        if (hetiBtn) hetiBtn.click();
+      }, 100);
+    } else if (startPage === 'fuvarok-statisztika-heti-napi') {
+      showPage('fuvarok');
+      switchFuvarokView('statisztika');
+      setTimeout(() => {
+        const hetiBtn = document.querySelector('#view-statisztika-panel .tab-btn:nth-child(2)');
+        if (hetiBtn) hetiBtn.click();
+        setTimeout(() => switchHetiTab('napi'), 150);
+      }, 100);
     } else if (startPage && document.getElementById('page-' + startPage)) {
       showPage(startPage);
     }
@@ -1326,11 +1344,13 @@
       // Csak a közvetlen szülő tab-nav gombjai és a közvetlen testvér tab-panelek
       const nav = btn.closest('.tab-nav');
       nav.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      // A paneleket a nav szülőjének közvetlen gyermekei közt keressük
       const container = nav.parentElement;
       container.querySelectorAll(':scope > .tab-panel').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById(panelId).classList.add('active');
+      // Hash mentése a stat oldal füleihez
+      if (panelId === 'stat-tab-ranglista') window.location.hash = 'fuvarok-statisztika-ranglista';
+      if (panelId === 'stat-tab-heti') window.location.hash = 'fuvarok-statisztika-heti';
     }
 
     function switchHetiTab(which) {
@@ -1339,6 +1359,8 @@
       document.getElementById('heti-napi').style.display = isOssz ? 'none' : 'block';
       document.getElementById('heti-btn-osszesites').classList.toggle('active', isOssz);
       document.getElementById('heti-btn-napi').classList.toggle('active', !isOssz);
+      // Hash mentése
+      window.location.hash = isOssz ? 'fuvarok-statisztika-heti' : 'fuvarok-statisztika-heti-napi';
     }
     // ══════════════ STATISZTIKA ══════════════
     const NAPOK = ['Hétfő','Kedd','Szerda','Csütörtök','Péntek','Szombat','Vasárnap'];
