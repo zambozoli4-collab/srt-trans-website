@@ -1275,17 +1275,33 @@
       if (!mediaAdminMode) return;
       if (!confirm(`Biztosan törlöd a ${tipus === 'kep' ? 'képet' : 'videót'}?`)) return;
       if (!allData._media) return;
+
+      // msgId kimentése törlés előtt
+      const item = tipus === 'kep' ? allData._media.kepek[idx] : allData._media.videok[idx];
+      const msgId = item?.msgId;
+
       if (tipus === 'kep') {
         allData._media.kepek.splice(idx, 1);
       } else {
         allData._media.videok.splice(idx, 1);
       }
+
       try {
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
+
+        // Discord üzenet törlése a botonn keresztül
+        if (msgId) {
+          await fetch(`${UPLOAD_API.replace('/upload', '/delete')}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': UPLOAD_SECRET },
+            body: JSON.stringify({ msgId, channelId: DISCORD_MEDIA_CHANNEL })
+          });
+        }
+
         renderMedia();
       } catch(e) {
         alert('Hiba a törlés során!');
