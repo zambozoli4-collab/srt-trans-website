@@ -1117,9 +1117,11 @@
       <!-- Admin panel + nézet váltó -->
       <div id="admin-panel" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
         <div id="admin-login-form" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <input id="admin-username" type="text" placeholder="👤 Felhasználónév (Trucky név)" onkeydown="if(event.key==='Enter')adminLogin()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 200px;" />
-          <input id="admin-password" type="password" placeholder="🔑 Jelszó" onkeydown="if(event.key==='Enter')adminLogin()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none;" />
-          <button onclick="adminLogin()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">Belépés</button>
+          <input id="admin-username" type="text" placeholder="Discord felhasználónév" onkeydown="if(event.key==='Enter')requestDiscordCode()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 200px;" />
+          <button onclick="requestDiscordCode()" style="padding: 8px 16px; border-radius: 8px; background: #5865f2; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">📨 Kód kérése</button>
+          <input id="admin-discord-code" type="text" placeholder="6 jegyű kód" maxlength="6" onkeydown="if(event.key==='Enter')adminLogin()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 120px; display:none;" />
+          <button id="admin-verify-btn" onclick="adminLogin()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; display:none;">✅ Belépés</button>
+          <span id="admin-code-msg" style="font-size: 12px; color: #4ade80;"></span>
         </div>
         <div id="admin-status" style="display: none; align-items: center; gap: 10px;">
           <span id="admin-status-label" style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Admin mód aktív</span>
@@ -1285,116 +1287,112 @@
       return Number(n || 0).toLocaleString('hu-HU');
     }
 
-    const ADMIN_PASSWORD = 'Tiszamogyorós1986'; // csak Cobra
-    const BOBY_PASSWORD = 'Fahéj'; // Boby
-    const ERIC_PASSWORD = 'Rita'; // Eric
     let adminMode = false;
-    let adminRole = null; // 'admin' vagy 'helyettes'
+    let adminRole = null;
     let currentDriver = null;
 
     function isAdminMode() { return adminMode; }
 
+    async function requestDiscordCode() {
+      const username = (document.getElementById('admin-username').value || '').trim();
+      if (!username) return;
+      const msg = document.getElementById('admin-code-msg');
+      msg.style.color = '#f97316';
+      msg.textContent = '⏳ Kód küldése...';
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/request-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordName: username })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.style.color = '#4ade80';
+          msg.textContent = '✅ Kód elküldve Discord DM-ben!';
+          document.getElementById('admin-discord-code').style.display = 'inline-block';
+          document.getElementById('admin-verify-btn').style.display = 'inline-block';
+          document.getElementById('admin-discord-code').focus();
+        } else {
+          msg.style.color = '#f87171';
+          msg.textContent = '❌ ' + (data.error || 'Hiba');
+        }
+      } catch(e) {
+        msg.style.color = '#f87171';
+        msg.textContent = '❌ Kapcsolati hiba';
+      }
+    }
+
     async function adminLogin() {
       const username = (document.getElementById('admin-username').value || '').trim();
-      const pw = document.getElementById('admin-password').value;
-
-      if (!username) {
-        document.getElementById('admin-username').style.borderColor = '#f87171';
-        setTimeout(() => document.getElementById('admin-username').style.borderColor = '', 1500);
-        return;
+      const code = (document.getElementById('admin-discord-code').value || '').trim();
+      const msg = document.getElementById('admin-code-msg');
+      if (!code) { msg.style.color='#f87171'; msg.textContent='❌ Add meg a kódot!'; return; }
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/verify-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordName: username, code })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          msg.style.color = '#f87171';
+          msg.textContent = '❌ ' + (data.error || 'Hibás kód');
+          document.getElementById('admin-discord-code').style.borderColor = '#f87171';
+          setTimeout(() => { document.getElementById('admin-discord-code').style.borderColor = ''; }, 1500);
+          return;
+        }
+        // Sikeres belépés
+        adminMode = true;
+        adminRole = data.role;
+        sessionStorage.setItem('srt_admin_user', username);
+        sessionStorage.setItem('srt_admin_role', adminRole);
+        sessionStorage.setItem('srt_discord_auth', '1');
+        if (!allData) await loadJsonBin(true);
+        document.getElementById('admin-login-form').style.display = 'none';
+        document.getElementById('admin-status').style.display = 'flex';
+        document.getElementById('admin-status-label').textContent =
+          adminRole === 'admin' ? `✅ Admin: ${username}` : `✅ Helyettes: ${username}`;
+        if (adminRole === 'admin' && username.toLowerCase().includes('cobra')) {
+          setTimeout(szerkesztoGombokMutat, 300);
+        }
+        renderDrivers();
+        if (currentDriver) showDriverJobs(currentDriver);
+      } catch(e) {
+        document.getElementById('admin-code-msg').textContent = '❌ Kapcsolati hiba';
       }
-      if (pw !== ADMIN_PASSWORD && pw !== BOBY_PASSWORD && pw !== ERIC_PASSWORD) {
-        document.getElementById('admin-password').style.borderColor = '#f87171';
-        setTimeout(() => document.getElementById('admin-password').style.borderColor = '', 1500);
-        return;
-      }
-
-      // Betöltjük az adatokat ha még nincs
-      if (!allData) await loadJsonBin(true);
-
-      // Fuvarok admin: csak Cobra
-      // Helyettes: Boby és Eric (látják a statisztikát de nem törölhetnek sofőrt)
-      const admins = ['cobra', 'cobra086'].concat(
-        (allData?._admins || []).map(n => n.toLowerCase()).filter(n => n.startsWith('cobra'))
-      );
-      const deputies = ['boby', 'bobydik', 'eric', 'eric19792'].concat(
-        (allData?._deputies || []).map(n => n.toLowerCase()).filter(n =>
-          n.startsWith('boby') || n.startsWith('eric')
-        )
-      );
-
-      const nameLower = username.toLowerCase();
-      const isCobraName = nameLower.includes('cobra');
-      const isDeputyName = ['boby','bobydik','eric','eric19792'].some(n => nameLower.includes(n));
-
-      if (isCobraName && pw === ADMIN_PASSWORD) {
-        adminRole = 'admin';
-      } else if ((nameLower.includes('boby') || nameLower.includes('bobydik')) && pw === BOBY_PASSWORD) {
-        adminRole = 'helyettes';
-      } else if ((nameLower.includes('eric') || nameLower.includes('eric19792')) && pw === ERIC_PASSWORD) {
-        adminRole = 'helyettes';
-      } else {
-        // Nincs jogosultság
-        document.getElementById('admin-username').style.borderColor = '#f87171';
-        document.getElementById('admin-password').style.borderColor = '#f87171';
-        setTimeout(() => {
-          document.getElementById('admin-username').style.borderColor = '';
-          document.getElementById('admin-password').style.borderColor = '';
-        }, 1500);
-        return;
-      }
-
-      adminMode = true;
-      sessionStorage.setItem('srt_admin_pw', pw);
-      sessionStorage.setItem('srt_admin_user', username);
-      sessionStorage.setItem('srt_admin_role', adminRole);
-
-      document.getElementById('admin-login-form').style.display = 'none';
-      document.getElementById('admin-status').style.display = 'flex';
-      document.getElementById('admin-status-label').textContent =
-        adminRole === 'admin' ? `✅ Admin: ${username}` : `✅ Helyettes: ${username}`;
-
-      // Cobra esetén szerkesztő gombok megjelenítése
-      if (adminRole === 'admin' && username.toLowerCase().includes('cobra')) {
-        setTimeout(szerkesztoGombokMutat, 300);
-      }
-
-      renderDrivers();
-      if (currentDriver) showDriverJobs(currentDriver);
     }
 
     function adminLogout() {
       adminMode = false;
       adminRole = null;
-      sessionStorage.removeItem('srt_admin_pw');
       sessionStorage.removeItem('srt_admin_user');
       sessionStorage.removeItem('srt_admin_role');
+      sessionStorage.removeItem('srt_discord_auth');
       document.getElementById('admin-login-form').style.display = 'flex';
       document.getElementById('admin-status').style.display = 'none';
-      document.getElementById('admin-password').value = '';
       document.getElementById('admin-username').value = '';
+      document.getElementById('admin-discord-code').value = '';
+      document.getElementById('admin-discord-code').style.display = 'none';
+      document.getElementById('admin-verify-btn').style.display = 'none';
+      document.getElementById('admin-code-msg').textContent = '';
       szerkesztoGombokElrejt();
       renderDrivers();
       if (currentDriver) showDriverJobs(currentDriver);
     }
 
     (function autoLogin() {
-      const saved = sessionStorage.getItem('srt_admin_pw');
-      const savedUser = (sessionStorage.getItem('srt_admin_user') || '').toLowerCase();
+      const savedUser = sessionStorage.getItem('srt_admin_user') || '';
       const savedRole = sessionStorage.getItem('srt_admin_role');
-      if (!saved || !savedUser || !savedRole) return;
-      const isCobraAuto = savedUser.includes('cobra');
-      const isDeputyAuto = ['boby','bobydik','eric','eric19792'].some(n => savedUser.includes(n));
-      const isBobyAuto = ['boby','bobydik'].some(n => savedUser.includes(n));
-      const isEricAuto = ['eric','eric19792'].some(n => savedUser.includes(n));
-      const pwOk = (isCobraAuto && saved === ADMIN_PASSWORD) || (isBobyAuto && saved === BOBY_PASSWORD) || (isEricAuto && saved === ERIC_PASSWORD);
-      if (pwOk) {
-        adminMode = true;
-        adminRole = savedRole;
-        document.getElementById('admin-login-form').style.display = 'none';
-        document.getElementById('admin-status').style.display = 'flex';
-        document.getElementById('admin-status-label').textContent =
-          savedRole === 'admin' ? `✅ Admin: ${sessionStorage.getItem('srt_admin_user')}` : `✅ Helyettes: ${sessionStorage.getItem('srt_admin_user')}`;
+      const discordAuth = sessionStorage.getItem('srt_discord_auth');
+      if (!savedUser || !savedRole || !discordAuth) return;
+      adminMode = true;
+      adminRole = savedRole;
+      document.getElementById('admin-login-form').style.display = 'none';
+      document.getElementById('admin-status').style.display = 'flex';
+      document.getElementById('admin-status-label').textContent =
+        savedRole === 'admin' ? `✅ Admin: ${savedUser}` : `✅ Helyettes: ${savedUser}`;
+      if (savedRole === 'admin' && savedUser.toLowerCase().includes('cobra')) {
+        setTimeout(szerkesztoGombokMutat, 500);
       }
     })();
 
@@ -1404,10 +1402,10 @@
       const username = (document.getElementById('admin-username-media').value || '').trim();
       const pw = document.getElementById('admin-password-media').value;
       const nameLower = username.toLowerCase();
-      const isCobraMedia = nameLower.includes('cobra');
-      const isDeputyMedia = ['boby','bobydik','eric','eric19792'].some(n => nameLower.includes(n));
-      const isBobyMedia = ['boby','bobydik'].some(n => nameLower.includes(n));
-      const isEricMedia = ['eric','eric19792'].some(n => nameLower.includes(n));
+      const isCobraMedia = ['cobra','cobra086'].includes(nameLower);
+      const isDeputyMedia = ['boby','bobydik'].concat(['eric','eric19792']).includes(nameLower);
+      const isBobyMedia = ['boby','bobydik'].includes(nameLower);
+      const isEricMedia = ['eric','eric19792'].includes(nameLower);
       const pwOk = (isCobraMedia && pw === ADMIN_PASSWORD) || (isBobyMedia && pw === BOBY_PASSWORD) || (isEricMedia && pw === ERIC_PASSWORD);
       const nameOk = isCobraMedia || isDeputyMedia;
 
