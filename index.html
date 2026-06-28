@@ -630,15 +630,27 @@
   <div class="page" id="page-terkep">
     <div class="container">
       <p class="section-eyebrow">ETS2 Világ</p>
-      <h2 class="section-title">Óriási európai térkép</h2>
-      <div class="map-wrap">
-        <iframe src="https://ets2.online/map/ets2" title="ETS2 interaktív térkép" loading="lazy" allowfullscreen></iframe>
-        <div class="map-overlay-label">
-          <div class="map-dot"></div>
-          ETS2 Interaktív Térkép
-        </div>
+      <h2 class="section-title">Térkép</h2>
+
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab(this, 'tab-trucky-map')">📡 Trucky térkép</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-ets2-map')">🗺 ETS2 térkép</button>
       </div>
-      <a class="map-link" href="https://ets2.online/map/ets2" target="_blank">🔗 Megnyitás teljes méretben →</a>
+
+      <div id="tab-trucky-map" class="tab-panel active">
+        <div class="map-wrap" style="height: 70vh;">
+          <iframe src="https://hub.truckyapp.com/map" title="Trucky térkép" loading="lazy" allowfullscreen style="border-radius: 12px;"></iframe>
+        </div>
+        <a class="map-link" href="https://hub.truckyapp.com/map" target="_blank">🔗 Megnyitás teljes méretben →</a>
+      </div>
+
+      <div id="tab-ets2-map" class="tab-panel">
+        <div class="map-wrap" style="height: 70vh;">
+          <iframe src="https://ets2.online/map/ets2" title="ETS2 interaktív térkép" loading="lazy" allowfullscreen style="border-radius: 12px;"></iframe>
+        </div>
+        <a class="map-link" href="https://ets2.online/map/ets2" target="_blank">🔗 Megnyitás teljes méretben →</a>
+      </div>
+
       <div class="map-info-grid">
         <div class="map-info-card">
           <h4>🌍 Európa</h4>
