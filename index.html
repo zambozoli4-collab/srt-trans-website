@@ -29,6 +29,8 @@
       line-height: 1.6;
       min-height: 100vh;
       overflow-x: hidden;
+      opacity: 0;
+      transition: opacity 0.15s ease;
     }
 
     /* ─── PAGES ─── */
@@ -1762,13 +1764,14 @@
     async function loadSzovegek() {
       if (!allData) await loadJsonBin(true);
       szovegek = allData?._szovegek || {};
-      // Alkalmazza a mentett szövegeket
       document.querySelectorAll('[data-edit]').forEach(el => {
         const key = el.dataset.edit;
         if (szovegek[key] !== undefined) {
           el.innerHTML = szovegek[key];
         }
       });
+      // Megjelenítjük az oldalt miután a szövegek be vannak töltve
+      document.body.style.opacity = '1';
     }
 
     function aktivSzerkesztoMod() {
