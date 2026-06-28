@@ -1041,37 +1041,15 @@
       // Betöltjük az adatokat ha még nincs
       if (!allData) await loadJsonBin(true);
 
-      // Fallback lista ha a bot rosszul szinkronizálna
-      const FALLBACK_ADMINS = ['cobra'];
-      const FALLBACK_DEPUTIES = ['boby', 'eric'];
-
-      const rawAdmins = allData?._admins || [];
-      const rawDeputies = allData?._deputies || [];
-
-      // Botok és ismert nem-tagok kiszűrése, csak valódi emberek
-      const botNames = ['mee6', 'dyno', 'mee6', 'srt hifi', 'rangadó boot', 'tag rang adó',
-        'gázsi', 'cobra 🐍', 'fuvar bemondó', 'fordító boot', 'ki klikkelt ki másik tagot!',
-        'törlő boot', 'szerver újra indítás', 'vírus link tiltó', 'hang-státusz boot', 'óra',
-        'kötelező km utáni rangadás', 'ats km szoba', 'szöveges üzenet törlése',
-        'képek/videók eltávolítása', 'online számláló', 'ets 2 játék elindítás figyelő',
-        'üdvözlő boot', 'születésnap és névnap köszöntő', 'csúnya beszéd',
-        '5. hónapnál fiatalabb fiók!', 'mee6'];
-
-      const admins = rawAdmins.length > 0
-        ? rawAdmins.map(n => n.toLowerCase()).filter(n => !botNames.some(b => n.includes(b)))
-        : FALLBACK_ADMINS;
-
-      // Attys31 és Batki Márk eltávolítása a helyettesekből
-      const EXCLUDED = ['attys31', 'batki márk', 'batki mark', '☠༒attys31༒☠'];
-      const deputies = rawDeputies.length > 0
-        ? rawDeputies.map(n => n.toLowerCase()).filter(n =>
-            !botNames.some(b => n.includes(b)) &&
-            !EXCLUDED.some(e => n.includes(e))
-          )
-        : FALLBACK_DEPUTIES;
-
-      // Cobra mindig admin legyen
-      if (!admins.includes('cobra')) admins.push('cobra');
+      // Engedélyezett nevek - CSAK ezek léphetnek be
+      const admins = ['cobra', 'cobra086', 'cobra 🐍'].concat(
+        (allData?._admins || []).map(n => n.toLowerCase()).filter(n => n.startsWith('cobra'))
+      );
+      const deputies = ['boby', 'bobydik', 'eric', 'eric19792'].concat(
+        (allData?._deputies || []).map(n => n.toLowerCase()).filter(n =>
+          n.startsWith('boby') || n.startsWith('eric')
+        )
+      );
 
       const nameLower = username.toLowerCase();
       const listsEmpty = admins.length === 0 && deputies.length === 0;
@@ -1081,9 +1059,7 @@
       } else if (deputies.includes(nameLower)) {
         adminRole = 'helyettes';
       } else {
-        // Nincs jogosultság — megmutatjuk mi van a listában (debug)
-        const msg = `❌ Nincs jogosultságod!\nAdmin lista: ${admins.join(', ') || 'üres'}\nHelyettes lista: ${deputies.join(', ') || 'üres'}`;
-        alert(msg);
+        // Nincs jogosultság
         document.getElementById('admin-username').style.borderColor = '#f87171';
         document.getElementById('admin-password').style.borderColor = '#f87171';
         setTimeout(() => {
