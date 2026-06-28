@@ -851,12 +851,13 @@
 
       <!-- Admin panel + nézet váltó -->
       <div id="admin-panel" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-        <div id="admin-login-form" style="display: flex; gap: 8px; align-items: center;">
-          <input id="admin-password" type="password" placeholder="🔑 Admin jelszó" onkeydown="if(event.key==='Enter')adminLogin()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none;" />
+        <div id="admin-login-form" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <input id="admin-username" type="text" placeholder="👤 Felhasználónév (Trucky név)" onkeydown="if(event.key==='Enter')adminLogin()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 200px;" />
+          <input id="admin-password" type="password" placeholder="🔑 Jelszó" onkeydown="if(event.key==='Enter')adminLogin()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none;" />
           <button onclick="adminLogin()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">Belépés</button>
         </div>
         <div id="admin-status" style="display: none; align-items: center; gap: 10px;">
-          <span style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Admin mód aktív</span>
+          <span id="admin-status-label" style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Admin mód aktív</span>
           <button onclick="adminLogout()" style="padding: 6px 12px; border-radius: 8px; background: rgba(239,68,68,0.15); color: #f87171; font-size: 12px; border: 1px solid rgba(239,68,68,0.3); cursor: pointer;">Kilépés</button>
         </div>
         <button onclick="switchFuvarokView('fuvarok')" id="btn-view-fuvarok" style="padding: 8px 18px; border-radius: 8px; background: var(--orange); color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">🚛 Fuvarok</button>
@@ -1016,33 +1017,73 @@
     }
 
     const ADMIN_PASSWORD = 'Tiszamogyorós';
-    const DEPUTY_PASSWORD = 'Tiszamogyorós';
     let adminMode = false;
+    let adminRole = null; // 'admin' vagy 'helyettes'
     let currentDriver = null;
 
     function isAdminMode() { return adminMode; }
 
-    function adminLogin() {
+    async function adminLogin() {
+      const username = (document.getElementById('admin-username').value || '').trim();
       const pw = document.getElementById('admin-password').value;
-      if (pw === ADMIN_PASSWORD || pw === DEPUTY_PASSWORD) {
-        adminMode = true;
-        sessionStorage.setItem('srt_admin_pw', pw); // megjegyzi frissítés után is
-        document.getElementById('admin-login-form').style.display = 'none';
-        document.getElementById('admin-status').style.display = 'flex';
-        renderDrivers();
-        if (currentDriver) showDriverJobs(currentDriver);
-      } else {
+
+      if (!username) {
+        document.getElementById('admin-username').style.borderColor = '#f87171';
+        setTimeout(() => document.getElementById('admin-username').style.borderColor = '', 1500);
+        return;
+      }
+      if (pw !== ADMIN_PASSWORD) {
         document.getElementById('admin-password').style.borderColor = '#f87171';
         setTimeout(() => document.getElementById('admin-password').style.borderColor = '', 1500);
+        return;
       }
+
+      // Betöltjük az adatokat ha még nincs
+      if (!allData) await loadJsonBin(true);
+
+      const admins = (allData?._admins || []).map(n => n.toLowerCase());
+      const deputies = (allData?._deputies || []).map(n => n.toLowerCase());
+      const nameLower = username.toLowerCase();
+
+      if (admins.includes(nameLower)) {
+        adminRole = 'admin';
+      } else if (deputies.includes(nameLower)) {
+        adminRole = 'helyettes';
+      } else {
+        // Nincs jogosultság
+        document.getElementById('admin-username').style.borderColor = '#f87171';
+        document.getElementById('admin-password').style.borderColor = '#f87171';
+        setTimeout(() => {
+          document.getElementById('admin-username').style.borderColor = '';
+          document.getElementById('admin-password').style.borderColor = '';
+        }, 1500);
+        return;
+      }
+
+      adminMode = true;
+      sessionStorage.setItem('srt_admin_pw', pw);
+      sessionStorage.setItem('srt_admin_user', username);
+      sessionStorage.setItem('srt_admin_role', adminRole);
+
+      document.getElementById('admin-login-form').style.display = 'none';
+      document.getElementById('admin-status').style.display = 'flex';
+      document.getElementById('admin-status-label').textContent =
+        adminRole === 'admin' ? `✅ Admin: ${username}` : `✅ Helyettes: ${username}`;
+
+      renderDrivers();
+      if (currentDriver) showDriverJobs(currentDriver);
     }
 
     function adminLogout() {
       adminMode = false;
+      adminRole = null;
       sessionStorage.removeItem('srt_admin_pw');
+      sessionStorage.removeItem('srt_admin_user');
+      sessionStorage.removeItem('srt_admin_role');
       document.getElementById('admin-login-form').style.display = 'flex';
       document.getElementById('admin-status').style.display = 'none';
       document.getElementById('admin-password').value = '';
+      document.getElementById('admin-username').value = '';
       renderDrivers();
       if (currentDriver) showDriverJobs(currentDriver);
     }
@@ -1050,10 +1091,15 @@
     // Automatikus bejelentkezés frissítés után
     (function autoLogin() {
       const saved = sessionStorage.getItem('srt_admin_pw');
-      if (saved === ADMIN_PASSWORD || saved === DEPUTY_PASSWORD) {
+      const savedUser = sessionStorage.getItem('srt_admin_user');
+      const savedRole = sessionStorage.getItem('srt_admin_role');
+      if (saved === ADMIN_PASSWORD && savedUser && savedRole) {
         adminMode = true;
+        adminRole = savedRole;
         document.getElementById('admin-login-form').style.display = 'none';
         document.getElementById('admin-status').style.display = 'flex';
+        document.getElementById('admin-status-label').textContent =
+          savedRole === 'admin' ? `✅ Admin: ${savedUser}` : `✅ Helyettes: ${savedUser}`;
       }
     })();
 
