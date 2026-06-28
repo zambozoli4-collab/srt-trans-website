@@ -487,18 +487,113 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ─── RESPONSIVE ─── */
+    /* ── HAMBURGER GOMB ── */
+    .hamburger {
+      display: none;
+      flex-direction: column; gap: 5px;
+      background: none; border: none; cursor: pointer;
+      padding: 6px; border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .hamburger:hover { background: rgba(255,255,255,0.08); }
+    .hamburger span {
+      display: block; width: 22px; height: 2px;
+      background: var(--text); border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── MOBIL NAVIGÁCIÓ ── */
+    .mobile-nav {
+      display: none;
+      position: fixed; top: 64px; left: 0; right: 0;
+      background: rgba(7,13,24,0.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      z-index: 99;
+      flex-direction: column;
+      padding: 12px 16px 20px;
+      gap: 4px;
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav .nav-btn {
+      width: 100%; text-align: left;
+      font-size: 15px; padding: 12px 16px;
+      border-radius: 10px;
+    }
+    .mobile-nav .btn-trucky {
+      margin-top: 8px; text-align: center;
+      padding: 12px 16px; border-radius: 10px;
+      font-size: 14px;
+    }
+
+    /* ── FUVAROK MOBIL ── */
+    .fuvarok-layout { display: flex; gap: 24px; align-items: flex-start; }
+
+    @media (max-width: 900px) {
+      .fuvarok-layout { flex-direction: column; }
+      #drivers-sidebar { width: 100% !important; min-width: unset !important; }
+      /* Fuvar táblázat vízszintes görgetés */
+      #jobs-view { overflow-x: auto; }
+    }
+
     @media (max-width: 768px) {
-      .hero { grid-template-columns: 1fr; padding: 40px 20px; gap: 28px; }
-      .hero h1 { font-size: 52px; }
-      .hero-image { display: none; }
-      .quick-grid { grid-template-columns: repeat(2, 1fr); }
+      /* Header */
+      .hamburger { display: flex; }
+      .nav { display: none; }
+      .btn-trucky { display: none; }
+      .header-inner { padding: 0 16px; }
+
+      /* Hero */
+      .hero { min-height: 70vh; }
+      .hero-content { padding: 32px 20px 0; }
+      .hero h1 { font-size: clamp(32px, 10vw, 56px); white-space: normal; }
+      .hero-lead { font-size: 16px; line-height: 1.7; }
+      .hero-badges { gap: 6px; }
+      .hero-actions { flex-direction: column; gap: 8px; }
+      .btn-primary, .btn-outline { width: 100%; justify-content: center; }
+
+      /* Grids */
+      .quick-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 16px 40px; }
       .gallery-grid { grid-template-columns: 1fr; }
       .video-wrap { grid-column: 1; }
       .map-info-grid, .info-grid { grid-template-columns: 1fr; }
+      .mod-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: repeat(2, 1fr); }
+
+      /* Container padding */
+      .container { padding: 40px 16px; }
+      .container-wide { padding: 40px 16px; }
+
+      /* Discord */
       .discord-card { padding: 32px 20px; }
-      .nav { gap: 2px; }
-      .nav-btn { font-size: 12px; padding: 6px 8px; }
-      .tab-nav { overflow-x: auto; }
+      .discord-card h2 { font-size: 32px; }
+
+      /* Tab nav */
+      .tab-nav { overflow-x: auto; width: 100%; }
+
+      /* Fuvarok */
+      .fuvarok-layout { flex-direction: column; }
+      #drivers-sidebar { width: 100% !important; min-width: unset !important; }
+      #jobs-view { overflow-x: auto; }
+
+      /* Stat kártyák */
+      .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+      /* Section title */
+      .section-title { font-size: 30px; }
+    }
+
+    @media (max-width: 480px) {
+      .quick-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr !important; }
+      .hero h1 { font-size: clamp(28px, 9vw, 42px); }
+      .hero-lead { font-size: 15px; }
+      .section-title { font-size: 26px; }
+      .tab-btn { font-size: 12px; padding: 7px 12px; }
     }
   </style>
 </head>
@@ -521,8 +616,24 @@
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Csapat</button>
       </nav>
       <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
+      <!-- Hamburger gomb mobilra -->
+      <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menü">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </header>
+
+  <!-- Mobil navigáció -->
+  <div class="mobile-nav" id="mobile-nav">
+    <button class="nav-btn active" id="mob-nav-home" onclick="showPage('home');closeMobileNav()">🏠 Kezdőlap</button>
+    <button class="nav-btn" id="mob-nav-fuvarok" onclick="showPage('fuvarok');closeMobileNav()">🚛 Fuvarok</button>
+    <button class="nav-btn" id="mob-nav-modok" onclick="showPage('modok');closeMobileNav()">📦 Módok</button>
+    <button class="nav-btn" id="mob-nav-terkep" onclick="showPage('terkep');closeMobileNav()">🗺 Térkép</button>
+    <button class="nav-btn" id="mob-nav-kepek" onclick="showPage('kepek');closeMobileNav()">🎬 Média</button>
+    <button class="nav-btn" id="mob-nav-kozosseg" onclick="showPage('kozosseg');closeMobileNav()">💬 Közösség</button>
+    <button class="nav-btn" id="mob-nav-csapat" onclick="showPage('csapat');closeMobileNav()">👥 Csapat</button>
+    <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky letöltés</a>
+  </div>
 
   <!-- ══════════ PAGE: HOME ══════════ -->
   <div class="page active" id="page-home">
@@ -901,7 +1012,7 @@
 
       <!-- FUVAROK nézet -->
       <div id="view-fuvarok-panel">
-      <div style="display: flex; gap: 24px; align-items: flex-start;">
+      <div class="fuvarok-layout" style="display: flex; gap: 24px; align-items: flex-start;">
 
         <!-- Sofőr lista oldalsáv -->
         <div id="drivers-sidebar" style="min-width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; flex-shrink: 0;">
@@ -1560,6 +1671,7 @@
         el.style.display = (el.dataset.for === 'page-' + name) ? 'block' : 'none';
       });
 
+      syncMobileNav(name);
       if (name === 'fuvarok') { renderDrivers(); renderStatisztika(); }
       if (name === 'kepek') renderMedia();
     }
@@ -1612,6 +1724,32 @@
       }, 100);
     } else if (startPage && document.getElementById('page-' + startPage)) {
       showPage(startPage);
+    }
+
+
+    function toggleMobileNav() {
+      var nav = document.getElementById('mobile-nav');
+      var btn = document.getElementById('hamburger-btn');
+      var isOpen = nav.classList.contains('open');
+      if (isOpen) {
+        nav.classList.remove('open');
+        btn.classList.remove('open');
+      } else {
+        nav.classList.add('open');
+        btn.classList.add('open');
+      }
+    }
+
+    function closeMobileNav() {
+      document.getElementById('mobile-nav').classList.remove('open');
+      document.getElementById('hamburger-btn').classList.remove('open');
+    }
+
+    // Mobil nav aktív gomb szinkronizálása
+    function syncMobileNav(name) {
+      document.querySelectorAll('#mobile-nav .nav-btn').forEach(b => b.classList.remove('active'));
+      var mobBtn = document.getElementById('mob-nav-' + name);
+      if (mobBtn) mobBtn.classList.add('active');
     }
 
     // ══════════════ AUTO-REFRESH ══════════════
