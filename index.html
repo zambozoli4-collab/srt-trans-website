@@ -933,14 +933,6 @@
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px,1fr)); gap: 20px;" id="ranglista-grid">
             <div style="color:var(--muted); padding: 32px; text-align:center;">Betöltés...</div>
           </div>
-          <!-- Admin szerkesztő -->
-          <div id="ranglista-admin-panel" style="display:none; margin-top: 32px;">
-            <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px;">
-              <div style="font-size:15px; font-weight:700; color:#fff; margin-bottom:16px;">✏️ Ranglista szerkesztése</div>
-              <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:16px;" id="ranglista-editor"></div>
-              <button onclick="saveRanglista()" style="margin-top:16px; padding:10px 24px; background:#e85d04; color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:14px;">💾 Mentés</button>
-            </div>
-          </div>
         </div>
 
         <!-- ══ HETI TAB ══ -->
@@ -1321,38 +1313,270 @@
       document.getElementById('heti-btn-osszesites').classList.toggle('active', isOssz);
       document.getElementById('heti-btn-napi').classList.toggle('active', !isOssz);
     }
-    // ══════════════ STATISZTIKA RENDSZER ══════════════
-
+    // ══════════════ STATISZTIKA ══════════════
     const NAPOK = ['Hétfő','Kedd','Szerda','Csütörtök','Péntek','Szombat','Vasárnap'];
-    const RANGLISTA_KATEGORIÁK = [
-      { key: 'osszes_km', nev: 'Összes KM', egyseg: 'km', ikon: '🛣️' },
-      { key: 'osszes_profit', nev: 'Összes Profit', egyseg: 'Ft', ikon: '💰' },
-      { key: 'osszes_suly', nev: 'Összes Szállított Súly', egyseg: 't', ikon: '⚖️' },
-      { key: 'havi_suly', nev: 'Havi Szállított Súly', egyseg: 't', ikon: '📦' },
-      { key: 'havi_km', nev: 'Havi KM', egyseg: 'km', ikon: '📍' },
-      { key: 'havi_profit', nev: 'Havi Profit', egyseg: 'Ft', ikon: '📈' },
-    ];
+    const FUEL_PRICE = 615;
+    // felülírások tárolója (ha admin módosít valamit)
+    // struktúra: { ranglista: { osszes_km: [{nev,ertek},...], ... }, heti: {...}, napi: { Hétfő: [...], ... } }
+    let statOverride = null;
 
-    let statData = null; // { ranglista: {...}, heti: {...}, napi: {...} }
+    function getUserName(id, u) { return u.truckyName || id; }
 
-    async function loadStatData() {
-      if (!allData) await loadJsonBin();
-      statData = allData?._statisztika || { ranglista: {}, heti: {}, napi: {} };
-      if (!statData.ranglista) statData.ranglista = {};
-      if (!statData.heti) statData.heti = {};
-      if (!statData.napi) statData.napi = {};
-      return statData;
+    function calcProfit(u, type) {
+      const p = type === 'total' ? 'total' : 'monthly';
+      return Math.round((u[p+'Revenue']||0) - (u[p+'Fine']||0) - ((u[p+'Fuel']||0) * FUEL_PRICE));
     }
 
-    async function saveStatData() {
-      if (!allData) await loadJsonBin();
-      allData._statisztika = statData;
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-        body: JSON.stringify({ data: allData, jobs: allJobs })
+    function getDrivers() {
+      if (!allData) return [];
+      return Object.entries(allData)
+        .filter(([id]) => !id.startsWith('_'))
+        .map(([id, u]) => ({ id, nev: getUserName(id, u), u }));
+    }
+
+    // Auto adatok a bot-ból
+    function autoRanglistaAdatok() {
+      const d = getDrivers();
+      return {
+        osszes_km:     d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.totalKm||0) })),
+        osszes_profit: d.map(x => ({ nev: x.nev, ertek: calcProfit(x.u,'total') })),
+        osszes_suly:   d.map(x => ({ nev: x.nev, ertek: x.u.totalTons||0 })),
+        havi_suly:     d.map(x => ({ nev: x.nev, ertek: x.u.monthlyTons||0 })),
+        havi_km:       d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.monthlyKm||0) })),
+        havi_profit:   d.map(x => ({ nev: x.nev, ertek: calcProfit(x.u,'monthly') })),
+      };
+    }
+    function autoHetiAdatok() {
+      const d = getDrivers();
+      return {
+        top_km:         d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.weeklyTotalKm||0) })),
+        top_fogyasztas: d.map(x => ({ nev: x.nev, ertek: x.u.weeklyAvgFuel||0 })),
+        top_suly:       d.map(x => ({ nev: x.nev, ertek: x.u.weeklyTons||0 })),
+      };
+    }
+    function autoNapiAdatok() {
+      const d = getDrivers();
+      const res = {};
+      NAPOK.forEach(nap => { res[nap] = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.weeklyKm?.[nap]||0) })); });
+      return res;
+    }
+
+    // Effektív adatok: felülírás ha van, egyébként auto
+    function getStatAdatok() {
+      const over = statOverride || (allData?._statOverride) || {};
+      const autoR = autoRanglistaAdatok();
+      const autoH = autoHetiAdatok();
+      const autoN = autoNapiAdatok();
+      return {
+        ranglista: {
+          osszes_km:     over.ranglista?.osszes_km     ?? autoR.osszes_km,
+          osszes_profit: over.ranglista?.osszes_profit ?? autoR.osszes_profit,
+          osszes_suly:   over.ranglista?.osszes_suly   ?? autoR.osszes_suly,
+          havi_suly:     over.ranglista?.havi_suly     ?? autoR.havi_suly,
+          havi_km:       over.ranglista?.havi_km       ?? autoR.havi_km,
+          havi_profit:   over.ranglista?.havi_profit   ?? autoR.havi_profit,
+        },
+        heti: {
+          top_km:         over.heti?.top_km         ?? autoH.top_km,
+          top_fogyasztas: over.heti?.top_fogyasztas ?? autoH.top_fogyasztas,
+          top_suly:       over.heti?.top_suly       ?? autoH.top_suly,
+        },
+        napi: Object.fromEntries(NAPOK.map(nap => [nap, over.napi?.[nap] ?? autoN[nap]])),
+      };
+    }
+
+    function renderTopListAuto(adatok, egyseg, top3Count = 3) {
+      if (!adatok) return '<div style="color:var(--muted);padding:16px;font-size:13px;">Nincs adat</div>';
+      const sorted = [...adatok].sort((a,b) => egyseg==='L/100km' ? a.ertek-b.ertek : b.ertek-a.ertek)
+                                .filter(x => x.ertek > 0);
+      if (!sorted.length) return '<div style="color:var(--muted);padding:16px;font-size:13px;">Nincs adat</div>';
+      const top = sorted.slice(0, top3Count), rest = sorted.slice(top3Count);
+      const medals = ['🥇','🥈','🥉'], colors = ['#fbbf24','#94a3b8','#f97316'];
+      let html = top.map((e,i) => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:6px;">
+          <div style="font-size:22px;flex-shrink:0;">${medals[i]||''}</div>
+          <div style="flex:1;font-size:14px;font-weight:700;color:${colors[i]||'var(--text)'};">${e.nev}</div>
+          <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;">${formatNum(e.ertek)} ${egyseg}</div>
+        </div>`).join('');
+      if (rest.length) html += rest.map((e,i) => `
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 16px;border-radius:10px;margin-bottom:4px;">
+          <div style="min-width:22px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);">${top3Count+i+1}.</div>
+          <div style="flex:1;font-size:13px;color:var(--text);">${e.nev}</div>
+          <div style="font-size:13px;color:var(--muted);white-space:nowrap;">${formatNum(e.ertek)} ${egyseg}</div>
+        </div>`).join('');
+      return html;
+    }
+
+    async function renderStatisztika() {
+      await loadJsonBin(allData === null);
+      // Betöltjük a mentett felülírásokat
+      statOverride = allData?._statOverride || null;
+      renderRanglista();
+      renderHeti();
+      renderNapi();
+    }
+
+    function renderRanglista() {
+      const stat = getStatAdatok();
+      const grid = document.getElementById('ranglista-grid');
+      const isAdmin = isAdminMode();
+      const kategoriák = [
+        { key:'osszes_km',     nev:'Összes KM',              ikon:'🛣️', egyseg:'km' },
+        { key:'osszes_profit', nev:'Összes Profit',           ikon:'💰', egyseg:'Ft' },
+        { key:'osszes_suly',   nev:'Összes Szállított Súly', ikon:'⚖️', egyseg:'t'  },
+        { key:'havi_suly',     nev:'Havi Szállított Súly',   ikon:'📦', egyseg:'t'  },
+        { key:'havi_km',       nev:'Havi KM',                ikon:'📍', egyseg:'km' },
+        { key:'havi_profit',   nev:'Havi Profit',            ikon:'📈', egyseg:'Ft' },
+      ];
+      grid.innerHTML = kategoriák.map(kat => `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:20px;">${kat.ikon}</span>
+              <div style="font-size:14px;font-weight:700;color:#fff;">${kat.nev}</div>
+            </div>
+            ${isAdmin ? `<button onclick="editRanglistaKat('${kat.key}','${kat.nev}','${kat.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
+          </div>
+          ${renderTopListAuto(stat.ranglista[kat.key], kat.egyseg, 3)}
+        </div>`).join('');
+    }
+
+    function renderHeti() {
+      const stat = getStatAdatok();
+      const grid = document.getElementById('heti-grid');
+      const isAdmin = isAdminMode();
+      const sections = [
+        { key:'top_km',         nev:'Heti Top KM',                ikon:'🛣️', egyseg:'km',      count: stat.heti.top_km.length },
+        { key:'top_fogyasztas', nev:'Top 3 Legjobb Fogyasztás',   ikon:'⛽', egyseg:'L/100km', count: 3 },
+        { key:'top_suly',       nev:'Top 3 Legtöbb Szállított Súly', ikon:'⚖️', egyseg:'t',   count: 3 },
+      ];
+      grid.innerHTML = sections.map(s => `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:20px;">${s.ikon}</span>
+              <div style="font-size:14px;font-weight:700;color:#fff;">${s.nev}</div>
+            </div>
+            ${isAdmin ? `<button onclick="editHetiSection('${s.key}','${s.nev}','${s.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
+          </div>
+          ${renderTopListAuto(stat.heti[s.key], s.egyseg, s.count)}
+        </div>`).join('');
+    }
+
+    function renderNapi() {
+      const stat = getStatAdatok();
+      const grid = document.getElementById('napi-grid');
+      const isAdmin = isAdminMode();
+      grid.innerHTML = NAPOK.map(nap => `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:15px;font-weight:700;color:var(--orange);">📅 ${nap}</div>
+            ${isAdmin ? `<button onclick="editNapiSection('${nap}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
+          </div>
+          ${renderTopListAuto(stat.napi[nap], 'km', stat.napi[nap]?.length||10)}
+        </div>`).join('');
+    }
+
+    // ── Admin szerkesztő modal ──
+
+    function openModal(title, adatok, egyseg, onSave) {
+      document.getElementById('stat-modal-title').textContent = title;
+      const body = document.getElementById('stat-modal-body');
+      const egysegLabel = egyseg;
+
+      function buildRows(rows) {
+        body.innerHTML = rows.map((e,i) => `
+          <div style="display:flex;gap:6px;margin-bottom:8px;" id="modal-row-${i}">
+            <input value="${e.nev}" placeholder="Név" style="flex:1;padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:13px;" id="mr-nev-${i}"/>
+            <input type="number" value="${e.ertek}" placeholder="Érték" style="width:120px;padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:13px;" id="mr-ertek-${i}"/>
+            <span style="align-self:center;font-size:12px;color:var(--muted);white-space:nowrap;">${egysegLabel}</span>
+            <button onclick="modalRemoveRow(${i})" style="padding:5px 8px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;cursor:pointer;font-size:12px;">🗑️</button>
+          </div>`).join('') +
+          `<button onclick="modalAddRow()" style="margin-top:4px;padding:6px 14px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:12px;">+ Sor hozzáadása</button>`;
+      }
+
+      let currentRows = adatok.map(e => ({...e}));
+      buildRows(currentRows);
+
+      window._modalAddRow = function() {
+        currentRows.push({ nev:'', ertek:0 });
+        buildRows(currentRows);
+      };
+      window._modalRemoveRow = function(i) {
+        currentRows.splice(i, 1);
+        buildRows(currentRows);
+      };
+      window.modalAddRow = window._modalAddRow;
+      window.modalRemoveRow = window._modalRemoveRow;
+
+      document.getElementById('stat-modal-save').onclick = () => {
+        const rows = currentRows.map((_,i) => ({
+          nev: document.getElementById(`mr-nev-${i}`)?.value || '',
+          ertek: parseFloat(document.getElementById(`mr-ertek-${i}`)?.value) || 0,
+        })).filter(r => r.nev);
+        onSave(rows);
+        closeModal();
+      };
+
+      document.getElementById('stat-modal-reset').onclick = () => {
+        if (!confirm('Visszaállítod az automatikus (bot) értékekre?')) return;
+        onSave(null); // null = töröljük a felülírást
+        closeModal();
+      };
+
+      document.getElementById('stat-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('stat-modal').style.display = 'none';
+    }
+
+    async function saveOverride() {
+      if (!allData) return;
+      allData._statOverride = statOverride || {};
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
+        });
+      } catch(e) { alert('❌ Mentési hiba!'); }
+    }
+
+    function editRanglistaKat(key, nev, egyseg) {
+      const stat = getStatAdatok();
+      openModal(nev + ' szerkesztése', stat.ranglista[key] || [], egyseg, async (rows) => {
+        if (!statOverride) statOverride = {};
+        if (!statOverride.ranglista) statOverride.ranglista = {};
+        if (rows === null) delete statOverride.ranglista[key];
+        else statOverride.ranglista[key] = rows;
+        await saveOverride();
+        renderRanglista();
       });
-      if (!res.ok) throw new Error('Mentés sikertelen');
+    }
+
+    function editHetiSection(key, nev, egyseg) {
+      const stat = getStatAdatok();
+      openModal(nev + ' szerkesztése', stat.heti[key] || [], egyseg, async (rows) => {
+        if (!statOverride) statOverride = {};
+        if (!statOverride.heti) statOverride.heti = {};
+        if (rows === null) delete statOverride.heti[key];
+        else statOverride.heti[key] = rows;
+        await saveOverride();
+        renderHeti();
+      });
+    }
+
+    function editNapiSection(nap) {
+      const stat = getStatAdatok();
+      openModal(nap + ' szerkesztése', stat.napi[nap] || [], 'km', async (rows) => {
+        if (!statOverride) statOverride = {};
+        if (!statOverride.napi) statOverride.napi = {};
+        if (rows === null) delete statOverride.napi[nap];
+        else statOverride.napi[nap] = rows;
+        await saveOverride();
+        renderNapi();
+      });
     }
 
     function switchFuvarokView(view) {
@@ -1370,269 +1594,21 @@
       if (!isFuvarok) renderStatisztika();
     }
 
-    function renderTopList(adatok, egyseg, top3Count = 3) {
-      if (!adatok || !adatok.length) return '<div style="color:var(--muted); padding:16px; font-size:13px;">Nincs adat</div>';
-      const sorted = [...adatok].sort((a,b) => b.ertek - a.ertek);
-      const top3 = sorted.slice(0, top3Count);
-      const rest = sorted.slice(top3Count);
-      const medals = ['🥇','🥈','🥉'];
-      const colors = ['#fbbf24','#94a3b8','#f97316'];
-
-      let html = top3.map((e, i) => `
-        <div style="display:flex; align-items:center; gap:12px; padding:10px 16px; background: rgba(255,255,255,0.04); border-radius:10px; margin-bottom:6px;">
-          <div style="font-size:22px; flex-shrink:0;">${medals[i]}</div>
-          <div style="flex:1; font-size:14px; font-weight:700; color:${colors[i]};">${e.nev}</div>
-          <div style="font-size:13px; font-weight:700; color:#fff; white-space:nowrap;">${formatNum(e.ertek)} ${egyseg}</div>
-        </div>`).join('');
-
-      if (rest.length) {
-        html += rest.map((e, i) => `
-          <div style="display:flex; align-items:center; gap:12px; padding:8px 16px; border-radius:10px; margin-bottom:4px;">
-            <div style="min-width:22px; text-align:center; font-size:12px; font-weight:700; color:var(--muted);">${top3Count + i + 1}.</div>
-            <div style="flex:1; font-size:13px; color:var(--text);">${e.nev}</div>
-            <div style="font-size:13px; color:var(--muted); white-space:nowrap;">${formatNum(e.ertek)} ${egyseg}</div>
-          </div>`).join('');
-      }
-      return html;
-    }
-
-    async function renderStatisztika() {
-      await loadStatData();
-      renderRanglista();
-      renderHeti();
-      renderNapi();
-      // Admin panelek láthatósága
-      const isAdmin = isAdminMode();
-      document.getElementById('ranglista-admin-panel').style.display = isAdmin ? 'block' : 'none';
-      document.getElementById('heti-admin-panel').style.display = isAdmin ? 'block' : 'none';
-      document.getElementById('napi-admin-panel').style.display = isAdmin ? 'block' : 'none';
-      if (isAdmin) {
-        renderRanglistaEditor();
-        renderHetiEditor();
-        renderNapiEditor();
-      }
-    }
-
-    function renderRanglista() {
-      const grid = document.getElementById('ranglista-grid');
-      grid.innerHTML = RANGLISTA_KATEGORIÁK.map(kat => {
-        const adatok = statData.ranglista[kat.key] || [];
-        return `
-          <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px;">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
-              <span style="font-size:20px;">${kat.ikon}</span>
-              <div style="font-size:14px; font-weight:700; color:#fff;">${kat.nev}</div>
-            </div>
-            ${renderTopList(adatok, kat.egyseg)}
-          </div>`;
-      }).join('');
-    }
-
-    function renderHeti() {
-      const heti = statData.heti;
-      const grid = document.getElementById('heti-grid');
-      // Top km, fogyasztás, súly
-      const topKm = heti.top_km || [];
-      const topFogy = heti.top_fogyasztas || [];
-      const topSuly = heti.top_suly || [];
-
-      grid.innerHTML = `
-        <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;"><span style="font-size:20px;">🛣️</span><div style="font-size:14px; font-weight:700; color:#fff;">Heti Top KM</div></div>
-          ${renderTopList(topKm, 'km', topKm.length)}
-        </div>
-        <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;"><span style="font-size:20px;">⛽</span><div style="font-size:14px; font-weight:700; color:#fff;">Top 3 Legjobb Fogyasztás</div></div>
-          ${renderTopList(topFogy, 'L/100km', 3)}
-        </div>
-        <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;"><span style="font-size:20px;">⚖️</span><div style="font-size:14px; font-weight:700; color:#fff;">Top 3 Legtöbb Szállított Súly</div></div>
-          ${renderTopList(topSuly, 't', 3)}
-        </div>`;
-    }
-
-    function renderNapi() {
-      const napi = statData.napi || {};
-      const grid = document.getElementById('napi-grid');
-      grid.innerHTML = NAPOK.map(nap => {
-        const adatok = napi[nap] || [];
-        return `
-          <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px;">
-            <div style="font-size:15px; font-weight:700; color:var(--orange); margin-bottom:12px;">📅 ${nap}</div>
-            ${renderTopList(adatok, 'km', adatok.length)}
-          </div>`;
-      }).join('');
-    }
-
-    // ── Admin szerkesztők ──
-
-    function ranglistaEditorRow(kat) {
-      const adatok = statData.ranglista[kat.key] || [];
-      return `
-        <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px;">
-          <div style="font-size:13px; font-weight:700; color:var(--orange); margin-bottom:10px;">${kat.ikon} ${kat.nev}</div>
-          <div id="rl-editor-${kat.key}">
-            ${adatok.map((e,i) => `
-              <div style="display:flex; gap:6px; margin-bottom:6px;">
-                <input value="${e.nev}" placeholder="Név" style="flex:1; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:#fff; font-size:12px;" data-rl="${kat.key}" data-i="${i}" data-field="nev" onchange="updateRLField(this)"/>
-                <input type="number" value="${e.ertek}" placeholder="Érték" style="width:110px; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:#fff; font-size:12px;" data-rl="${kat.key}" data-i="${i}" data-field="ertek" onchange="updateRLField(this)"/>
-                <button onclick="removeRLRow('${kat.key}',${i})" style="padding:4px 8px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; border-radius:6px; cursor:pointer; font-size:12px;">🗑️</button>
-              </div>`).join('')}
-          </div>
-          <button onclick="addRLRow('${kat.key}')" style="margin-top:6px; padding:5px 12px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--orange); border-radius:6px; cursor:pointer; font-size:12px;">+ Sor</button>
-        </div>`;
-    }
-
-    function renderRanglistaEditor() {
-      document.getElementById('ranglista-editor').innerHTML = RANGLISTA_KATEGORIÁK.map(kat => ranglistaEditorRow(kat)).join('');
-    }
-
-    function updateRLField(el) {
-      const key = el.dataset.rl, i = parseInt(el.dataset.i), field = el.dataset.field;
-      if (!statData.ranglista[key]) statData.ranglista[key] = [];
-      statData.ranglista[key][i][field] = field === 'ertek' ? parseFloat(el.value) : el.value;
-    }
-
-    function addRLRow(key) {
-      if (!statData.ranglista[key]) statData.ranglista[key] = [];
-      statData.ranglista[key].push({ nev: '', ertek: 0 });
-      renderRanglistaEditor();
-    }
-
-    function removeRLRow(key, i) {
-      statData.ranglista[key].splice(i, 1);
-      renderRanglistaEditor();
-    }
-
-    async function saveRanglista() {
-      try {
-        await saveStatData();
-        renderRanglista();
-        alert('✅ Ranglista mentve!');
-      } catch(e) { alert('❌ Hiba a mentés során!'); }
-    }
-
-    // Heti szerkesztő
-    function renderHetiEditor() {
-      const heti = statData.heti;
-      const sections = [
-        { key: 'top_km', nev: 'Heti Top KM', egyseg: 'km' },
-        { key: 'top_fogyasztas', nev: 'Top 3 Legjobb Fogyasztás', egyseg: 'L/100km' },
-        { key: 'top_suly', nev: 'Top 3 Legtöbb Szállított Súly', egyseg: 't' },
-      ];
-      document.getElementById('heti-editor').innerHTML = sections.map(s => {
-        const adatok = heti[s.key] || [];
-        return `
-          <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px;">
-            <div style="font-size:13px; font-weight:700; color:var(--orange); margin-bottom:10px;">${s.nev} (${s.egyseg})</div>
-            <div id="heti-editor-${s.key}">
-              ${adatok.map((e,i) => `
-                <div style="display:flex; gap:6px; margin-bottom:6px;">
-                  <input value="${e.nev}" placeholder="Név" style="flex:1; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:#fff; font-size:12px;" data-hk="${s.key}" data-i="${i}" data-field="nev" onchange="updateHetiField(this)"/>
-                  <input type="number" value="${e.ertek}" placeholder="Érték" style="width:110px; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:#fff; font-size:12px;" data-hk="${s.key}" data-i="${i}" data-field="ertek" onchange="updateHetiField(this)"/>
-                  <button onclick="removeHetiRow('${s.key}',${i})" style="padding:4px 8px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; border-radius:6px; cursor:pointer; font-size:12px;">🗑️</button>
-                </div>`).join('')}
-            </div>
-            <button onclick="addHetiRow('${s.key}')" style="margin-top:6px; padding:5px 12px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--orange); border-radius:6px; cursor:pointer; font-size:12px;">+ Sor</button>
-          </div>`;
-      }).join('');
-    }
-
-    function updateHetiField(el) {
-      const key = el.dataset.hk, i = parseInt(el.dataset.i), field = el.dataset.field;
-      if (!statData.heti[key]) statData.heti[key] = [];
-      statData.heti[key][i][field] = field === 'ertek' ? parseFloat(el.value) : el.value;
-    }
-
-    function addHetiRow(key) {
-      if (!statData.heti[key]) statData.heti[key] = [];
-      statData.heti[key].push({ nev: '', ertek: 0 });
-      renderHetiEditor();
-    }
-
-    function removeHetiRow(key, i) {
-      statData.heti[key].splice(i, 1);
-      renderHetiEditor();
-    }
-
-    async function saveHetiAdatok() {
-      try {
-        await saveStatData();
-        renderHeti();
-        alert('✅ Heti adatok mentve!');
-      } catch(e) { alert('❌ Hiba a mentés során!'); }
-    }
-
-    async function resetHetiAdatok() {
-      if (!confirm('Biztosan nullázod az összes heti adatot?')) return;
-      statData.heti = { top_km: [], top_fogyasztas: [], top_suly: [] };
-      try {
-        await saveStatData();
-        renderHeti();
-        renderHetiEditor();
-        alert('✅ Heti adatok nullázva!');
-      } catch(e) { alert('❌ Hiba!'); }
-    }
-
-    async function resetNapiAdatok() {
-      if (!confirm('Biztosan nullázod az összes napi adatot?')) return;
-      statData.napi = {};
-      NAPOK.forEach(n => statData.napi[n] = []);
-      try {
-        await saveStatData();
-        renderNapi();
-        renderNapiEditor();
-        alert('✅ Napi adatok nullázva!');
-      } catch(e) { alert('❌ Hiba!'); }
-    }
-
-    // Napi szerkesztő
-    function renderNapiEditor() {
-      const napi = statData.napi || {};
-      document.getElementById('napi-editor').innerHTML = NAPOK.map(nap => {
-        const adatok = napi[nap] || [];
-        return `
-          <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px;">
-            <div style="font-size:13px; font-weight:700; color:var(--orange); margin-bottom:10px;">📅 ${nap}</div>
-            <div id="napi-editor-${nap.replace(/[^a-zA-Z]/g,'_')}">
-              ${adatok.map((e,i) => `
-                <div style="display:flex; gap:6px; margin-bottom:6px;">
-                  <input value="${e.nev}" placeholder="Név" style="flex:1; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:#fff; font-size:12px;" data-nap="${nap}" data-i="${i}" data-field="nev" onchange="updateNapiField(this)"/>
-                  <input type="number" value="${e.ertek}" placeholder="km" style="width:100px; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:#fff; font-size:12px;" data-nap="${nap}" data-i="${i}" data-field="ertek" onchange="updateNapiField(this)"/>
-                  <button onclick="removeNapiRow('${nap}',${i})" style="padding:4px 8px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; border-radius:6px; cursor:pointer; font-size:12px;">🗑️</button>
-                </div>`).join('')}
-            </div>
-            <button onclick="addNapiRow('${nap}')" style="margin-top:6px; padding:5px 12px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--orange); border-radius:6px; cursor:pointer; font-size:12px;">+ Sor</button>
-          </div>`;
-      }).join('');
-    }
-
-    function updateNapiField(el) {
-      const nap = el.dataset.nap, i = parseInt(el.dataset.i), field = el.dataset.field;
-      if (!statData.napi[nap]) statData.napi[nap] = [];
-      statData.napi[nap][i][field] = field === 'ertek' ? parseFloat(el.value) : el.value;
-    }
-
-    function addNapiRow(nap) {
-      if (!statData.napi[nap]) statData.napi[nap] = [];
-      statData.napi[nap].push({ nev: '', ertek: 0 });
-      renderNapiEditor();
-    }
-
-    function removeNapiRow(nap, i) {
-      statData.napi[nap].splice(i, 1);
-      renderNapiEditor();
-    }
-
-    async function saveNapiAdatok() {
-      try {
-        await saveStatData();
-        renderNapi();
-        alert('✅ Napi adatok mentve!');
-      } catch(e) { alert('❌ Hiba a mentés során!'); }
-    }
-
   </script>
+
+  <!-- ══ STATISZTIKA SZERKESZTŐ MODAL ══ -->
+  <div id="stat-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;min-width:360px;max-width:560px;width:90%;max-height:80vh;overflow-y:auto;position:relative;">
+      <button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+      <div id="stat-modal-title" style="font-size:16px;font-weight:700;color:#fff;margin-bottom:20px;padding-right:32px;"></div>
+      <div id="stat-modal-body" style="margin-bottom:20px;"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button id="stat-modal-save" style="padding:10px 24px;background:#e85d04;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">💾 Mentés</button>
+        <button id="stat-modal-reset" style="padding:10px 18px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);border-radius:8px;font-weight:700;cursor:pointer;font-size:13px;">🔄 Visszaállítás (auto)</button>
+        <button onclick="closeModal()" style="padding:10px 18px;background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;">Mégsem</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
