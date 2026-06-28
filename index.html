@@ -669,6 +669,7 @@
       </div>
 
       <div id="tab-kepek" class="tab-panel active">
+        ${isAdminMode ? '' : ''}
         <div style="max-height: 70vh; overflow-y: auto; padding-right: 4px;">
           <div id="kepekGrid" class="gallery-grid">
             <div style="color: var(--muted); font-size: 14px;">Betöltés...</div>
@@ -921,7 +922,7 @@
       return Number(n || 0).toLocaleString('hu-HU');
     }
 
-    const ADMIN_PASSWORD = 'Tiszamogyorós';
+    const ADMIN_PASSWORD = 'srt2024admin';
     let adminMode = false;
     let currentDriver = null;
 
@@ -946,6 +947,27 @@
       document.getElementById('admin-status').style.display = 'none';
       document.getElementById('admin-password').value = '';
       if (currentDriver) showDriverJobs(currentDriver);
+    }
+
+    async function deleteMedia(tipus, idx) {
+      if (!adminMode) return;
+      if (!confirm(`Biztosan törlöd a ${tipus === 'kep' ? 'képet' : 'videót'}?`)) return;
+      if (!allData._media) return;
+      if (tipus === 'kep') {
+        allData._media.kepek.splice(idx, 1);
+      } else {
+        allData._media.videok.splice(idx, 1);
+      }
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
+        });
+        renderMedia();
+      } catch(e) {
+        alert('Hiba a törlés során!');
+      }
     }
 
     async function deleteJob(driverName, reversedIdx) {
@@ -996,6 +1018,7 @@
         kepekGrid.innerHTML = kepek.map((k, i) => `
           <div style="position: relative;">
             <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; z-index: 1;">${i + 1}.</div>
+            ${isAdminMode() && i >= 3 ? `<button onclick="deleteMedia('kep', ${i - 3})" style="position: absolute; top: 8px; right: 8px; background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; z-index: 1;">🗑️</button>` : ''}
             <a class="gallery-img" href="${k.url}" target="_blank">
               <img src="${k.url}" alt="${k.nev || 'SRT TRANS'}" loading="lazy" style="width:100%; border-radius: 8px;" />
             </a>
@@ -1013,7 +1036,8 @@
           <div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
               <div style="background: rgba(0,0,0,0.7); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;">${i + 1}.</div>
-              <div style="font-size: 13px; color: #fff; font-weight: 600;">${v.cim}</div>
+              <div style="font-size: 13px; color: #fff; font-weight: 600; flex: 1;">${v.cim}</div>
+              ${isAdminMode() && i >= 1 ? `<button onclick="deleteMedia('video', ${i - 1})" style="background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px;">🗑️</button>` : ''}
             </div>
             <div class="video-wrap">
               <iframe src="https://www.youtube.com/embed/${v.youtubeId}" title="${v.cim}"
