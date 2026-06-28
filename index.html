@@ -697,23 +697,6 @@
 
       <!-- Feltöltő panel - csak admin módban látszik -->
       <div id="media-upload-panel" style="display:none; margin-bottom: 20px;">
-        <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-          <div style="font-size:14px; font-weight:700; color:#fff;">📤 Feltöltés:</div>
-
-          <!-- Kép feltöltés -->
-          <label style="padding:8px 16px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--orange); border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
-            🖼️ Kép feltöltése
-            <input type="file" id="kep-upload-input" accept="image/*" style="display:none;" onchange="feltoltKep(this)"/>
-          </label>
-
-          <!-- Videó feltöltés -->
-          <label style="padding:8px 16px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--orange); border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
-            🎬 Videó feltöltése
-            <input type="file" id="video-upload-input" accept="video/*" style="display:none;" onchange="feltoltVideoFajl(this)"/>
-          </label>
-
-          <div id="upload-status" style="font-size:12px; color:var(--muted);"></div>
-        </div>
       </div>
 
       <div class="tab-nav">
@@ -722,6 +705,14 @@
       </div>
 
       <div id="tab-kepek" class="tab-panel active">
+        <!-- Kép feltöltés gomb -->
+        <div id="kep-upload-panel" style="display:none; margin-bottom: 16px;">
+          <label style="padding:8px 16px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--orange); border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+            🖼️ Kép feltöltése
+            <input type="file" id="kep-upload-input" accept="image/*" style="display:none;" onchange="feltoltKep(this)"/>
+          </label>
+          <span id="upload-status-kep" style="font-size:12px; color:var(--muted); margin-left:10px;"></span>
+        </div>
         <div style="max-height: 70vh; overflow-y: auto; padding-right: 4px;">
           <div id="kepekGrid" class="gallery-grid">
             <div style="color: var(--muted); font-size: 14px;">Betöltés...</div>
@@ -730,6 +721,14 @@
       </div>
 
       <div id="tab-video" class="tab-panel">
+        <!-- Videó feltöltés gomb -->
+        <div id="video-upload-panel" style="display:none; margin-bottom: 16px;">
+          <label style="padding:8px 16px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--orange); border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+            🎬 Videó feltöltése
+            <input type="file" id="video-upload-input" accept="video/*" style="display:none;" onchange="feltoltVideoFajl(this)"/>
+          </label>
+          <span id="upload-status-video" style="font-size:12px; color:var(--muted); margin-left:10px;"></span>
+        </div>
         <div style="max-height: 70vh; overflow-y: auto; padding-right: 4px;">
           <div id="videokGrid" class="gallery-grid">
             <div style="color: var(--muted); font-size: 14px;">Betöltés...</div>
@@ -1165,7 +1164,8 @@
         document.getElementById('admin-login-form-media').style.display = 'none';
         document.getElementById('admin-status-media').style.display = 'flex';
         document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${username}`;
-        document.getElementById('media-upload-panel').style.display = 'block';
+        document.getElementById('kep-upload-panel').style.display = 'block';
+        document.getElementById('video-upload-panel').style.display = 'block';
         renderMedia();
       } else {
         document.getElementById('admin-username-media').style.borderColor = '#f87171';
@@ -1186,6 +1186,8 @@
       document.getElementById('admin-password-media').value = '';
       document.getElementById('admin-username-media').value = '';
       document.getElementById('media-upload-panel').style.display = 'none';
+      document.getElementById('kep-upload-panel').style.display = 'none';
+      document.getElementById('video-upload-panel').style.display = 'none';
       renderMedia();
     }
 
@@ -1202,7 +1204,8 @@
         document.getElementById('admin-login-form-media').style.display = 'none';
         document.getElementById('admin-status-media').style.display = 'flex';
         document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${sessionStorage.getItem('srt_media_user')}`;
-        document.getElementById('media-upload-panel').style.display = 'block';
+        document.getElementById('kep-upload-panel').style.display = 'block';
+        document.getElementById('video-upload-panel').style.display = 'block';
       }
     })();
 
@@ -1213,25 +1216,20 @@
     async function feltoltKep(input) {
       const file = input.files[0];
       if (!file) return;
-      const status = document.getElementById('upload-status');
-      status.textContent = '⏳ Feltöltés folyamatban...';
+      const status = document.getElementById('upload-status-kep');
+      status.textContent = '⏳ Kép feltöltése folyamatban...';
       status.style.color = 'var(--orange)';
-
       try {
         const feltolto = sessionStorage.getItem('srt_media_user') || 'Admin';
         const formData = new FormData();
         formData.append('file', file, file.name);
         formData.append('feltolto', feltolto);
-
         const res = await fetch(UPLOAD_API, {
           method: 'POST',
           headers: { 'X-Upload-Secret': UPLOAD_SECRET },
           body: formData
         });
-
         if (!res.ok) throw new Error('Feltöltési hiba');
-        const result = await res.json();
-
         status.textContent = '✅ Kép feltöltve!';
         status.style.color = '#4ade80';
         input.value = '';
@@ -1247,24 +1245,20 @@
     async function feltoltVideoFajl(input) {
       const file = input.files[0];
       if (!file) return;
-      const status = document.getElementById('upload-status');
+      const status = document.getElementById('upload-status-video');
       status.textContent = '⏳ Videó feltöltése folyamatban...';
       status.style.color = 'var(--orange)';
-
       try {
         const feltolto = sessionStorage.getItem('srt_media_user') || 'Admin';
         const formData = new FormData();
         formData.append('file', file, file.name);
         formData.append('feltolto', feltolto);
-
         const res = await fetch(UPLOAD_API, {
           method: 'POST',
           headers: { 'X-Upload-Secret': UPLOAD_SECRET },
           body: formData
         });
-
         if (!res.ok) throw new Error('Feltöltési hiba');
-
         status.textContent = '✅ Videó feltöltve!';
         status.style.color = '#4ade80';
         input.value = '';
