@@ -921,9 +921,11 @@
       <!-- Admin panel -->
       <div id="admin-panel-media" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
         <div id="admin-login-form-media" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <input id="admin-username-media" type="text" placeholder="👤 Felhasználónév" onkeydown="if(event.key==='Enter')adminLoginMedia()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 180px;" />
-          <input id="admin-password-media" type="password" placeholder="🔑 Jelszó" onkeydown="if(event.key==='Enter')adminLoginMedia()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none;" />
-          <button onclick="adminLoginMedia()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">Belépés</button>
+          <input id="admin-username-media" type="text" placeholder="Discord felhasználónév" onkeydown="if(event.key==='Enter')requestMediaCode()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 180px;" />
+          <button onclick="requestMediaCode()" style="padding: 8px 16px; border-radius: 8px; background: #5865f2; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">📨 Kód kérése</button>
+          <input id="admin-code-media" type="text" placeholder="6 jegyű kód" maxlength="6" onkeydown="if(event.key==='Enter')adminLoginMedia()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 110px; display:none;" />
+          <button id="admin-verify-media-btn" onclick="adminLoginMedia()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; display:none;">✅ Belépés</button>
+          <span id="media-code-msg" style="font-size: 12px; color: #4ade80;"></span>
         </div>
         <div id="admin-status-media" style="display: none; align-items: center; gap: 10px;">
           <span id="admin-status-label-media" style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Média admin aktív</span>
@@ -1398,45 +1400,79 @@
 
     let mediaAdminMode = false;
 
-    function adminLoginMedia() {
+    async function requestMediaCode() {
       const username = (document.getElementById('admin-username-media').value || '').trim();
-      const pw = document.getElementById('admin-password-media').value;
-      const nameLower = username.toLowerCase();
-      const isCobraMedia = ['cobra','cobra086'].includes(nameLower);
-      const isDeputyMedia = ['boby','bobydik'].concat(['eric','eric19792']).includes(nameLower);
-      const isBobyMedia = ['boby','bobydik'].includes(nameLower);
-      const isEricMedia = ['eric','eric19792'].includes(nameLower);
-      const pwOk = (isCobraMedia && pw === ADMIN_PASSWORD) || (isBobyMedia && pw === BOBY_PASSWORD) || (isEricMedia && pw === ERIC_PASSWORD);
-      const nameOk = isCobraMedia || isDeputyMedia;
+      if (!username) return;
+      const msg = document.getElementById('media-code-msg');
+      msg.style.color = '#f97316';
+      msg.textContent = '⏳ Kód küldése...';
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/request-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordName: username })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.style.color = '#4ade80';
+          msg.textContent = '✅ Kód elküldve Discord DM-ben!';
+          document.getElementById('admin-code-media').style.display = 'inline-block';
+          document.getElementById('admin-verify-media-btn').style.display = 'inline-block';
+          document.getElementById('admin-code-media').focus();
+        } else {
+          msg.style.color = '#f87171';
+          msg.textContent = '❌ ' + (data.error || 'Hiba');
+        }
+      } catch(e) {
+        msg.style.color = '#f87171';
+        msg.textContent = '❌ Kapcsolati hiba';
+      }
+    }
 
-      if (pwOk && nameOk) {
+    async function adminLoginMedia() {
+      const username = (document.getElementById('admin-username-media').value || '').trim();
+      const code = (document.getElementById('admin-code-media').value || '').trim();
+      const msg = document.getElementById('media-code-msg');
+      if (!code) { msg.style.color='#f87171'; msg.textContent='❌ Add meg a kódot!'; return; }
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/verify-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordName: username, code })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          msg.style.color = '#f87171';
+          msg.textContent = '❌ ' + (data.error || 'Hibás kód');
+          document.getElementById('admin-code-media').style.borderColor = '#f87171';
+          setTimeout(() => { document.getElementById('admin-code-media').style.borderColor = ''; }, 1500);
+          return;
+        }
         mediaAdminMode = true;
-        sessionStorage.setItem('srt_media_pw', pw);
         sessionStorage.setItem('srt_media_user', username);
+        sessionStorage.setItem('srt_media_auth', '1');
         document.getElementById('admin-login-form-media').style.display = 'none';
         document.getElementById('admin-status-media').style.display = 'flex';
         document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${username}`;
         document.getElementById('kep-upload-panel').style.display = 'block';
         document.getElementById('video-upload-panel').style.display = 'block';
         renderMedia();
-      } else {
-        document.getElementById('admin-username-media').style.borderColor = '#f87171';
-        document.getElementById('admin-password-media').style.borderColor = '#f87171';
-        setTimeout(() => {
-          document.getElementById('admin-username-media').style.borderColor = '';
-          document.getElementById('admin-password-media').style.borderColor = '';
-        }, 1500);
+      } catch(e) {
+        document.getElementById('media-code-msg').textContent = '❌ Kapcsolati hiba';
       }
     }
 
     function adminLogoutMedia() {
       mediaAdminMode = false;
-      sessionStorage.removeItem('srt_media_pw');
       sessionStorage.removeItem('srt_media_user');
+      sessionStorage.removeItem('srt_media_auth');
       document.getElementById('admin-login-form-media').style.display = 'flex';
       document.getElementById('admin-status-media').style.display = 'none';
-      document.getElementById('admin-password-media').value = '';
       document.getElementById('admin-username-media').value = '';
+      document.getElementById('admin-code-media').value = '';
+      document.getElementById('admin-code-media').style.display = 'none';
+      document.getElementById('admin-verify-media-btn').style.display = 'none';
+      document.getElementById('media-code-msg').textContent = '';
       document.getElementById('media-upload-panel').style.display = 'none';
       document.getElementById('kep-upload-panel').style.display = 'none';
       document.getElementById('video-upload-panel').style.display = 'none';
@@ -1445,22 +1481,15 @@
 
     // Automatikus média bejelentkezés frissítés után
     (function autoLoginMedia() {
-      const savedPw = sessionStorage.getItem('srt_media_pw');
-      const savedUser = (sessionStorage.getItem('srt_media_user') || '').toLowerCase();
-      if (!savedPw || !savedUser) return;
-      const isCobraMedia = savedUser.includes('cobra');
-      const isDeputyMedia = ['boby','bobydik','eric','eric19792'].some(n => savedUser.includes(n));
-      const isBobyMediaAuto = ['boby','bobydik'].some(n => savedUser.includes(n));
-      const isEricMediaAuto = ['eric','eric19792'].some(n => savedUser.includes(n));
-      const pwOk = (isCobraMedia && savedPw === ADMIN_PASSWORD) || (isBobyMediaAuto && savedPw === BOBY_PASSWORD) || (isEricMediaAuto && savedPw === ERIC_PASSWORD);
-      if (pwOk && (isCobraMedia || isDeputyMedia)) {
-        mediaAdminMode = true;
-        document.getElementById('admin-login-form-media').style.display = 'none';
-        document.getElementById('admin-status-media').style.display = 'flex';
-        document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${sessionStorage.getItem('srt_media_user')}`;
-        document.getElementById('kep-upload-panel').style.display = 'block';
-        document.getElementById('video-upload-panel').style.display = 'block';
-      }
+      const savedUser = sessionStorage.getItem('srt_media_user') || '';
+      const mediaAuth = sessionStorage.getItem('srt_media_auth');
+      if (!savedUser || !mediaAuth) return;
+      mediaAdminMode = true;
+      document.getElementById('admin-login-form-media').style.display = 'none';
+      document.getElementById('admin-status-media').style.display = 'flex';
+      document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${savedUser}`;
+      document.getElementById('kep-upload-panel').style.display = 'block';
+      document.getElementById('video-upload-panel').style.display = 'block';
     })();
 
     const DISCORD_MEDIA_CHANNEL = '1520571630118764544';
