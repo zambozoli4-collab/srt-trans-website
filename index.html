@@ -1018,7 +1018,8 @@
       return Number(n || 0).toLocaleString('hu-HU');
     }
 
-    const ADMIN_PASSWORD = 'Tiszamogyorós1986';
+    const ADMIN_PASSWORD = 'Tiszamogyorós1986'; // csak Cobra
+    const DEPUTY_PASSWORD = 'Tiszamogyoros'; // Eric, Boby
     let adminMode = false;
     let adminRole = null; // 'admin' vagy 'helyettes'
     let currentDriver = null;
@@ -1055,11 +1056,12 @@
       );
 
       const nameLower = username.toLowerCase();
-      const listsEmpty = admins.length === 0 && deputies.length === 0;
+      const isCobraName = nameLower.includes('cobra');
+      const isDeputyName = ['boby','bobydik','eric','eric19792'].some(n => nameLower.includes(n));
 
-      if (admins.includes(nameLower)) {
+      if (isCobraName && pw === ADMIN_PASSWORD) {
         adminRole = 'admin';
-      } else if (deputies.includes(nameLower)) {
+      } else if (isDeputyName && pw === DEPUTY_PASSWORD) {
         adminRole = 'helyettes';
       } else {
         // Nincs jogosultság
@@ -1106,18 +1108,21 @@
       if (currentDriver) showDriverJobs(currentDriver);
     }
 
-    // Automatikus bejelentkezés frissítés után
     (function autoLogin() {
       const saved = sessionStorage.getItem('srt_admin_pw');
-      const savedUser = sessionStorage.getItem('srt_admin_user');
+      const savedUser = (sessionStorage.getItem('srt_admin_user') || '').toLowerCase();
       const savedRole = sessionStorage.getItem('srt_admin_role');
-      if (saved === ADMIN_PASSWORD && savedUser && savedRole) {
+      if (!saved || !savedUser || !savedRole) return;
+      const isCobraAuto = savedUser.includes('cobra');
+      const isDeputyAuto = ['boby','bobydik','eric','eric19792'].some(n => savedUser.includes(n));
+      const pwOk = (isCobraAuto && saved === ADMIN_PASSWORD) || (isDeputyAuto && saved === DEPUTY_PASSWORD);
+      if (pwOk) {
         adminMode = true;
         adminRole = savedRole;
         document.getElementById('admin-login-form').style.display = 'none';
         document.getElementById('admin-status').style.display = 'flex';
         document.getElementById('admin-status-label').textContent =
-          savedRole === 'admin' ? `✅ Admin: ${savedUser}` : `✅ Helyettes: ${savedUser}`;
+          savedRole === 'admin' ? `✅ Admin: ${sessionStorage.getItem('srt_admin_user')}` : `✅ Helyettes: ${sessionStorage.getItem('srt_admin_user')}`;
       }
     })();
 
@@ -1130,9 +1135,12 @@
       const username = (document.getElementById('admin-username-media').value || '').trim();
       const pw = document.getElementById('admin-password-media').value;
 
-      const nameLower = username.toLowerCase();
-      const pwOk = pw === ADMIN_PASSWORD;
-      const nameOk = MEDIA_ALLOWED.some(n => nameLower.includes(n) || n.includes(nameLower));
+      const nameLower = document.getElementById('admin-username-media').value.trim().toLowerCase();
+      const isCobraMedia = nameLower.includes('cobra');
+      const isDeputyMedia = ['boby','bobydik','eric','eric19792'].some(n => nameLower.includes(n));
+
+      const pwOk = (isCobraMedia && pw === ADMIN_PASSWORD) || (isDeputyMedia && pw === DEPUTY_PASSWORD);
+      const nameOk = isCobraMedia || isDeputyMedia;
 
       if (pwOk && nameOk) {
         mediaAdminMode = true;
@@ -1166,15 +1174,16 @@
     // Automatikus média bejelentkezés frissítés után
     (function autoLoginMedia() {
       const savedPw = sessionStorage.getItem('srt_media_pw');
-      const savedUser = sessionStorage.getItem('srt_media_user');
-      if (savedPw === ADMIN_PASSWORD && savedUser) {
-        const nameLower = savedUser.toLowerCase();
-        if (MEDIA_ALLOWED.some(n => nameLower.includes(n) || n.includes(nameLower))) {
-          mediaAdminMode = true;
-          document.getElementById('admin-login-form-media').style.display = 'none';
-          document.getElementById('admin-status-media').style.display = 'flex';
-          document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${savedUser}`;
-        }
+      const savedUser = (sessionStorage.getItem('srt_media_user') || '').toLowerCase();
+      if (!savedPw || !savedUser) return;
+      const isCobraMedia = savedUser.includes('cobra');
+      const isDeputyMedia = ['boby','bobydik','eric','eric19792'].some(n => savedUser.includes(n));
+      const pwOk = (isCobraMedia && savedPw === ADMIN_PASSWORD) || (isDeputyMedia && savedPw === DEPUTY_PASSWORD);
+      if (pwOk && (isCobraMedia || isDeputyMedia)) {
+        mediaAdminMode = true;
+        document.getElementById('admin-login-form-media').style.display = 'none';
+        document.getElementById('admin-status-media').style.display = 'flex';
+        document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${sessionStorage.getItem('srt_media_user')}`;
       }
     })();
 
