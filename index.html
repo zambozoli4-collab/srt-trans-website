@@ -1044,18 +1044,16 @@
       const admins = (allData?._admins || []).map(n => n.toLowerCase());
       const deputies = (allData?._deputies || []).map(n => n.toLowerCase());
       const nameLower = username.toLowerCase();
-
-      // Ha a lista még üres (bot még nem szinkronizált), jelszóval bárki beléphet
       const listsEmpty = admins.length === 0 && deputies.length === 0;
 
-      if (listsEmpty) {
-        adminRole = 'admin'; // ideiglenes, amíg a bot fel nem tölti a listát
-      } else if (admins.includes(nameLower)) {
+      if (admins.includes(nameLower)) {
         adminRole = 'admin';
       } else if (deputies.includes(nameLower)) {
         adminRole = 'helyettes';
       } else {
-        // Nincs jogosultság
+        // Nincs jogosultság — megmutatjuk mi van a listában (debug)
+        const msg = `❌ Nincs jogosultságod!\nAdmin lista: ${admins.join(', ') || 'üres'}\nHelyettes lista: ${deputies.join(', ') || 'üres'}`;
+        alert(msg);
         document.getElementById('admin-username').style.borderColor = '#f87171';
         document.getElementById('admin-password').style.borderColor = '#f87171';
         setTimeout(() => {
