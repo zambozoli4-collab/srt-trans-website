@@ -1250,7 +1250,12 @@
       const cim = document.getElementById('video-cim-input').value.trim();
       const status = document.getElementById('upload-status');
 
-      if (!url) { status.textContent = '❌ Add meg a videó linket!'; status.style.color = '#f87171'; return; }
+      if (!url) {
+        status.textContent = '⚠️ Add meg a videó linket!';
+        status.style.color = '#fbbf24';
+        setTimeout(() => { status.textContent = ''; }, 3000);
+        return;
+      }
 
       const feltolto = sessionStorage.getItem('srt_media_user') || 'Admin';
       const datum = new Date().toLocaleDateString('hu-HU');
