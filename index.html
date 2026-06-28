@@ -529,7 +529,7 @@
       <div class="hero-content">
         <p class="hero-eyebrow">Euro Truck Simulator 2 · Magyar konvoj</p>
         <h1>Éld át a <em>kamionos</em> életet!</h1>
-        <p class="hero-lead">2024 tavaszán alakult közösségünk mára 25 aktív tagból áll. Saját dedikált szerverünk, rendszeres konvojok, és egy összetartó, segítőkész csapat vár rád. Fő rendszerünk a Trucky, de van saját Pickup rendszerünk is, ahol valódi szerződések alapján fuvarozunk: legyen szó biológiai anyagokról, üzemanyagról, mezőgazdasági termékekről vagy gyümölcsszállításról. Ha jó társaságra és komoly ETS2-es élményre vágysz, nálunk a helyed!</p>
+        <p class="hero-lead">2024 tavaszán alakult közösségünk mára 20 aktív tagból áll. Saját dedikált szerverünk, rendszeres konvojok, és egy összetartó, segítőkész csapat vár rád. Fő rendszerünk a Trucky, de van saját Pickup rendszerünk is, ahol valódi szerződések alapján fuvarozunk: legyen szó biológiai anyagokról, üzemanyagról, mezőgazdasági termékekről vagy gyümölcsszállításról. Ha jó társaságra és komoly ETS2-es élményre vágysz, nálunk a helyed!</p>
       </div>
     </section>
 
@@ -630,7 +630,7 @@
   <div class="page" id="page-terkep">
     <div class="container">
       <p class="section-eyebrow">ETS2 Világ</p>
-      <h2 class="section-title">Óriási Európa Térkép</h2>
+      <h2 class="section-title">Óriási európai térkép</h2>
       <div class="map-wrap">
         <iframe src="https://ets2.online/map/ets2" title="ETS2 interaktív térkép" loading="lazy" allowfullscreen></iframe>
         <div class="map-overlay-label">
@@ -819,6 +819,18 @@
       <p class="section-eyebrow">Sofőr statisztikák</p>
       <h2 class="section-title">Fuvarok</h2>
 
+      <!-- Admin panel -->
+      <div id="admin-panel" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+        <div id="admin-login-form" style="display: flex; gap: 8px; align-items: center;">
+          <input id="admin-password" type="password" placeholder="🔑 Admin jelszó" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none;" />
+          <button onclick="adminLogin()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">Belépés</button>
+        </div>
+        <div id="admin-status" style="display: none; align-items: center; gap: 10px;">
+          <span style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Admin mód aktív</span>
+          <button onclick="adminLogout()" style="padding: 6px 12px; border-radius: 8px; background: rgba(239,68,68,0.15); color: #f87171; font-size: 12px; border: 1px solid rgba(239,68,68,0.3); cursor: pointer;">Kilépés</button>
+        </div>
+      </div>
+
       <div style="display: flex; gap: 24px; align-items: flex-start;">
 
         <!-- Sofőr lista oldalsáv -->
@@ -909,7 +921,61 @@
       return Number(n || 0).toLocaleString('hu-HU');
     }
 
-    async function renderMedia() {
+    const ADMIN_PASSWORD = 'srt2024admin';
+    let adminMode = false;
+
+    function isAdminMode() { return adminMode; }
+
+    function adminLogin() {
+      const pw = document.getElementById('admin-password').value;
+      if (pw === ADMIN_PASSWORD) {
+        adminMode = true;
+        document.getElementById('admin-login-form').style.display = 'none';
+        document.getElementById('admin-status').style.display = 'flex';
+        // Újrarajzoljuk a fuvarokat törlés gombokkal
+        if (currentDriver) showDriverJobs(currentDriver);
+      } else {
+        document.getElementById('admin-password').style.borderColor = '#f87171';
+        setTimeout(() => document.getElementById('admin-password').style.borderColor = '', 1500);
+      }
+    }
+
+    function adminLogout() {
+      adminMode = false;
+      document.getElementById('admin-login-form').style.display = 'flex';
+      document.getElementById('admin-status').style.display = 'none';
+      document.getElementById('admin-password').value = '';
+      if (currentDriver) showDriverJobs(currentDriver);
+    }
+
+    async function deleteJob(driverName, reversedIdx) {
+      if (!adminMode) return;
+      if (!confirm(`Biztosan törlöd a ${reversedIdx + 1}. fuvart?`)) return;
+
+      const jobs = allJobs[driverName] || [];
+      const sorted = [...jobs].reverse();
+      sorted.splice(reversedIdx, 1);
+      allJobs[driverName] = sorted.reverse();
+
+      // JSONBin frissítés
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
+        });
+        showDriverJobs(driverName);
+      } catch(e) {
+        alert('Hiba a törlés során!');
+      }
+    }
+
+    // Enter gomb jelszónál
+    document.getElementById('admin-password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') adminLogin();
+    });
+
+    let currentDriver = null;
       const kepekGrid = document.getElementById('kepekGrid');
       const videokGrid = document.getElementById('videokGrid');
 
@@ -1008,6 +1074,7 @@
     }
 
     function showDriverJobs(driverName) {
+      currentDriver = driverName;
       // Aktív sofőr kiemelése
       document.querySelectorAll('.driver-sidebar-item').forEach(el => {
         el.style.borderLeft = '3px solid transparent';
@@ -1053,7 +1120,7 @@
 
       const sortedJobs = [...jobs].reverse();
       list.innerHTML = sortedJobs.map((j, i) => `
-        <div style="display: grid; grid-template-columns: 36px minmax(180px,1fr) 130px 110px 70px 70px 90px 110px 110px; gap: 0; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: center; ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.015);'} transition: background 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background='${i % 2 === 0 ? '' : 'rgba(255,255,255,0.015)'}'">
+        <div style="display: grid; grid-template-columns: 36px minmax(180px,1fr) 130px 110px 70px 70px 90px 110px 110px ${isAdminMode() ? '50px' : ''}; gap: 0; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: center; ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.015);'} transition: background 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background='${i % 2 === 0 ? '' : 'rgba(255,255,255,0.015)'}'">
           <div style="font-size: 13px; font-weight: 700; color: var(--muted);">${i + 1}</div>
           <div style="overflow: hidden;">
             <div style="font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${j.honnan || '?'} → ${j.hova || '?'}</div>
@@ -1071,6 +1138,7 @@
           </div>
           <div style="text-align: right; font-size: 12px; font-weight: 700; color: #4ade80; white-space: nowrap;">${formatNum(j.bevételFt || 0)} Ft</div>
           <div style="text-align: right; font-size: 12px; font-weight: 700; white-space: nowrap; color: ${j.büntFt > 0 ? '#f87171' : 'var(--muted)'};">${j.büntFt > 0 ? '-' + formatNum(j.büntFt) + ' Ft' : '-'}</div>
+          ${isAdminMode() ? `<div style="text-align: center;"><button onclick="deleteJob('${driverName}', ${i})" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px;">🗑️</button></div>` : ''}
         </div>`).join('');
     }
 
