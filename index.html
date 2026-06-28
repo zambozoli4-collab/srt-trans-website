@@ -1296,10 +1296,10 @@
         allJobs = json.record.jobs || {};
         // Mentett avatarok betöltése
         for (let i = 1; i <= 5; i++) {
-          const b64 = allData['_avatar_' + i];
-          if (b64) {
+          const avatarUrl = allData['_avatar_' + i];
+          if (avatarUrl) {
             const avatars = document.querySelectorAll('.team-avatar img');
-            if (avatars[i-1]) avatars[i-1].src = 'data:image/png;base64,' + b64;
+            if (avatars[i-1]) avatars[i-1].src = avatarUrl;
           }
         }
         return true;
@@ -2557,6 +2557,55 @@
       setTimeout(szerkesztoGombokMutat, 500);
     }
 
+
+    let currentAvatarIdx = null;
+    const AVATAR_CHANNEL_ID = '1520903413523546185';
+
+    function avatarKattint(idx) {
+      if (!aktivSzerkesztoMod()) return;
+      currentAvatarIdx = idx;
+      document.getElementById('avatar-upload-input').click();
+    }
+
+    async function avatarFeltolt(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const statusEl = document.getElementById('avatar-upload-status');
+      statusEl.textContent = '⏳ Feltöltés...';
+      statusEl.style.display = 'block';
+
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('channelId', AVATAR_CHANNEL_ID);
+      formData.append('caption', 'avatar_' + currentAvatarIdx);
+
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/upload', {
+          method: 'POST',
+          headers: { 'X-Upload-Secret': 'srt-trans-upload-2024' },
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Hiba');
+
+        const imageUrl = data.url;
+        const avatars = document.querySelectorAll('.team-avatar img');
+        if (avatars[currentAvatarIdx - 1]) {
+          avatars[currentAvatarIdx - 1].src = imageUrl;
+        }
+
+        if (!allData) await loadJsonBin(true);
+        allData['_avatar_' + currentAvatarIdx] = imageUrl;
+        await updateJsonBin();
+
+        statusEl.textContent = '✅ Kész!';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+      } catch(e) {
+        statusEl.textContent = '❌ Hiba: ' + e.message;
+        setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+      }
+      input.value = '';
+    }
   </script>
 
   <!-- ══ SZÖVEG SZERKESZTŐ MODAL ══ -->
