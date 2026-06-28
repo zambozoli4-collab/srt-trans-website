@@ -1045,7 +1045,12 @@
       const deputies = (allData?._deputies || []).map(n => n.toLowerCase());
       const nameLower = username.toLowerCase();
 
-      if (admins.includes(nameLower)) {
+      // Ha a lista még üres (bot még nem szinkronizált), jelszóval bárki beléphet
+      const listsEmpty = admins.length === 0 && deputies.length === 0;
+
+      if (listsEmpty) {
+        adminRole = 'admin'; // ideiglenes, amíg a bot fel nem tölti a listát
+      } else if (admins.includes(nameLower)) {
         adminRole = 'admin';
       } else if (deputies.includes(nameLower)) {
         adminRole = 'helyettes';
