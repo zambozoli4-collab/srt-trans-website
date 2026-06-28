@@ -532,12 +532,7 @@
     /* ── FUVAROK MOBIL ── */
     .fuvarok-layout { display: flex; gap: 24px; align-items: flex-start; }
 
-    @media (max-width: 900px) {
-      .fuvarok-layout { flex-direction: column; }
-      #drivers-sidebar { width: 100% !important; min-width: unset !important; }
-      /* Fuvar táblázat vízszintes görgetés */
-      #jobs-view { overflow-x: auto; }
-    }
+
 
     @media (max-width: 768px) {
       /* Header */
@@ -574,10 +569,9 @@
       /* Tab nav */
       .tab-nav { overflow-x: auto; width: 100%; }
 
-      /* Fuvarok */
-      .fuvarok-layout { flex-direction: column; }
-      #drivers-sidebar { width: 100% !important; min-width: unset !important; }
-      #jobs-view { overflow-x: auto; }
+      /* Fuvarok - sidebar marad mellette, táblázat görgethetős */
+      .fuvarok-layout { overflow-x: auto; }
+      #jobs-view { min-width: 0; }
 
       /* Stat kártyák */
       .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
