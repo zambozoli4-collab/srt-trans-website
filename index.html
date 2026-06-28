@@ -1035,7 +1035,7 @@
         setTimeout(() => document.getElementById('admin-username').style.borderColor = '', 1500);
         return;
       }
-      if (pw !== ADMIN_PASSWORD) {
+      if (pw !== ADMIN_PASSWORD && pw !== DEPUTY_PASSWORD) {
         document.getElementById('admin-password').style.borderColor = '#f87171';
         setTimeout(() => document.getElementById('admin-password').style.borderColor = '', 1500);
         return;
