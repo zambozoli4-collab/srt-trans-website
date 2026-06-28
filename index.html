@@ -695,6 +695,28 @@
         </div>
       </div>
 
+      <!-- Feltöltő panel - csak admin módban látszik -->
+      <div id="media-upload-panel" style="display:none; margin-bottom: 20px;">
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+          <div style="font-size:14px; font-weight:700; color:#fff;">📤 Feltöltés:</div>
+
+          <!-- Kép feltöltés -->
+          <label style="padding:8px 16px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--orange); border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+            🖼️ Kép feltöltése
+            <input type="file" id="kep-upload-input" accept="image/*" style="display:none;" onchange="feltoltKep(this)"/>
+          </label>
+
+          <!-- Videó link -->
+          <div style="display:flex; gap:6px; align-items:center;">
+            <input id="video-url-input" type="text" placeholder="🎬 Videó link (YouTube/Discord)" style="padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:#fff; font-size:13px; outline:none; width:260px;"/>
+            <input id="video-cim-input" type="text" placeholder="Cím" style="padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:#fff; font-size:13px; outline:none; width:140px;"/>
+            <button onclick="feltoltVideo()" style="padding:8px 14px; background:#e85d04; color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px;">Hozzáad</button>
+          </div>
+
+          <div id="upload-status" style="font-size:12px; color:var(--muted);"></div>
+        </div>
+      </div>
+
       <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab(this, 'tab-kepek')">🖼️ Képek</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-video')">🎬 Videó</button>
@@ -1128,17 +1150,12 @@
 
     let mediaAdminMode = false;
 
-    // Média admin engedélyezett nevek
-    const MEDIA_ALLOWED = ['cobra', 'cobra086', 'boby', 'bobydik', 'eric', 'eric19792'];
-
     function adminLoginMedia() {
       const username = (document.getElementById('admin-username-media').value || '').trim();
       const pw = document.getElementById('admin-password-media').value;
-
-      const nameLower = document.getElementById('admin-username-media').value.trim().toLowerCase();
+      const nameLower = username.toLowerCase();
       const isCobraMedia = nameLower.includes('cobra');
       const isDeputyMedia = ['boby','bobydik','eric','eric19792'].some(n => nameLower.includes(n));
-
       const pwOk = (isCobraMedia && pw === ADMIN_PASSWORD) || (isDeputyMedia && pw === DEPUTY_PASSWORD);
       const nameOk = isCobraMedia || isDeputyMedia;
 
@@ -1149,6 +1166,7 @@
         document.getElementById('admin-login-form-media').style.display = 'none';
         document.getElementById('admin-status-media').style.display = 'flex';
         document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${username}`;
+        document.getElementById('media-upload-panel').style.display = 'block';
         renderMedia();
       } else {
         document.getElementById('admin-username-media').style.borderColor = '#f87171';
@@ -1168,6 +1186,7 @@
       document.getElementById('admin-status-media').style.display = 'none';
       document.getElementById('admin-password-media').value = '';
       document.getElementById('admin-username-media').value = '';
+      document.getElementById('media-upload-panel').style.display = 'none';
       renderMedia();
     }
 
@@ -1184,8 +1203,80 @@
         document.getElementById('admin-login-form-media').style.display = 'none';
         document.getElementById('admin-status-media').style.display = 'flex';
         document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${sessionStorage.getItem('srt_media_user')}`;
+        document.getElementById('media-upload-panel').style.display = 'block';
       }
     })();
+
+    async function feltoltKep(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const status = document.getElementById('upload-status');
+      status.textContent = '⏳ Feltöltés folyamatban...';
+      status.style.color = 'var(--orange)';
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const base64 = e.target.result;
+          const feltolto = sessionStorage.getItem('srt_media_user') || 'Admin';
+          const datum = new Date().toLocaleDateString('hu-HU');
+
+          if (!allData._media) allData._media = { kepek: [], videok: [] };
+          if (!allData._media.kepek) allData._media.kepek = [];
+
+          allData._media.kepek.push({ url: base64, cim: file.name.replace(/\.[^.]+$/, ''), datum, feltolto });
+
+          await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            body: JSON.stringify({ data: allData, jobs: allJobs })
+          });
+
+          status.textContent = '✅ Kép feltöltve!';
+          status.style.color = '#4ade80';
+          input.value = '';
+          setTimeout(() => { status.textContent = ''; }, 3000);
+          renderMedia();
+        } catch(e) {
+          status.textContent = '❌ Hiba a feltöltés során!';
+          status.style.color = '#f87171';
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function feltoltVideo() {
+      const url = document.getElementById('video-url-input').value.trim();
+      const cim = document.getElementById('video-cim-input').value.trim();
+      const status = document.getElementById('upload-status');
+
+      if (!url) { status.textContent = '❌ Add meg a videó linket!'; status.style.color = '#f87171'; return; }
+
+      const feltolto = sessionStorage.getItem('srt_media_user') || 'Admin';
+      const datum = new Date().toLocaleDateString('hu-HU');
+
+      if (!allData._media) allData._media = { kepek: [], videok: [] };
+      if (!allData._media.videok) allData._media.videok = [];
+
+      allData._media.videok.push({ url, cim: cim || 'Videó', datum, feltolto });
+
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
+        });
+        status.textContent = '✅ Videó hozzáadva!';
+        status.style.color = '#4ade80';
+        document.getElementById('video-url-input').value = '';
+        document.getElementById('video-cim-input').value = '';
+        setTimeout(() => { status.textContent = ''; }, 3000);
+        renderMedia();
+      } catch(e) {
+        status.textContent = '❌ Hiba!';
+        status.style.color = '#f87171';
+      }
+    }
 
     async function deleteMedia(tipus, idx) {
       if (!mediaAdminMode) return;
