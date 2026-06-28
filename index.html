@@ -682,13 +682,14 @@
       <h2 class="section-title">Média</h2>
 
       <!-- Admin panel -->
-      <div id="admin-panel-media" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
-        <div id="admin-login-form-media" style="display: flex; gap: 8px; align-items: center;">
-          <input id="admin-password-media" type="password" placeholder="🔑 Admin jelszó" onkeydown="if(event.key==='Enter')adminLoginMedia()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none;" />
+      <div id="admin-panel-media" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <div id="admin-login-form-media" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <input id="admin-username-media" type="text" placeholder="👤 Felhasználónév" onkeydown="if(event.key==='Enter')adminLoginMedia()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 180px;" />
+          <input id="admin-password-media" type="password" placeholder="🔑 Jelszó" onkeydown="if(event.key==='Enter')adminLoginMedia()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none;" />
           <button onclick="adminLoginMedia()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">Belépés</button>
         </div>
         <div id="admin-status-media" style="display: none; align-items: center; gap: 10px;">
-          <span style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Admin mód aktív</span>
+          <span id="admin-status-label-media" style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Média admin aktív</span>
           <button onclick="adminLogoutMedia()" style="padding: 6px 12px; border-radius: 8px; background: rgba(239,68,68,0.15); color: #f87171; font-size: 12px; border: 1px solid rgba(239,68,68,0.3); cursor: pointer;">Kilépés</button>
         </div>
       </div>
@@ -1041,8 +1042,9 @@
       // Betöltjük az adatokat ha még nincs
       if (!allData) await loadJsonBin(true);
 
-      // Engedélyezett nevek - CSAK ezek léphetnek be
-      const admins = ['cobra', 'cobra086', 'cobra 🐍'].concat(
+      // Fuvarok admin: csak Cobra
+      // Helyettes: Boby és Eric (látják a statisztikát de nem törölhetnek sofőrt)
+      const admins = ['cobra', 'cobra086'].concat(
         (allData?._admins || []).map(n => n.toLowerCase()).filter(n => n.startsWith('cobra'))
       );
       const deputies = ['boby', 'bobydik', 'eric', 'eric19792'].concat(
@@ -1114,29 +1116,63 @@
 
     let mediaAdminMode = false;
 
+    // Média admin engedélyezett nevek
+    const MEDIA_ALLOWED = ['cobra', 'cobra086', 'boby', 'bobydik', 'eric', 'eric19792'];
+
     function adminLoginMedia() {
+      const username = (document.getElementById('admin-username-media').value || '').trim();
       const pw = document.getElementById('admin-password-media').value;
-      if (pw === ADMIN_PASSWORD) {
+
+      const nameLower = username.toLowerCase();
+      const pwOk = pw === ADMIN_PASSWORD;
+      const nameOk = MEDIA_ALLOWED.some(n => nameLower.includes(n) || n.includes(nameLower));
+
+      if (pwOk && nameOk) {
         mediaAdminMode = true;
+        sessionStorage.setItem('srt_media_pw', pw);
+        sessionStorage.setItem('srt_media_user', username);
         document.getElementById('admin-login-form-media').style.display = 'none';
         document.getElementById('admin-status-media').style.display = 'flex';
+        document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${username}`;
         renderMedia();
       } else {
+        document.getElementById('admin-username-media').style.borderColor = '#f87171';
         document.getElementById('admin-password-media').style.borderColor = '#f87171';
-        setTimeout(() => document.getElementById('admin-password-media').style.borderColor = '', 1500);
+        setTimeout(() => {
+          document.getElementById('admin-username-media').style.borderColor = '';
+          document.getElementById('admin-password-media').style.borderColor = '';
+        }, 1500);
       }
     }
 
     function adminLogoutMedia() {
       mediaAdminMode = false;
+      sessionStorage.removeItem('srt_media_pw');
+      sessionStorage.removeItem('srt_media_user');
       document.getElementById('admin-login-form-media').style.display = 'flex';
       document.getElementById('admin-status-media').style.display = 'none';
       document.getElementById('admin-password-media').value = '';
+      document.getElementById('admin-username-media').value = '';
       renderMedia();
     }
 
+    // Automatikus média bejelentkezés frissítés után
+    (function autoLoginMedia() {
+      const savedPw = sessionStorage.getItem('srt_media_pw');
+      const savedUser = sessionStorage.getItem('srt_media_user');
+      if (savedPw === ADMIN_PASSWORD && savedUser) {
+        const nameLower = savedUser.toLowerCase();
+        if (MEDIA_ALLOWED.some(n => nameLower.includes(n) || n.includes(nameLower))) {
+          mediaAdminMode = true;
+          document.getElementById('admin-login-form-media').style.display = 'none';
+          document.getElementById('admin-status-media').style.display = 'flex';
+          document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${savedUser}`;
+        }
+      }
+    })();
+
     async function deleteMedia(tipus, idx) {
-      if (!adminMode) return;
+      if (!mediaAdminMode) return;
       if (!confirm(`Biztosan törlöd a ${tipus === 'kep' ? 'képet' : 'videót'}?`)) return;
       if (!allData._media) return;
       if (tipus === 'kep') {
