@@ -137,10 +137,14 @@
     }
     .hero h1 em { font-style: normal; color: var(--orange); }
     .hero-lead {
-      font-size: 22px; color: rgba(255,255,255,0.85);
+      font-size: 22px; color: rgba(255,255,255,0.95);
       line-height: 2; margin-bottom: 32px;
       max-width: 100%;
-      text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+      text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.45);
+      padding: 14px 20px;
+      border-radius: 12px;
+      backdrop-filter: blur(4px);
     }
     .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
     .badge {
@@ -2672,6 +2676,22 @@
       document.getElementById('edit-font-size').value = '';
     }
 
+    function editInsertBg(bgColor) {
+      const ta = editGetTextarea();
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const sel = ta.value.substring(start, end);
+      const styleAttr = bgColor === 'transparent'
+        ? 'background:transparent;padding:0;border-radius:0;'
+        : `background:${bgColor};padding:10px 16px;border-radius:10px;backdrop-filter:blur(4px);display:inline-block;`;
+      const ins = sel
+        ? `<span style="${styleAttr}">${sel}</span>`
+        : `<span style="${styleAttr}"></span>`;
+      ta.value = ta.value.substring(0, start) + ins + ta.value.substring(end);
+      const cursor = sel ? start + ins.length : start + ins.length - 7;
+      ta.setSelectionRange(cursor, cursor);
+      ta.focus();
+    }
+
     function editInsertBr() {
       const ta = editGetTextarea();
       const start = ta.selectionStart;
@@ -2727,6 +2747,17 @@
         </div>
         <div style="width:1px;background:var(--border);margin:0 2px;"></div>
         <button onclick="editInsertBr()" title="Sortörés" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,0.08);color:var(--muted);cursor:pointer;font-size:11px;">↵ br</button>
+        <div style="width:1px;background:var(--border);margin:0 2px;"></div>
+        <span style="font-size:11px;color:var(--muted);align-self:center;">🖌️ Háttér:</span>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+          <button onclick="editInsertBg('transparent')" title="Nincs háttér" style="width:20px;height:20px;border-radius:4px;border:2px solid #888;background:transparent;cursor:pointer;font-size:10px;">✕</button>
+          <button onclick="editInsertBg('rgba(0,0,0,0.45)')" title="Sötét félig átlátszó" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:rgba(0,0,0,0.6);cursor:pointer;"></button>
+          <button onclick="editInsertBg('rgba(0,0,0,0.75)')" title="Sötét erős" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:rgba(0,0,0,0.85);cursor:pointer;"></button>
+          <button onclick="editInsertBg('rgba(14,30,60,0.7)')" title="Kék sötét" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:rgba(14,30,60,0.85);cursor:pointer;"></button>
+          <button onclick="editInsertBg('rgba(30,60,14,0.7)')" title="Zöld sötét" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:rgba(30,60,14,0.85);cursor:pointer;"></button>
+          <button onclick="editInsertBg('rgba(232,93,4,0.35)')" title="Narancs félig átlátszó" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:rgba(232,93,4,0.6);cursor:pointer;"></button>
+          <button onclick="editInsertBg('rgba(255,255,255,0.1)')" title="Fehér félig átlátszó" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:rgba(255,255,255,0.2);cursor:pointer;"></button>
+        </div>
       </div>
       <textarea id="edit-modal-textarea" style="width:100%;min-height:120px;padding:12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;font-family:inherit;resize:vertical;outline:none;box-sizing:border-box;"></textarea>
       <div id="edit-modal-hint" style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:16px;">HTML tags használható (pl. &lt;em&gt;, &lt;strong&gt;, &lt;br&gt;)</div>
