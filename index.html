@@ -287,11 +287,12 @@
     .map-info-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
 
     /* ══════════════ KÉPEK PAGE ══════════════ */
-    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; position: relative; z-index: 1; }
     .gallery-img {
       border-radius: 12px; overflow: hidden;
       border: 1px solid var(--border);
       transition: border-color 0.2s, transform 0.15s; display: block;
+      position: relative; z-index: 1;
     }
     .gallery-img:hover { border-color: rgba(249,115,22,0.4); transform: scale(1.01); }
     .gallery-img img { width: 100%; height: 210px; object-fit: cover; display: block; }
@@ -911,7 +912,7 @@
 
   <!-- ══════════ PAGE: KÉPEK ══════════ -->
   <!-- ══════════ PAGE: MÉDIA ══════════ -->
-  <div class="page" id="page-kepek" style="position:relative;">
+  <div class="page" id="page-kepek" style="position:relative; z-index:0;">
     <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-kepek" data-for="page-kepek"></div>
     <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-kepek"></div>
     <div class="container">
