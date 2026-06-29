@@ -1526,16 +1526,13 @@
         if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error(e?.error || 'Feltöltési hiba'); }
         const data = await res.json();
         if (!data.url) throw new Error('Nem érkezett URL');
-        // Frissítjük az allData-t azonnal
-        if (!allData) await loadJsonBin(true);
-        if (!allData._media) allData._media = { kepek: [], videok: [] };
-        if (!allData._media.kepek) allData._media.kepek = [];
-        const datum = new Date().toLocaleDateString('hu-HU');
-        allData._media.kepek.push({ url: data.url, cim: file.name.replace(/\.[^.]+$/, ''), datum, feltolto });
         status.textContent = '✅ Kép feltöltve!';
         status.style.color = '#4ade80';
         input.value = '';
         setTimeout(() => { status.textContent = ''; }, 3000);
+        // Friss adatok betöltése a botból
+        allData = null;
+        await loadJsonBin(true);
         renderMedia();
       } catch(e) {
         status.textContent = '❌ Hiba: ' + e.message;
@@ -1562,16 +1559,12 @@
         if (!res.ok) { const e2 = await res.json().catch(()=>{}); throw new Error(e2?.error || 'Feltöltési hiba'); }
         const vdata = await res.json();
         if (!vdata.url) throw new Error('Nem érkezett URL');
-        if (!allData) await loadJsonBin(true);
-        if (!allData._media) allData._media = { kepek: [], videok: [] };
-        if (!allData._media.videok) allData._media.videok = [];
-        const vdatum = new Date().toLocaleDateString('hu-HU');
-        const vfeltolto = sessionStorage.getItem('srt_media_user') || sessionStorage.getItem('srt_admin_user') || 'Admin';
-        allData._media.videok.push({ url: vdata.url, cim: file.name.replace(/\.[^.]+$/, ''), datum: vdatum, feltolto: vfeltolto });
         status.textContent = '✅ Videó feltöltve!';
         status.style.color = '#4ade80';
         input.value = '';
         setTimeout(() => { status.textContent = ''; }, 3000);
+        allData = null;
+        await loadJsonBin(true);
         renderMedia();
       } catch(e) {
         status.textContent = '❌ Hiba: ' + e.message;
