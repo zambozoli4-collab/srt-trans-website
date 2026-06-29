@@ -1526,7 +1526,6 @@
         status.style.color = '#4ade80';
         input.value = '';
         setTimeout(() => { status.textContent = ''; }, 3000);
-        await loadJsonBin(true);
         renderMedia();
       } catch(e) {
         status.textContent = '❌ Hiba: ' + e.message;
@@ -1555,7 +1554,6 @@
         status.style.color = '#4ade80';
         input.value = '';
         setTimeout(() => { status.textContent = ''; }, 3000);
-        await loadJsonBin(true);
         renderMedia();
       } catch(e) {
         status.textContent = '❌ Hiba: ' + e.message;
@@ -1623,7 +1621,7 @@
       const kepekGrid = document.getElementById('kepekGrid');
       const videokGrid = document.getElementById('videokGrid');
 
-      const ok = await loadJsonBin(true); // mindig frissen tölt, de a jobs/data megmarad
+      const ok = await loadJsonBin(allData === null); // ne írja felül a módosított adatot
 
       // Alapértelmezett képek (ha nincs még feltöltve Discordon)
       const defaultKepek = [
@@ -2080,7 +2078,9 @@
     async function autoRefreshTick() {
       const page = getActivePage();
       if (page !== 'fuvarok' && page !== 'kepek') return;
-      const ok = await loadJsonBin(true);
+      // Admin módban ne írjuk felül a módosított adatokat
+      const forceReload = !adminMode;
+      const ok = await loadJsonBin(forceReload);
       if (!ok) return;
       if (page === 'fuvarok') {
         await renderDrivers();
@@ -2472,6 +2472,7 @@
       const isLink = key === 'discord_link';
 
       document.getElementById('edit-modal-title').textContent = isLink ? '🔗 Discord link szerkesztése' : '✏️ Szöveg szerkesztése';
+      editToolbarToggle(!isLink);
       const textarea = document.getElementById('edit-modal-textarea');
 
       if (isLink) {
@@ -2623,12 +2624,110 @@
         if (allData['_avatar_' + id]) avatarBetoltElem(id, allData['_avatar_' + id]);
       });
     }
+
+    // ══════════ SZÖVEG SZERKESZTŐ ESZKÖZTÁR ══════════
+    function editGetTextarea() {
+      return document.getElementById('edit-modal-textarea');
+    }
+
+    function editInsertTag(tag) {
+      const ta = editGetTextarea();
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const sel = ta.value.substring(start, end);
+      const ins = sel ? `<${tag}>${sel}</${tag}>` : `<${tag}></${tag}>`;
+      ta.value = ta.value.substring(0, start) + ins + ta.value.substring(end);
+      const cursor = start + ins.length - (sel ? 0 : tag.length + 3);
+      ta.setSelectionRange(cursor, cursor);
+      ta.focus();
+    }
+
+    function editInsertColor(color) {
+      const ta = editGetTextarea();
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const sel = ta.value.substring(start, end);
+      const ins = sel
+        ? `<span style="color:${color}">${sel}</span>`
+        : `<span style="color:${color}"></span>`;
+      ta.value = ta.value.substring(0, start) + ins + ta.value.substring(end);
+      const cursor = sel ? start + ins.length : start + ins.length - 7;
+      ta.setSelectionRange(cursor, cursor);
+      ta.focus();
+      // Reset color picker
+      const cp = document.getElementById('edit-custom-color');
+      if (cp) cp.value = '#ffffff';
+    }
+
+    function editInsertSize(size) {
+      if (!size) return;
+      const ta = editGetTextarea();
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const sel = ta.value.substring(start, end);
+      const ins = sel
+        ? `<span style="font-size:${size}">${sel}</span>`
+        : `<span style="font-size:${size}"></span>`;
+      ta.value = ta.value.substring(0, start) + ins + ta.value.substring(end);
+      const cursor = sel ? start + ins.length : start + ins.length - 7;
+      ta.setSelectionRange(cursor, cursor);
+      ta.focus();
+      document.getElementById('edit-font-size').value = '';
+    }
+
+    function editInsertBr() {
+      const ta = editGetTextarea();
+      const start = ta.selectionStart;
+      ta.value = ta.value.substring(0, start) + '<br>' + ta.value.substring(start);
+      ta.setSelectionRange(start + 4, start + 4);
+      ta.focus();
+    }
+
+    // Toolbar mutatás/elrejtés link szerkesztésnél
+    function editToolbarToggle(show) {
+      const tb = document.getElementById('edit-modal-toolbar');
+      if (tb) tb.style.display = show ? 'flex' : 'none';
+    }
 </script>
 
   <!-- ══ SZÖVEG SZERKESZTŐ MODAL ══ -->
   <div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
     <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;min-width:360px;max-width:640px;width:92%;position:relative;">
       <div id="edit-modal-title" style="font-size:16px;font-weight:700;color:#fff;margin-bottom:16px;"></div>
+      <!-- Eszköztár -->
+      <div id="edit-modal-toolbar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid var(--border);">
+        <!-- Betűstílus -->
+        <button onclick="editInsertTag('strong')" title="Félkövér" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,0.08);color:#fff;cursor:pointer;font-weight:700;font-size:13px;">B</button>
+        <button onclick="editInsertTag('em')" title="Dőlt" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,0.08);color:#fff;cursor:pointer;font-style:italic;font-size:13px;">I</button>
+        <button onclick="editInsertTag('u')" title="Aláhúzott" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,0.08);color:#fff;cursor:pointer;text-decoration:underline;font-size:13px;">U</button>
+        <div style="width:1px;background:var(--border);margin:0 2px;"></div>
+        <!-- Betűméret -->
+        <select id="edit-font-size" onchange="editInsertSize(this.value)" title="Betűméret" style="padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:12px;cursor:pointer;">
+          <option value="">Méret</option>
+          <option value="0.8em">Kis</option>
+          <option value="1em">Normal</option>
+          <option value="1.3em">Nagy</option>
+          <option value="1.6em">Nagyobb</option>
+          <option value="2em">Óriás</option>
+        </select>
+        <div style="width:1px;background:var(--border);margin:0 2px;"></div>
+        <!-- Betűszín -->
+        <span style="font-size:11px;color:var(--muted);align-self:center;">🎨 Szín:</span>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+          <button onclick="editInsertColor('#ffffff')" title="Fehér" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:#ffffff;cursor:pointer;"></button>
+          <button onclick="editInsertColor('#f1f1f1')" title="Világosszürke" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:#f1f1f1;cursor:pointer;"></button>
+          <button onclick="editInsertColor('#e85d04')" title="Narancssárga" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:#e85d04;cursor:pointer;"></button>
+          <button onclick="editInsertColor('#f59e0b')" title="Sárga" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:#f59e0b;cursor:pointer;"></button>
+          <button onclick="editInsertColor('#4ade80')" title="Zöld" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:#4ade80;cursor:pointer;"></button>
+          <button onclick="editInsertColor('#60a5fa')" title="Kék" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:#60a5fa;cursor:pointer;"></button>
+          <button onclick="editInsertColor('#f87171')" title="Piros" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:#f87171;cursor:pointer;"></button>
+          <button onclick="editInsertColor('#c084fc')" title="Lila" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:#c084fc;cursor:pointer;"></button>
+          <button onclick="editInsertColor('#34d399')" title="Türkiz" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:#34d399;cursor:pointer;"></button>
+          <!-- Egyéni szín -->
+          <label title="Egyéni szín" style="width:20px;height:20px;border-radius:4px;border:1px solid #555;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);cursor:pointer;display:inline-block;overflow:hidden;">
+            <input type="color" id="edit-custom-color" onchange="editInsertColor(this.value)" style="width:0;height:0;opacity:0;position:absolute;"/>
+          </label>
+        </div>
+        <div style="width:1px;background:var(--border);margin:0 2px;"></div>
+        <button onclick="editInsertBr()" title="Sortörés" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:rgba(255,255,255,0.08);color:var(--muted);cursor:pointer;font-size:11px;">↵ br</button>
+      </div>
       <textarea id="edit-modal-textarea" style="width:100%;min-height:120px;padding:12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;font-family:inherit;resize:vertical;outline:none;box-sizing:border-box;"></textarea>
       <div id="edit-modal-hint" style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:16px;">HTML tags használható (pl. &lt;em&gt;, &lt;strong&gt;, &lt;br&gt;)</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
