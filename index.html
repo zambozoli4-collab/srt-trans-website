@@ -945,11 +945,12 @@
 
       <div id="tab-kepek" class="tab-panel active">
         <!-- Kép feltöltés gomb -->
-        <div id="kep-upload-panel" style="display:none; margin-bottom: 16px;">
+        <div id="kep-upload-panel" style="display:none; margin-bottom: 16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <label style="padding:8px 16px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--orange); border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
             🖼️ Kép feltöltése
             <input type="file" id="kep-upload-input" accept="image/*" style="display:none;" onchange="feltoltKep(this)"/>
           </label>
+          <button onclick="osszesTorles()" style="padding:8px 16px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">🗑️ Összes kép törlése</button>
           <span id="upload-status-kep" style="font-size:12px; color:var(--muted); margin-left:10px;"></span>
         </div>
         <div style="max-height: 70vh; overflow-y: auto; padding-right: 4px;">
@@ -1590,7 +1591,7 @@
     }
 
     async function deleteMedia(tipus, idx) {
-      if (!mediaAdminMode) return;
+      if (!mediaAdminMode && !sessionStorage.getItem('srt_media_auth')) return;
       if (!confirm(`Biztosan törlöd a ${tipus === 'kep' ? 'képet' : 'videót'}?`)) return;
       if (!allData._media) return;
 
@@ -2881,6 +2882,25 @@
       Object.entries(allData._hatterek).forEach(([pageKey, url]) => {
         if (url) bgAlkalmaz(pageKey, url);
       });
+    }
+
+    // ══════════ ÖSSZES KÉP TÖRLÉSE ══════════
+    async function osszesTorles() {
+      if (!confirm('Biztosan törlöd AZ ÖSSZES képet? Ez nem visszavonható!')) return;
+      if (!confirm('Megerősítés: valóban törlöd az összes feltöltött képet?')) return;
+      try {
+        if (!allData) await loadJsonBin(true);
+        allData._media = { kepek: [], videok: allData._media?.videok || [] };
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
+        });
+        renderMedia();
+        alert('✅ Összes kép törölve!');
+      } catch(e) {
+        alert('❌ Hiba: ' + e.message);
+      }
     }
 </script>
 
