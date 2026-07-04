@@ -1369,6 +1369,7 @@
           document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${username}`;
           document.getElementById('kep-upload-panel').style.display = 'block';
           document.getElementById('video-upload-panel').style.display = 'block';
+          renderMedia();
         }
         renderDrivers();
         if (currentDriver) showDriverJobs(currentDriver);
@@ -1418,6 +1419,7 @@
           document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${savedUser}`;
           document.getElementById('kep-upload-panel').style.display = 'block';
           document.getElementById('video-upload-panel').style.display = 'block';
+          renderMedia();
         }
       }
     })();
@@ -1514,6 +1516,8 @@
       document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${savedUser}`;
       document.getElementById('kep-upload-panel').style.display = 'block';
       document.getElementById('video-upload-panel').style.display = 'block';
+      // Újrarajzolás hogy a törlés gombok megjelenjenek
+      renderMedia();
     })();
 
     const DISCORD_MEDIA_CHANNEL = '1520571630118764544';
