@@ -1175,9 +1175,10 @@
               <!-- Táblázat fejléc -->
               <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
               <div style="min-width: 900px;">
-              <div class="job-table-header" style="display: grid; grid-template-columns: 36px minmax(140px,1fr) 120px 90px 60px 60px 75px 70px 95px 95px; gap: 0; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);">
+              <div class="job-table-header" style="display: grid; grid-template-columns: 36px minmax(140px,1fr) 90px 120px 90px 60px 60px 75px 70px 95px 95px; gap: 0; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);">
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600;">#</div>
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600;">ÚTVONAL / ÁRU</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600;">KAMION</div>
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600;">FELVÉTEL / LEADÁS</div>
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">FOGYASZTÁS</div>
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">TONNA</div>
@@ -1817,13 +1818,16 @@
 
       const sortedJobs = [...jobs].reverse();
       list.innerHTML = sortedJobs.map((j, i) => `
-        <div style="display: grid; grid-template-columns: 36px minmax(140px,1fr) 120px 90px 60px 60px 75px 70px 95px 95px ${isAdminMode() ? '50px' : ''}; gap: 0; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: center; ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.015);'} transition: background 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background='${i % 2 === 0 ? '' : 'rgba(255,255,255,0.015)'}'">
+        <div style="display: grid; grid-template-columns: 36px minmax(140px,1fr) 90px 120px 90px 60px 60px 75px 70px 95px 95px ${isAdminMode() ? '50px' : ''}; gap: 0; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: center; ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.015);'} transition: background 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background='${i % 2 === 0 ? '' : 'rgba(255,255,255,0.015)'}'">
           <div style="font-size: 13px; font-weight: 700; color: var(--muted);">${i + 1}</div>
           <div style="overflow: hidden;">
             <div style="font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${j.honnan || '?'} → ${j.hova || '?'}</div>
             <div style="font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📦 ${j.aru || '-'}</div>
           </div>
           <div>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ${j.kamion ? `🚚 ${j.kamion}` : '-'}
+            </div>
             <div style="font-size: 12px; color: var(--text); white-space: nowrap;">📥 ${j.felvételIdeje || j.datumFormazva || '-'}</div>
             <div style="font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap;">📤 ${j.leadásIdeje || '-'}</div>
           </div>
@@ -1831,9 +1835,9 @@
           <div style="text-align: center; font-size: 13px; font-weight: 700; color: var(--orange);">${j.tonna || 0} t</div>
           <div style="text-align: center; font-size: 13px; font-weight: 700; color: var(--orange);">${formatNum(Math.round(j.km || 0))} km</div>
           <div style="text-align: center;">
-            <span style="font-size: 11px; padding: 3px 8px; border-radius: 999px; white-space: nowrap; background: ${(j.sebessegTipus||j.sebességTípus) === 'verseny' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)'}; color: ${(j.sebessegTipus||j.sebességTípus) === 'verseny' ? '#f87171' : '#4ade80'}; font-weight: 600;">${(j.sebessegTipus||j.sebességTípus) === 'verseny' ? 'verseny' : 'valós'}</span>
+            <span style="font-size: 11px; padding: 3px 8px; border-radius: 999px; white-space: nowrap; background: ${((j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 101)) ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)'}; color: ${((j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 101)) ? '#f87171' : '#4ade80'}; font-weight: 600;">${(j.sebessegTipus||j.sebességTípus) === 'verseny' ? 'verseny' : 'valós'}</span>
           </div>
-          <div style="text-align: center; font-size: 12px; font-weight: 700; color: #c084fc; white-space: nowrap;">${j.maxSebesseg ? j.maxSebesseg + " km/h" : "-"}</div>
+          <div style="text-align: center; font-size: 12px; font-weight: 700; color: ${j.maxSebesseg && j.maxSebesseg > 101 ? '#f87171' : j.maxSebesseg ? '#c084fc' : 'var(--muted)'}; white-space: nowrap;">${j.maxSebesseg ? j.maxSebesseg + " km/h" : "-"}</div>
           <div style="text-align: right; font-size: 12px; font-weight: 700; color: #4ade80; white-space: nowrap;">${formatNum(j.bevételFt || 0)} Ft</div>
           <div style="text-align: right; font-size: 12px; font-weight: 700; white-space: nowrap; color: ${j.büntFt > 0 ? '#f87171' : 'var(--muted)'};">${j.büntFt > 0 ? '-' + formatNum(j.büntFt) + ' Ft' : '-'}</div>
           ${isAdminMode() ? `<div style="text-align: center;"><button onclick="deleteJob('${driverName}', ${i})" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px;">🗑️</button></div>` : ''}
