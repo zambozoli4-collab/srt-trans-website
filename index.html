@@ -1360,6 +1360,15 @@
           adminRole === 'admin' ? `✅ Admin: ${username}` : `✅ Helyettes: ${username}`;
         if (adminRole === 'admin' && username.toLowerCase().includes('cobra')) {
           setTimeout(szerkesztoGombokMutat, 300);
+          // Cobra automatikusan média admin is
+          mediaAdminMode = true;
+          sessionStorage.setItem('srt_media_user', username);
+          sessionStorage.setItem('srt_media_auth', '1');
+          document.getElementById('admin-login-form-media').style.display = 'none';
+          document.getElementById('admin-status-media').style.display = 'flex';
+          document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${username}`;
+          document.getElementById('kep-upload-panel').style.display = 'block';
+          document.getElementById('video-upload-panel').style.display = 'block';
         }
         renderDrivers();
         if (currentDriver) showDriverJobs(currentDriver);
@@ -1399,6 +1408,17 @@
         savedRole === 'admin' ? `✅ Admin: ${savedUser}` : `✅ Helyettes: ${savedUser}`;
       if (savedRole === 'admin' && savedUser.toLowerCase().includes('cobra')) {
         setTimeout(szerkesztoGombokMutat, 500);
+        // Cobra automatikusan média admin is
+        mediaAdminMode = true;
+        if (!sessionStorage.getItem('srt_media_auth')) {
+          sessionStorage.setItem('srt_media_user', savedUser);
+          sessionStorage.setItem('srt_media_auth', '1');
+          document.getElementById('admin-login-form-media').style.display = 'none';
+          document.getElementById('admin-status-media').style.display = 'flex';
+          document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${savedUser}`;
+          document.getElementById('kep-upload-panel').style.display = 'block';
+          document.getElementById('video-upload-panel').style.display = 'block';
+        }
       }
     })();
 
