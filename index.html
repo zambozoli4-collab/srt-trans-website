@@ -1175,11 +1175,11 @@
               <!-- Táblázat fejléc -->
               <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
               <div style="min-width: 900px;">
-              <div class="job-table-header" style="display: grid; grid-template-columns: 36px minmax(160px,1fr) 100px 130px 90px 60px 60px 75px 70px 95px 95px; gap: 0; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);">
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600;">#</div>
+              <div class="job-table-header" style="display: grid; grid-template-columns: 40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px; gap: 0; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);">
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">#</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">KAMION</div>
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600;">ÚTVONAL / ÁRU</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600;">KAMION</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600;">FELVÉTEL / LEADÁS</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">FELVÉTEL / LEADÁS</div>
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">FOGYASZTÁS</div>
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">TONNA</div>
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">KM</div>
@@ -1817,31 +1817,44 @@
       }
 
       const sortedJobs = [...jobs].reverse();
-      list.innerHTML = sortedJobs.map((j, i) => `
-        <div style="display: grid; grid-template-columns: 36px minmax(160px,1fr) 100px 130px 90px 60px 60px 75px 70px 95px 95px ${isAdminMode() ? '50px' : ''}; gap: 0; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: center; ${i % 2 === 0 ? '' : 'background: rgba(255,255,255,0.015);'} transition: background 0.15s;" onmouseenter="this.style.background='rgba(255,255,255,0.04)'" onmouseleave="this.style.background='${i % 2 === 0 ? '' : 'rgba(255,255,255,0.015)'}'">
-          <div style="font-size: 13px; font-weight: 700; color: var(--muted);">${i + 1}</div>
-          <div style="overflow: hidden;">
-            <div style="font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${j.honnan || '?'} → ${j.hova || '?'}</div>
-            <div style="font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📦 ${j.aru || '-'}</div>
-          </div>
-          <div>
-            <div style="font-size: 12px; color: rgba(255,255,255,0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              ${j.kamion ? `🚚 ${j.kamion}` : '-'}
-            </div>
-            <div style="font-size: 12px; color: var(--text); white-space: nowrap;">📥 ${j.felvételIdeje || j.datumFormazva || '-'}</div>
-            <div style="font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap;">📤 ${j.leadásIdeje || '-'}</div>
-          </div>
-          <div style="text-align: center; font-size: 12px; color: #60a5fa; font-weight: 600; white-space: nowrap;">${j.avgFuelJob ? j.avgFuelJob + ' L/100' : (j.üzemanyag ? j.üzemanyag + ' L' : '-')}</div>
-          <div style="text-align: center; font-size: 13px; font-weight: 700; color: var(--orange);">${j.tonna || 0} t</div>
-          <div style="text-align: center; font-size: 13px; font-weight: 700; color: var(--orange);">${formatNum(Math.round(j.km || 0))} km</div>
-          <div style="text-align: center;">
-            <span style="font-size: 11px; padding: 3px 8px; border-radius: 999px; white-space: nowrap; background: ${((j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 101)) ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)'}; color: ${((j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 101)) ? '#f87171' : '#4ade80'}; font-weight: 600;">${((j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 101)) ? '🏁 verseny' : '✅ valós'}</span>
-          </div>
-          <div style="text-align: center; font-size: 12px; font-weight: 700; color: ${j.maxSebesseg && j.maxSebesseg > 101 ? '#f87171' : j.maxSebesseg ? '#c084fc' : 'var(--muted)'}; white-space: nowrap;">${j.maxSebesseg ? j.maxSebesseg + " km/h" : "-"}</div>
-          <div style="text-align: right; font-size: 12px; font-weight: 700; color: #4ade80; white-space: nowrap;">${formatNum(j.bevételFt || 0)} Ft</div>
-          <div style="text-align: right; font-size: 12px; font-weight: 700; white-space: nowrap; color: ${j.büntFt > 0 ? '#f87171' : 'var(--muted)'};">${j.büntFt > 0 ? '-' + formatNum(j.büntFt) + ' Ft' : '-'}</div>
-          ${isAdminMode() ? `<div style="text-align: center;"><button onclick="deleteJob('${driverName}', ${i})" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px;">🗑️</button></div>` : ''}
-        </div>`).join('');
+      list.innerHTML = sortedJobs.map(function(j, i) {
+        var isVerseny = (j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 101);
+        var adminCol = isAdminMode() ? ' 50px' : '';
+        var cols = '40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px' + adminCol;
+        var rowBg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015);';
+        var num = sortedJobs.length - i;
+        var honnan = j.honnan || '?';
+        var hova = j.hova || '?';
+        var aru = j.aru || '-';
+        var kamion = j.kamion || '-';
+        var felvetel = j.felvételIdeje || j.datumFormazva || '-';
+        var leadas = j.leadásIdeje || '-';
+        var fogyasztas = j.avgFuelJob ? j.avgFuelJob + ' L/100' : (j.üzemanyag ? j.üzemanyag + ' L' : '-');
+        var sebBg = isVerseny ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)';
+        var sebColor = isVerseny ? '#f87171' : '#4ade80';
+        var sebSzoveg = isVerseny ? '🏁 verseny' : '✅ valós';
+        var maxColor = (j.maxSebesseg && j.maxSebesseg > 101) ? '#f87171' : j.maxSebesseg ? '#c084fc' : 'var(--muted)';
+        var maxSeb = j.maxSebesseg ? j.maxSebesseg + ' km/h' : '-';
+        var bunt = j.büntFt > 0 ? '-' + formatNum(j.büntFt) + ' Ft' : '-';
+        var buntColor = j.büntFt > 0 ? '#f87171' : 'var(--muted)';
+        var adminBtn = isAdminMode() ? '<div style="text-align:center"><button onclick="deleteJob(\'' + driverName + '\', ' + i + ')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">🗑️</button></div>' : '';
+        var html = '';
+        html += '<div style="display:grid;grid-template-columns:' + cols + ';gap:0;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;' + rowBg + 'transition:background 0.15s">';
+        html += '<div style="font-size:13px;font-weight:700;color:var(--muted);text-align:center">' + num + '</div>';
+        html += '<div style="text-align:center;padding:0 4px;overflow:hidden"><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + kamion + '</div></div>';
+        html += '<div style="overflow:hidden;padding:0 8px"><div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + honnan + ' → ' + hova + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📦 ' + aru + '</div></div>';
+        html += '<div style="text-align:center"><div style="font-size:11px;color:rgba(255,255,255,0.7);white-space:nowrap">📅 ' + felvetel + '</div><div style="font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap">🏁 ' + leadas + '</div></div>';
+        html += '<div style="text-align:center;font-size:12px;color:#60a5fa;font-weight:600;white-space:nowrap">' + fogyasztas + '</div>';
+        html += '<div style="text-align:center;font-size:13px;font-weight:700;color:var(--orange)">' + (j.tonna||0) + ' t</div>';
+        html += '<div style="text-align:center;font-size:13px;font-weight:700;color:var(--orange)">' + formatNum(Math.round(j.km||0)) + ' km</div>';
+        html += '<div style="text-align:center"><span style="font-size:11px;padding:3px 8px;border-radius:999px;white-space:nowrap;background:' + sebBg + ';color:' + sebColor + ';font-weight:600">' + sebSzoveg + '</span></div>';
+        html += '<div style="text-align:center;font-size:12px;font-weight:700;color:' + maxColor + ';white-space:nowrap">' + maxSeb + '</div>';
+        html += '<div style="text-align:right;font-size:12px;font-weight:700;color:#4ade80;white-space:nowrap">' + formatNum(j.bevételFt||0) + ' Ft</div>';
+        html += '<div style="text-align:right;font-size:12px;font-weight:700;white-space:nowrap;color:' + buntColor + '">' + bunt + '</div>';
+        html += adminBtn;
+        html += '</div>';
+        return html;
+      }).join('');
     }
 
     function showDrivers() {
