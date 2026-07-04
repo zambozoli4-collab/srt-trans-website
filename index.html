@@ -1816,13 +1816,13 @@
         return;
       }
 
-      const sortedJobs = [...jobs].reverse();
+      const sortedJobs = [...jobs];
       list.innerHTML = sortedJobs.map(function(j, i) {
         var isVerseny = (j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 101);
         var adminCol = isAdminMode() ? ' 50px' : '';
         var cols = '40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px' + adminCol;
         var rowBg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015);';
-        var num = sortedJobs.length - i;
+        var num = i + 1;
         var honnan = j.honnan || '?';
         var hova = j.hova || '?';
         var aru = j.aru || '-';
