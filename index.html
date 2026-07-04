@@ -912,7 +912,7 @@
 
   <!-- ══════════ PAGE: KÉPEK ══════════ -->
   <!-- ══════════ PAGE: MÉDIA ══════════ -->
-  <div class="page" id="page-kepek" style="position:relative; z-index:0;">
+  <div class="page" id="page-kepek" style="position:relative; z-index:1;">
     <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-kepek" data-for="page-kepek"></div>
     <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-kepek"></div>
     <div class="container">
@@ -945,7 +945,7 @@
 
       <div id="tab-kepek" class="tab-panel active">
         <!-- Kép feltöltés gomb -->
-        <div id="kep-upload-panel" style="display:none; margin-bottom: 16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div id="kep-upload-panel" style="display:none; margin-bottom: 16px; gap:10px; align-items:center; flex-wrap:wrap;">
           <label style="padding:8px 16px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--orange); border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
             🖼️ Kép feltöltése
             <input type="file" id="kep-upload-input" accept="image/*" style="display:none;" onchange="feltoltKep(this)"/>
@@ -1368,7 +1368,7 @@
           document.getElementById('admin-login-form-media').style.display = 'none';
           document.getElementById('admin-status-media').style.display = 'flex';
           document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${username}`;
-          document.getElementById('kep-upload-panel').style.display = 'block';
+          document.getElementById('kep-upload-panel').style.display = 'flex';
           document.getElementById('video-upload-panel').style.display = 'block';
           renderMedia();
         }
@@ -1418,7 +1418,7 @@
           document.getElementById('admin-login-form-media').style.display = 'none';
           document.getElementById('admin-status-media').style.display = 'flex';
           document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${savedUser}`;
-          document.getElementById('kep-upload-panel').style.display = 'block';
+          document.getElementById('kep-upload-panel').style.display = 'flex';
           document.getElementById('video-upload-panel').style.display = 'block';
           renderMedia();
         }
@@ -1481,7 +1481,7 @@
         document.getElementById('admin-login-form-media').style.display = 'none';
         document.getElementById('admin-status-media').style.display = 'flex';
         document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${username}`;
-        document.getElementById('kep-upload-panel').style.display = 'block';
+        document.getElementById('kep-upload-panel').style.display = 'flex';
         document.getElementById('video-upload-panel').style.display = 'block';
         renderMedia();
       } catch(e) {
@@ -1515,7 +1515,7 @@
       document.getElementById('admin-login-form-media').style.display = 'none';
       document.getElementById('admin-status-media').style.display = 'flex';
       document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${savedUser}`;
-      document.getElementById('kep-upload-panel').style.display = 'block';
+      document.getElementById('kep-upload-panel').style.display = 'flex';
       document.getElementById('video-upload-panel').style.display = 'block';
       // Újrarajzolás hogy a törlés gombok megjelenjenek
       renderMedia();
@@ -2889,6 +2889,12 @@
       if (!confirm('Biztosan törlöd AZ ÖSSZES képet? Ez nem visszavonható!')) return;
       if (!confirm('Megerősítés: valóban törlöd az összes feltöltött képet?')) return;
       try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/clear-media', {
+          method: 'POST',
+          headers: { 'X-Upload-Secret': 'srt-trans-upload-2024' }
+        });
+        if (!res.ok) throw new Error('Bot hiba');
+        // JSONBin-ből is töröljük
         if (!allData) await loadJsonBin(true);
         allData._media = { kepek: [], videok: allData._media?.videok || [] };
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
