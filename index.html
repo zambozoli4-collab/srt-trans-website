@@ -1849,7 +1849,7 @@
         html += '<div style="text-align:center"><span style="font-size:11px;padding:3px 8px;border-radius:999px;white-space:nowrap;background:' + sebBg + ';color:' + sebColor + ';font-weight:600">' + sebSzoveg + '</span></div>';
         html += '<div style="text-align:center;font-size:12px;font-weight:700;color:' + maxColor + ';white-space:nowrap">' + maxSeb + '</div>';
         html += '<div style="text-align:right;font-size:12px;font-weight:700;color:#4ade80;white-space:nowrap">' + formatNum(j.bevételFt||0) + ' Ft</div>';
-        html += '<div style="text-align:right;font-size:12px;font-weight:700;white-space:nowrap;color:' + buntColor + '">' + bunt + '</div>';
+        html += (j.truckyUrl && j.büntFt > 0) ? '<div style="text-align:right;font-size:12px;font-weight:700;white-space:nowrap;color:' + buntColor + ';cursor:pointer;text-decoration:underline" onclick="window.open(\'' + j.truckyUrl + '\',\'_blank\')">⚠️ ' + bunt + '</div>' : '<div style="text-align:right;font-size:12px;font-weight:700;white-space:nowrap;color:' + buntColor + '">' + bunt + '</div>';
         html += adminBtn;
         html += '</div>';
         return html;
