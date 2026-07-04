@@ -1632,9 +1632,8 @@
       if (!adminMode) return;
       if (!confirm(`Biztosan törlöd a ${reversedIdx + 1}. fuvart?`)) return;
       const jobs = allJobs[driverName] || [];
-      const sorted = [...jobs].reverse();
-      sorted.splice(reversedIdx, 1);
-      allJobs[driverName] = sorted.reverse();
+      jobs.splice(reversedIdx, 1);
+      allJobs[driverName] = jobs;
       try {
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method: 'PUT',
