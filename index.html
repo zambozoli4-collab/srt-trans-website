@@ -1281,12 +1281,12 @@
     </div>
 
     <!-- ATS FUVAROK nézet -->
-    <div id="ats-view-fuvarok-panel">
+    <div id="ats-view-fuvarok-panel" style="display:block;">
       <div class="fuvarok-layout" style="display: flex; gap: 24px; align-items: flex-start;">
 
         <!-- ATS Sofőr lista oldalsáv -->
         <div id="ats-drivers-sidebar" style="min-width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; flex-shrink: 0;">
-          <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase;">🇺🇸 Sofőrök</div>
+          <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase;">🎮 Sofőrök</div>
           <div id="atsDriversList" style="padding: 8px 0;">
             <div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>
           </div>
@@ -1342,21 +1342,24 @@
 
     <!-- ATS STATISZTIKA nézet -->
     <div id="ats-view-statisztika-panel" style="display:none;">
+
+      <!-- Fő fülek: Ranglista / Heti -->
       <div class="tab-nav" style="margin-bottom: 24px;">
-        <button class="tab-btn active" onclick="switchTab(this,'ats-stat-tab-ranglista')">🏆 Ranglista</button>
-        <button class="tab-btn" onclick="switchTab(this,'ats-stat-tab-heti')">📅 Heti</button>
+        <button class="tab-btn active" id="ats-stat-btn-ranglista" onclick="switchATSStatTab('ranglista')">🏆 Ranglista</button>
+        <button class="tab-btn" id="ats-stat-btn-heti" onclick="switchATSStatTab('heti')">📅 Heti</button>
       </div>
 
-      <!-- ATS RANGLISTA TAB -->
-      <div id="ats-stat-tab-ranglista" class="tab-panel active">
+      <!-- RANGLISTA TAB -->
+      <div id="ats-stat-tab-ranglista" style="display:block;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px,1fr)); gap: 20px;" id="ats-ranglista-grid">
           <div style="color:var(--muted); padding: 32px; text-align:center;">Betöltés...</div>
         </div>
       </div>
 
-      <!-- ATS HETI TAB -->
-      <div id="ats-stat-tab-heti" class="tab-panel">
-        <div class="tab-nav" style="margin-bottom: 20px;" id="ats-heti-subnav">
+      <!-- HETI TAB -->
+      <div id="ats-stat-tab-heti" style="display:none;">
+        <!-- Alfülek -->
+        <div class="tab-nav" style="margin-bottom: 20px;">
           <button class="tab-btn active" id="ats-heti-btn-osszesites" onclick="switchATSHetiTab('osszesites')">📊 Összesítés</button>
           <button class="tab-btn" id="ats-heti-btn-napi" onclick="switchATSHetiTab('napi')">📆 Napi bontás</button>
         </div>
@@ -1371,6 +1374,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div> <!-- /game-panel-ats -->
 
@@ -2639,6 +2643,16 @@
     }
 
     // ══ ATS HETI TAB ══
+    function switchATSStatTab(which) {
+      const isRanglista = which === 'ranglista';
+      document.getElementById('ats-stat-tab-ranglista').style.display = isRanglista ? 'block' : 'none';
+      document.getElementById('ats-stat-tab-heti').style.display = isRanglista ? 'none' : 'block';
+      document.getElementById('ats-stat-btn-ranglista').classList.toggle('active', isRanglista);
+      document.getElementById('ats-stat-btn-heti').classList.toggle('active', !isRanglista);
+      if (!isRanglista) renderATSHeti();
+      else renderATSRanglista();
+    }
+
     function switchATSHetiTab(which) {
       const isOssz = which === 'osszesites';
       document.getElementById('ats-heti-osszesites').style.display = isOssz ? 'block' : 'none';
@@ -2646,7 +2660,6 @@
       document.getElementById('ats-heti-btn-osszesites').classList.toggle('active', isOssz);
       document.getElementById('ats-heti-btn-napi').classList.toggle('active', !isOssz);
     }
-
     // ══ ATS SOFŐR LISTA RENDERELÉS ══
     async function renderATSDrivers() {
       const list = document.getElementById('atsDriversList');
@@ -2721,8 +2734,12 @@
     // ══ ATS STATISZTIKA ══
     async function renderATSStatisztika() {
       await loadJsonBin(allData === null);
+      // Alapértelmezett: ranglista tab aktív
+      document.getElementById('ats-stat-tab-ranglista').style.display = 'block';
+      document.getElementById('ats-stat-tab-heti').style.display = 'none';
+      document.getElementById('ats-stat-btn-ranglista').classList.add('active');
+      document.getElementById('ats-stat-btn-heti').classList.remove('active');
       renderATSRanglista();
-      renderATSHeti();
     }
 
     function getATSDrivers() {
