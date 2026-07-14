@@ -1909,6 +1909,7 @@
 
     function showDriverJobs(driverName) {
       currentDriver = driverName;
+      sessionStorage.setItem('srt_ets_driver', driverName);
       // Aktív sofőr kiemelése
       document.querySelectorAll('.driver-sidebar-item').forEach(el => {
         el.style.borderLeft = '3px solid transparent';
@@ -2089,7 +2090,19 @@
 
     // Oldal visszaállítása frissítés után
     const startPage = window.location.hash.replace('#', '');
-    if (startPage === 'fuvarok-statisztika' || startPage === 'fuvarok-statisztika-ranglista') {
+    if (startPage === 'fuvarok' || startPage === '') {
+      // ETS2 fuvarok — visszaállítja a kiválasztott sofőrt
+      if (startPage === 'fuvarok') {
+        showPage('fuvarok');
+        const savedEtsDriver = sessionStorage.getItem('srt_ets_driver');
+        if (savedEtsDriver) {
+          setTimeout(async () => {
+            currentDriver = savedEtsDriver;
+            await showDriverJobs(savedEtsDriver);
+          }, 800);
+        }
+      }
+    } else if (startPage === 'fuvarok-statisztika' || startPage === 'fuvarok-statisztika-ranglista') {
       showPage('fuvarok');
       switchFuvarokView('statisztika');
     } else if (startPage === 'fuvarok-statisztika-heti') {
@@ -2146,6 +2159,14 @@
       showPage('fuvarok');
       switchGameTab('ats', true);
       switchATSView('fuvarok');
+      // Visszaállítja a kiválasztott sofőrt frissítés után
+      const savedATSDriver = sessionStorage.getItem('srt_ats_driver');
+      if (savedATSDriver) {
+        setTimeout(async () => {
+          currentATSDriver = savedATSDriver;
+          await showATSDriverJobs(savedATSDriver);
+        }, 800);
+      }
     } else if (startPage === 'ats-statisztika' || startPage === 'ats-statisztika-ranglista') {
       showPage('fuvarok');
       switchGameTab('ats', true);
@@ -2868,6 +2889,7 @@
     // ══ ATS SOFŐR FUVAROK MEGJELENÍTÉS ══
     async function showATSDriverJobs(name) {
       currentATSDriver = name;
+      sessionStorage.setItem('srt_ats_driver', name);
       document.getElementById('atsDetailName').textContent = name;
       document.getElementById('atsDetailSub').textContent = 'American Truck Simulator sofőr';
       document.getElementById('atsDetailAvatar').innerHTML = '<span style="font-size:24px;">🎮</span>';
