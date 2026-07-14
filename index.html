@@ -2794,25 +2794,52 @@
         document.getElementById('atsJobsList').innerHTML = '<div style="padding:32px;text-align:center;color:var(--muted);">Még nincs ATS fuvar</div>';
         return;
       }
-      document.getElementById('atsJobsList').innerHTML = [...jobs].reverse().map((j, i) => `
-        <div style="display:grid;grid-template-columns:40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px;gap:0;padding:12px 16px;border-bottom:1px solid var(--border);transition:background 0.15s;" onmouseover="this.style.background='rgba(29,110,216,0.07)'" onmouseout="this.style.background=''">
-          <div style="font-size:12px;color:var(--muted);text-align:center;align-self:center;">${i+1}</div>
-          <div style="font-size:12px;color:var(--muted);text-align:center;align-self:center;">${j.kamion||'-'}</div>
-          <div style="align-self:center;"><div style="font-size:13px;font-weight:600;color:#fff;">${j.honnan||'?'} → ${j.hova||'?'}</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">${j.aru||''}</div></div>
-          <div style="font-size:11px;color:var(--muted);text-align:center;align-self:center;">${j.datumFormazva||j.datum?.slice(0,10)||'-'}</div>
-          <div style="font-size:13px;text-align:center;align-self:center;">${j.avgFuelJob>0?j.avgFuelJob.toFixed(1)+' L/100':'-'}</div>
-          <div style="font-size:13px;text-align:center;align-self:center;">${j.tonna>0?j.tonna+' t':'-'}</div>
-          <div style="font-size:13px;font-weight:600;color:var(--orange);text-align:center;align-self:center;">${Math.round(j.km||0)} km</div>
-          <div style="font-size:12px;text-align:center;align-self:center;"><span style="padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;background:${j.sebessegTipus==='verseny'?'rgba(239,68,68,0.15)':'rgba(34,197,94,0.12)'};color:${j.sebessegTipus==='verseny'?'#f87171':'#4ade80'}">${j.sebessegTipus==='verseny'?'Verseny':'Valós'}</span></div>
-          <div style="font-size:13px;text-align:center;align-self:center;">${j.maxSebesseg?j.maxSebesseg+' km/h':'-'}</div>
-          <div style="font-size:13px;font-weight:600;color:#4ade80;text-align:right;align-self:center;">${j.bevételFt>0?formatNum(j.bevételFt)+' Ft':'-'}</div>
-          <div style="font-size:13px;color:#f87171;text-align:right;align-self:center;">${j.büntFt>0?formatNum(j.büntFt)+' Ft':'-'}</div>
-        </div>`).join('');
+      document.getElementById('atsJobsList').innerHTML = '<div style="min-width:900px;">' + [...jobs].reverse().map((j, i) => {
+        const isVerseny = j.sebessegTipus === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 101);
+        const sebBg = isVerseny ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)';
+        const sebColor = isVerseny ? '#f87171' : '#4ade80';
+        const maxColor = (j.maxSebesseg && j.maxSebesseg > 101) ? '#f87171' : j.maxSebesseg ? '#c084fc' : 'var(--muted)';
+        const rowBg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015);';
+        const adminBtn = atsAdminMode ? `<div style="text-align:center"><button onclick="deleteATSJob('${name.replace(/'/g,"\\'")}', ${i})" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">🗑️</button></div>` : '';
+        const adminCol = atsAdminMode ? ' 50px' : '';
+        return `<div style="display:grid;grid-template-columns:40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px${adminCol};gap:0;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;${rowBg}transition:background 0.15s;">
+          <div style="font-size:13px;font-weight:700;color:var(--muted);text-align:center;">${i+1}</div>
+          <div style="text-align:center;padding:0 4px;overflow:hidden;"><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${j.kamion||'-'}</div></div>
+          <div style="overflow:hidden;padding:0 8px;"><div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${j.honnan||'?'} → ${j.hova||'?'}</div><div style="font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📦 ${j.aru||'-'}</div></div>
+          <div style="text-align:center;"><div style="font-size:11px;color:rgba(255,255,255,0.7);white-space:nowrap;">📅 ${j.datumFormazva||j.datum?.slice(0,10)||'-'}</div></div>
+          <div style="text-align:center;font-size:12px;color:#60a5fa;font-weight:600;white-space:nowrap;">${j.avgFuelJob>0?j.avgFuelJob.toFixed(1)+' L/100':'-'}</div>
+          <div style="text-align:center;font-size:13px;font-weight:700;color:var(--orange);">${j.tonna>0?j.tonna+' t':'-'}</div>
+          <div style="text-align:center;font-size:13px;font-weight:700;color:var(--orange);">${formatNum(Math.round(j.km||0))} km</div>
+          <div style="text-align:center;"><span style="font-size:11px;padding:3px 8px;border-radius:999px;white-space:nowrap;background:${sebBg};color:${sebColor};font-weight:600;">${isVerseny?'🏁 verseny':'✅ valós'}</span></div>
+          <div style="text-align:center;font-size:12px;font-weight:700;color:${maxColor};white-space:nowrap;">${j.maxSebesseg?j.maxSebesseg+' km/h':'-'}</div>
+          <div style="text-align:right;font-size:12px;font-weight:700;color:#4ade80;white-space:nowrap;">${j.bevételFt>0?formatNum(j.bevételFt)+' Ft':'-'}</div>
+          <div style="text-align:right;font-size:12px;font-weight:700;color:${j.büntFt>0?'#f87171':'var(--muted)'};white-space:nowrap;">${j.büntFt>0?'-'+formatNum(j.büntFt)+' Ft':'-'}</div>
+          ${adminBtn}
+        </div>`;
+      }).join('') + '</div>';
+    }
+
+    // ══ ATS FUVAR TÖRLÉS ══
+    async function deleteATSJob(driverName, reversedIdx) {
+      if (!atsAdminMode) return;
+      if (!confirm(`Biztosan törlöd a ${reversedIdx + 1}. fuvart?`)) return;
+      const jobs = allJobs[driverName] || [];
+      jobs.splice(reversedIdx, 1);
+      allJobs[driverName] = jobs;
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
+        });
+        showATSDriverJobs(driverName);
+      } catch(e) {
+        alert('Hiba a törlés során!');
+      }
     }
 
     // ══ ATS STATISZTIKA ══
-    async function renderATSStatisztika() {
-      await loadJsonBin(allData === null);
+    async function renderATSStatisztika() {      await loadJsonBin(allData === null);
       // Alapértelmezett: ranglista tab aktív
       document.getElementById('ats-stat-tab-ranglista').style.display = 'block';
       document.getElementById('ats-stat-tab-heti').style.display = 'none';
