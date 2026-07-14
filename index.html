@@ -1404,6 +1404,12 @@
     let allData = null;
     let allJobs = null;
 
+    // Firebase kulcsnevek nem tartalmazhatnak '.', '#', '$', '[', ']' karaktert.
+    // Ezeket a fuvar-tárolásnál (allJobs objektum kulcsai) alácseréljük, hogy a mentés ne bukjon el.
+    function jobKey(name) {
+      return (name || '').replace(/[.#$\[\]]/g, '_');
+    }
+
     async function loadJsonBin(force = false) {
       if (!force && allData !== null && allJobs !== null) return true;
       try {
@@ -1765,9 +1771,9 @@
     async function deleteJob(driverName, reversedIdx) {
       if (!adminMode) return;
       if (!confirm(`Biztosan törlöd a ${reversedIdx + 1}. fuvart?`)) return;
-      const jobs = allJobs[driverName] || [];
+      const jobs = allJobs[jobKey(driverName)] || [];
       jobs.splice(reversedIdx, 1);
-      allJobs[driverName] = jobs;
+      allJobs[jobKey(driverName)] = jobs;
       try {
         await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
@@ -1871,7 +1877,7 @@
 
       list.innerHTML = drivers.map(([id, u]) => {
         const name = u.truckyName || id;
-        const jobs = (allJobs[name] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats').length;
+        const jobs = (allJobs[jobKey(name)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats').length;
         const km = formatNum(Math.round(u.totalKm || 0));
         return `
           <div class="driver-sidebar-item" onclick="showDriverJobs('${name}')" id="driver-${name.replace(/[^a-zA-Z0-9]/g,'_')}"
@@ -1900,7 +1906,7 @@
       const driverName = btn.dataset.driverName;
       if (!confirm(`Biztosan törlöd ${driverName} sofőrt és összes fuvarát?`)) return;
       delete allData[driverId];
-      delete allJobs[driverName];
+      delete allJobs[jobKey(driverName)];
       try {
         await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
@@ -1939,7 +1945,7 @@
 
       const u = Object.values(allData).find(d => d.truckyName === driverName) || {};
       // ETS2-nél csak az ETS2 fuvarokat mutatjuk (ATS fuvarokat kiszűrjük)
-      const jobs = (allJobs[driverName] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
+      const jobs = (allJobs[jobKey(driverName)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
       document.getElementById('detailSub').textContent = `${jobs.length} fuvar · ${formatNum(Math.round(u.totalKm || 0))} km összes`;
 
       // Gyors fuvar statisztika
@@ -2891,7 +2897,7 @@
       }
       list.innerHTML = atsDriverIds.map(name => {
         const u = Object.values(allData).find(d => d && d.truckyName && d.truckyName.toLowerCase() === name.toLowerCase()) || {};
-        const atsJobs = (allJobs?.[name] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
+        const atsJobs = (allJobs?.[jobKey(name)] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
         const km = formatNum(u.atsOsszesOverride?.atsTotalKm ?? Math.round(atsJobs.reduce((s,j)=>s+(j.km||0),0)));
         const deleteBtn = atsAdminMode ? `<button onclick="event.stopPropagation();deleteATSDriver('${name.replace(/'/g,"\\'")}');" style="margin-left:auto;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:13px;flex-shrink:0;">🗑️</button>` : '';
         return `
@@ -2921,7 +2927,7 @@
       const sel = document.getElementById('ats-driver-' + name.replace(/[^a-zA-Z0-9]/g,'_'));
       if (sel) { sel.style.borderLeftColor = '#1d6ed8'; sel.style.background = 'rgba(29,110,216,0.1)'; }
       await loadJsonBin(allData === null);
-      const jobs = (allJobs?.[name] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
+      const jobs = (allJobs?.[jobKey(name)] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
       const u = Object.values(allData || {}).find(d => d && d.truckyName && d.truckyName.toLowerCase() === name.toLowerCase()) || {};
 
       // Fejléc frissítése — ugyanolyan mint ETS2-nél
@@ -3114,7 +3120,7 @@
       if (!atsAdminMode) return;
       if (!confirm(`Biztosan törlöd a ${atsIdx + 1}. fuvart?`)) return;
       // Az ATS fuvarok szűrt listájából megkeressük a tényleges indexet az allJobs-ban
-      const allJobsList = allJobs[driverName] || [];
+      const allJobsList = allJobs[jobKey(driverName)] || [];
       const atsJobs = allJobsList.filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
       const jobToDelete = atsJobs[atsIdx];
       if (!jobToDelete) { alert('Nem található a fuvar!'); return; }
@@ -3122,7 +3128,7 @@
       const realIdx = allJobsList.indexOf(jobToDelete);
       if (realIdx === -1) { alert('Nem található a fuvar!'); return; }
       allJobsList.splice(realIdx, 1);
-      allJobs[driverName] = allJobsList;
+      allJobs[jobKey(driverName)] = allJobsList;
       try {
         await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
@@ -3177,7 +3183,7 @@
       return atsIds.map(name => {
         const nameLower = name.toLowerCase();
         const u = Object.values(allData).find(d => d && d.truckyName && d.truckyName.toLowerCase() === nameLower) || {};
-        const jobs = (allJobs?.[name] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
+        const jobs = (allJobs?.[jobKey(name)] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
         return { nev: name, u, jobs };
       });
     }
