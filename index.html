@@ -1956,13 +1956,26 @@
 
       // Statisztikák
       const stats = document.getElementById('statsGrid');
+      const editBtn = (key, label, val, unit) => isAdminMode() ? `<button onclick="editDriverStat('${driverName}','${key}','${label}',${val},'${unit}')" style="position:absolute;top:8px;right:8px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:10px;">✏️</button>` : '';
       stats.innerHTML = `
-        <div class="stat-card"><div class="stat-label">Összes km</div><div class="stat-value orange">${formatNum(Math.round(u.totalKm || 0))} km</div></div>
-        <div class="stat-card"><div class="stat-label">Összes tonna</div><div class="stat-value">${formatNum(u.totalTons || 0)} t</div></div>
-        <div class="stat-card"><div class="stat-label">Összes bevétel</div><div class="stat-value">${formatNum(Math.round(u.totalRevenue || 0))} Ft</div></div>
-        <div class="stat-card"><div class="stat-label">Havi km</div><div class="stat-value orange">${formatNum(Math.round(u.monthlyKm || 0))} km</div></div>
-        <div class="stat-card"><div class="stat-label">Havi tonna</div><div class="stat-value">${formatNum(u.monthlyTons || 0)} t</div></div>
-        <div class="stat-card"><div class="stat-label">Havi fogyasztás</div><div class="stat-value" style="color:#60a5fa;">${formatNum(Math.round(u.monthlyFuel || 0))} L</div></div>`;
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('totalKm','Összes km',Math.round(u.totalKm||0),'km')}
+          <div class="stat-label">Összes km</div><div class="stat-value orange">${formatNum(Math.round(u.totalKm || 0))} km</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('totalTons','Összes tonna',u.totalTons||0,'t')}
+          <div class="stat-label">Összes tonna</div><div class="stat-value">${formatNum(u.totalTons || 0)} t</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('totalRevenue','Összes bevétel',Math.round(u.totalRevenue||0),'Ft')}
+          <div class="stat-label">Összes bevétel</div><div class="stat-value">${formatNum(Math.round(u.totalRevenue || 0))} Ft</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('monthlyKm','Havi km',Math.round(u.monthlyKm||0),'km')}
+          <div class="stat-label">Havi km</div><div class="stat-value orange">${formatNum(Math.round(u.monthlyKm || 0))} km</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('monthlyTons','Havi tonna',u.monthlyTons||0,'t')}
+          <div class="stat-label">Havi tonna</div><div class="stat-value">${formatNum(u.monthlyTons || 0)} t</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('monthlyFuel','Havi fogyasztás',Math.round(u.monthlyFuel||0),'L')}
+          <div class="stat-label">Havi fogyasztás</div><div class="stat-value" style="color:#60a5fa;">${formatNum(Math.round(u.monthlyFuel || 0))} L</div></div>`;
 
       // Fuvarok
       const jobCount = document.getElementById('jobCount');
@@ -2927,22 +2940,35 @@
         }
       }
 
-      // Havi adatok számítása a fuvarokból
+      // Havi adatok számítása a fuvarokból (override-dal)
       const now2 = new Date();
       const thisMonth = `${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
       const haviJobs = jobs.filter(j => j.datum && j.datum.startsWith(thisMonth));
-      const haviKm = haviJobs.reduce((s,j) => s + (j.km||0), 0);
-      const haviTonna = haviJobs.reduce((s,j) => s + (j.tonna||0), 0);
-      const haviFogyasztas = haviJobs.reduce((s,j) => s + (j.üzemanyag||0), 0);
+      const haviKm = u.atsHaviOverride?.atsHaviKm ?? haviJobs.reduce((s,j) => s + (j.km||0), 0);
+      const haviTonna = u.atsHaviOverride?.atsHaviTonna ?? haviJobs.reduce((s,j) => s + (j.tonna||0), 0);
+      const haviFogyasztas = u.atsHaviOverride?.atsHaviFogyasztas ?? haviJobs.reduce((s,j) => s + (j.üzemanyag||0), 0);
 
-      // Stat kártyák — ugyanolyan mint ETS2-nél
+      // Stat kártyák — ugyanolyan mint ETS2-nél, admin szerkesztéssel
+      const atsEditBtn = (key, label, val, unit) => atsAdminMode ? `<button onclick="editATSDriverStat('${name.replace(/'/g,"\\'")}','${key}','${label}',${val},'${unit}')" style="position:absolute;top:8px;right:8px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:10px;">✏️</button>` : '';
       document.getElementById('atsStatsGrid').innerHTML = `
-        <div class="stat-card"><div class="stat-label">Összes KM</div><div class="stat-value orange">${formatNum(Math.round(u.atsTotalKm||0))} km</div></div>
-        <div class="stat-card"><div class="stat-label">Összes Tonna</div><div class="stat-value">${formatNum(Math.round(u.atsTotalTons||0))} t</div></div>
-        <div class="stat-card"><div class="stat-label">Összes Bevétel</div><div class="stat-value">${formatNum(Math.round(u.atsTotalRevenue||0))} Ft</div></div>
-        <div class="stat-card"><div class="stat-label">Havi KM</div><div class="stat-value orange">${formatNum(Math.round(haviKm))} km</div></div>
-        <div class="stat-card"><div class="stat-label">Havi Tonna</div><div class="stat-value">${formatNum(Math.round(haviTonna))} t</div></div>
-        <div class="stat-card"><div class="stat-label">Havi Fogyasztás</div><div class="stat-value" style="color:#60a5fa;">${formatNum(Math.round(haviFogyasztas))} L</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${atsEditBtn('atsTotalKm','Összes KM',Math.round(u.atsTotalKm||0),'km')}
+          <div class="stat-label">Összes KM</div><div class="stat-value orange">${formatNum(Math.round(u.atsTotalKm||0))} km</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${atsEditBtn('atsTotalTons','Összes Tonna',Math.round(u.atsTotalTons||0),'t')}
+          <div class="stat-label">Összes Tonna</div><div class="stat-value">${formatNum(Math.round(u.atsTotalTons||0))} t</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${atsEditBtn('atsTotalRevenue','Összes Bevétel',Math.round(u.atsTotalRevenue||0),'Ft')}
+          <div class="stat-label">Összes Bevétel</div><div class="stat-value">${formatNum(Math.round(u.atsTotalRevenue||0))} Ft</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${atsEditBtn('atsHaviKm','Havi KM',Math.round(haviKm),'km')}
+          <div class="stat-label">Havi KM</div><div class="stat-value orange">${formatNum(Math.round(haviKm))} km</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${atsEditBtn('atsHaviTonna','Havi Tonna',Math.round(haviTonna),'t')}
+          <div class="stat-label">Havi Tonna</div><div class="stat-value">${formatNum(Math.round(haviTonna))} t</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${atsEditBtn('atsHaviFogyasztas','Havi Fogyasztás',Math.round(haviFogyasztas),'L')}
+          <div class="stat-label">Havi Fogyasztás</div><div class="stat-value" style="color:#60a5fa;">${formatNum(Math.round(haviFogyasztas))} L</div></div>
       `;
       document.getElementById('atsJobCount').textContent = `${jobs.length} fuvar`;
       if (!jobs.length) {
@@ -3002,6 +3028,55 @@
         html += '</div>';
         return html;
       }).join('') + '</div>';
+    }
+
+    // ══ ETS2 SOFŐR STAT SZERKESZTÉS ══
+    async function editDriverStat(driverName, key, label, currentVal, unit) {
+      const newVal = prompt(`${label} (${unit}) szerkesztése:\nJelenlegi érték: ${currentVal}\n\n0 = nullázás`, currentVal);
+      if (newVal === null) return; // mégse
+      const num = parseFloat(newVal);
+      if (isNaN(num)) { alert('❌ Érvénytelen szám!'); return; }
+      // Megkeressük a sofőrt az allData-ban
+      const entry = Object.entries(allData).find(([id, u]) => u.truckyName === driverName || id === driverName);
+      if (!entry) { alert('❌ Nem találtuk a sofőrt!'); return; }
+      const [id, u] = entry;
+      u[key] = num;
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
+        });
+        showDriverJobs(driverName);
+      } catch(e) { alert('❌ Mentési hiba!'); }
+    }
+
+    // ══ ATS SOFŐR STAT SZERKESZTÉS ══
+    async function editATSDriverStat(driverName, key, label, currentVal, unit) {
+      const newVal = prompt(`${label} (${unit}) szerkesztése:\nJelenlegi érték: ${currentVal}\n\n0 = nullázás`, currentVal);
+      if (newVal === null) return;
+      const num = parseFloat(newVal);
+      if (isNaN(num)) { alert('❌ Érvénytelen szám!'); return; }
+      const entry = Object.entries(allData).find(([id, u]) => u && u.truckyName === driverName);
+      if (!entry) { alert('❌ Nem találtuk a sofőrt!'); return; }
+      const [id, u] = entry;
+      // Havi adatoknál nem direkt mező van — fuvarok alapján számolódik
+      // Csak az ATS total mezőket mentjük direkt
+      if (key.startsWith('atsHavi')) {
+        // Havi adatoknál override mezőt használunk
+        if (!u.atsHaviOverride) u.atsHaviOverride = {};
+        u.atsHaviOverride[key] = num;
+      } else {
+        u[key] = num;
+      }
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
+        });
+        showATSDriverJobs(driverName);
+      } catch(e) { alert('❌ Mentési hiba!'); }
     }
 
     // ══ ATS SOFŐR TÖRLÉS ══
