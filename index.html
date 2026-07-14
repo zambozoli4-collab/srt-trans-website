@@ -532,6 +532,8 @@
 
     /* ── FUVAROK MOBIL ── */
     .fuvarok-layout { display: flex; gap: 24px; align-items: flex-start; }
+    #jobs-view { min-width: 0; overflow: hidden; }
+    #ats-jobs-view { min-width: 0; overflow: hidden; }
 
 
 
@@ -573,6 +575,7 @@
       /* Fuvarok - sidebar marad mellette, táblázat görgethetős */
       .fuvarok-layout { overflow-x: auto; }
       #jobs-view { min-width: 0; }
+      #ats-jobs-view { min-width: 0; }
 
       /* Stat kártyák */
       .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -1267,8 +1270,7 @@
         </div>
       </div>
 
-    </div>
-  </div> <!-- /game-panel-ets -->
+    </div> <!-- /game-panel-ets -->
 
       <!-- ══════════ ATS PANEL ══════════ -->
       <div id="game-panel-ats" style="display:none;">
@@ -1292,8 +1294,9 @@
         </div>
 
         <!-- ATS FUVAROK nézet -->
-        <div id="ats-view-fuvarok-panel" style="display:block;">
+        <div id="ats-view-fuvarok-panel" style="display:block; overflow:hidden; transition: max-height 0.3s;">
         <div class="fuvarok-layout" style="display: flex; gap: 24px; align-items: flex-start;">
+
           <!-- ATS Sofőr lista oldalsáv -->
           <div id="ats-drivers-sidebar" style="min-width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; flex-shrink: 0;">
             <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase;">🎮 Sofőrök</div>
@@ -1301,9 +1304,14 @@
               <div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>
             </div>
           </div>
-          <!-- ATS Jobb oldal -->
+
+          <!-- Jobb oldal -->
           <div style="flex: 1; min-width: 0;">
+
+            <!-- Sofőr fuvar részletek -->
             <div id="ats-jobs-view">
+
+              <!-- Fejléc -->
               <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; justify-content: space-between;">
                 <div style="display:flex; align-items:center; gap:16px;">
                   <div id="atsDetailAvatar" style="width: 56px; height: 52px; border-radius: 10px; background: linear-gradient(135deg, #1d4ed8, #1e40af); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;"></div>
@@ -1314,12 +1322,18 @@
                 </div>
                 <div id="atsSpeedingStats" style="text-align:right; flex-shrink:0;"></div>
               </div>
+
+              <!-- Statisztika kártyák -->
               <div id="atsStatsGrid" class="stats-grid" style="margin-bottom: 16px;"></div>
+
+              <!-- Fuvar táblázat -->
               <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
                 <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
                   <div style="font-size: 15px; font-weight: 700; color: #fff;">📋 Fuvar előzmények</div>
                   <div id="atsJobCount" style="font-size: 12px; color: var(--muted); background: rgba(255,255,255,0.06); padding: 3px 10px; border-radius: 999px;"></div>
                 </div>
+
+                <!-- Táblázat fejléc -->
                 <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
                 <div style="min-width: 900px;">
                 <div class="job-table-header" style="display: grid; grid-template-columns: 40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px; gap: 0; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);">
@@ -1335,6 +1349,7 @@
                   <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BEVÉTEL</div>
                   <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BÜNTETÉS</div>
                 </div>
+
                 <div id="atsJobsList" style="max-height: 600px; overflow-y: auto;"></div>
                 </div><!-- /min-width -->
                 </div><!-- /overflow-x -->
