@@ -2019,7 +2019,11 @@
       document.getElementById('page-' + name).classList.add('active');
       document.getElementById('nav-' + name).classList.add('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      window.location.hash = name;
+      // Csak akkor állítsuk a hash-t ha nem ATS sub-hash van
+      const curHash = window.location.hash.replace('#','');
+      if (!curHash.startsWith('ats-')) {
+        window.location.hash = name;
+      }
 
       // Fuvarok dedikált háttér
       var bgEl = document.getElementById('fuvarok-bg');
@@ -2046,7 +2050,9 @@
 
     // Háttér inicializálása oldalbetöltéskor
     (function initPageBg() {
-      var hash = window.location.hash.replace('#','').split('-')[0] || 'home';
+      var rawHash = window.location.hash.replace('#','');
+      // ATS hash esetén a fuvarok hátteret mutatjuk
+      var hash = rawHash.startsWith('ats-') ? 'fuvarok' : (rawHash.split('-')[0] || 'home');
       // Fuvarok
       var bgEl = document.getElementById('fuvarok-bg');
       var ovEl = document.getElementById('fuvarok-overlay');
@@ -2118,6 +2124,18 @@
         const btn = document.querySelector('#page-modok .tab-btn:nth-child(4)');
         if (btn) btn.click();
       }, 100);
+    } else if (startPage === 'ats-fuvarok') {
+      showPage('fuvarok');
+      setTimeout(() => { switchGameTab('ats'); switchATSView('fuvarok'); }, 100);
+    } else if (startPage === 'ats-statisztika' || startPage === 'ats-statisztika-ranglista') {
+      showPage('fuvarok');
+      setTimeout(() => { switchGameTab('ats'); switchATSView('statisztika'); switchATSStatTab('ranglista'); }, 100);
+    } else if (startPage === 'ats-statisztika-heti') {
+      showPage('fuvarok');
+      setTimeout(() => { switchGameTab('ats'); switchATSView('statisztika'); switchATSStatTab('heti'); switchATSHetiTab('osszesites'); }, 150);
+    } else if (startPage === 'ats-statisztika-heti-napi') {
+      showPage('fuvarok');
+      setTimeout(() => { switchGameTab('ats'); switchATSView('statisztika'); switchATSStatTab('heti'); switchATSHetiTab('napi'); }, 150);
     } else if (startPage && document.getElementById('page-' + startPage)) {
       showPage(startPage);
     }
@@ -2796,7 +2814,7 @@
       }
 
       const sortedJobs = [...jobs];
-      document.getElementById('atsJobsList').innerHTML = sortedJobs.map(function(j, i) {
+      document.getElementById('atsJobsList').innerHTML = '<div style="min-width:900px;">' + sortedJobs.map(function(j, i) {
         var isVerseny = (j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 101);
         var adminCol = atsAdminMode ? ' 50px' : '';
         var cols = '40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px' + adminCol;
@@ -2846,7 +2864,7 @@
         html += adminBtn;
         html += '</div>';
         return html;
-      }).join('');
+      }).join('') + '</div>';
     }
 
     // ══ ATS FUVAR TÖRLÉS ══
