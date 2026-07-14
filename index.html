@@ -2034,7 +2034,7 @@
       document.getElementById('page-' + name).classList.add('active');
       document.getElementById('nav-' + name).classList.add('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      // Csak akkor állítsuk a hash-t ha nem ATS sub-hash van
+      // Ne írjuk felül a hash-t ha ATS sub-hash van vagy ha épp azt állítjuk be
       const curHash = window.location.hash.replace('#','');
       if (!curHash.startsWith('ats-')) {
         window.location.hash = name;
@@ -2141,16 +2141,25 @@
       }, 100);
     } else if (startPage === 'ats-fuvarok') {
       showPage('fuvarok');
-      setTimeout(() => { switchGameTab('ats'); switchATSView('fuvarok'); }, 100);
+      switchGameTab('ats', true);
+      switchATSView('fuvarok');
     } else if (startPage === 'ats-statisztika' || startPage === 'ats-statisztika-ranglista') {
       showPage('fuvarok');
-      setTimeout(() => { switchGameTab('ats'); switchATSView('statisztika'); switchATSStatTab('ranglista'); }, 100);
+      switchGameTab('ats', true);
+      switchATSView('statisztika');
+      switchATSStatTab('ranglista');
     } else if (startPage === 'ats-statisztika-heti') {
       showPage('fuvarok');
-      setTimeout(() => { switchGameTab('ats'); switchATSView('statisztika'); switchATSStatTab('heti'); switchATSHetiTab('osszesites'); }, 150);
+      switchGameTab('ats', true);
+      switchATSView('statisztika');
+      switchATSStatTab('heti');
+      switchATSHetiTab('osszesites');
     } else if (startPage === 'ats-statisztika-heti-napi') {
       showPage('fuvarok');
-      setTimeout(() => { switchGameTab('ats'); switchATSView('statisztika'); switchATSStatTab('heti'); switchATSHetiTab('napi'); }, 150);
+      switchGameTab('ats', true);
+      switchATSView('statisztika');
+      switchATSStatTab('heti');
+      switchATSHetiTab('napi');
     } else if (startPage && document.getElementById('page-' + startPage)) {
       showPage(startPage);
     }
@@ -2665,17 +2674,17 @@
     }
 
     // ══ JÁTÉK TAB VÁLTÓ (ETS2 / ATS) ══
-    function switchGameTab(game) {
+    function switchGameTab(game, noHashUpdate) {
       const isEts = game === 'ets';
       document.getElementById('game-panel-ets').style.display = isEts ? 'block' : 'none';
       document.getElementById('game-panel-ats').style.display = isEts ? 'none' : 'block';
       document.getElementById('game-tab-ets').classList.toggle('active', isEts);
       document.getElementById('game-tab-ats').classList.toggle('active', !isEts);
       if (!isEts) {
-        window.location.hash = 'ats-fuvarok';
+        if (!noHashUpdate) window.location.hash = 'ats-fuvarok';
         renderATSDrivers();
       } else {
-        window.location.hash = 'fuvarok';
+        if (!noHashUpdate) window.location.hash = 'fuvarok';
       }
     }
 
@@ -2684,7 +2693,8 @@
       const isFuvarok = view === 'fuvarok';
       document.getElementById('ats-view-fuvarok-panel').style.display = isFuvarok ? 'block' : 'none';
       document.getElementById('ats-view-statisztika-panel').style.display = isFuvarok ? 'none' : 'block';
-      window.location.hash = isFuvarok ? 'ats-fuvarok' : 'ats-statisztika';      const btnF2 = document.getElementById('btn-ats-fuvarok');
+      window.location.hash = isFuvarok ? 'ats-fuvarok' : 'ats-statisztika';
+      const btnF2 = document.getElementById('btn-ats-fuvarok');
       const btnS2 = document.getElementById('btn-ats-statisztika');
       btnF2.style.background = isFuvarok ? 'var(--orange)' : 'var(--card)';
       btnF2.style.color = isFuvarok ? '#fff' : 'var(--muted)';
@@ -2920,13 +2930,30 @@
     }
 
     // ══ ATS STATISZTIKA ══
-    async function renderATSStatisztika() {      await loadJsonBin(allData === null);
-      // Alapértelmezett: ranglista tab aktív
-      document.getElementById('ats-stat-tab-ranglista').style.display = 'block';
-      document.getElementById('ats-stat-tab-heti').style.display = 'none';
-      document.getElementById('ats-stat-btn-ranglista').classList.add('active');
-      document.getElementById('ats-stat-btn-heti').classList.remove('active');
-      renderATSRanglista();
+    async function renderATSStatisztika() {
+      await loadJsonBin(allData === null);
+      // Csak az aktuális tab tartalmát frissítjük, nem váltunk tab-ot
+      const curHash = window.location.hash.replace('#','');
+      if (curHash === 'ats-statisztika-heti' || curHash === 'ats-statisztika-heti-napi') {
+        // Heti tab aktív — csak azt frissítjük
+        document.getElementById('ats-stat-tab-ranglista').style.display = 'none';
+        document.getElementById('ats-stat-tab-heti').style.display = 'block';
+        document.getElementById('ats-stat-btn-ranglista').classList.remove('active');
+        document.getElementById('ats-stat-btn-heti').classList.add('active');
+        renderATSHeti();
+        if (curHash === 'ats-statisztika-heti-napi') {
+          switchATSHetiTab('napi');
+        } else {
+          switchATSHetiTab('osszesites');
+        }
+      } else {
+        // Ranglista tab aktív (alapértelmezett)
+        document.getElementById('ats-stat-tab-ranglista').style.display = 'block';
+        document.getElementById('ats-stat-tab-heti').style.display = 'none';
+        document.getElementById('ats-stat-btn-ranglista').classList.add('active');
+        document.getElementById('ats-stat-btn-heti').classList.remove('active');
+        renderATSRanglista();
+      }
     }
 
     function getATSDrivers() {
