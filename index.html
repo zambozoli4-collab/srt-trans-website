@@ -3063,6 +3063,7 @@
       const d = getATSDrivers();
       const grid = document.getElementById('ats-ranglista-grid');
       const isAdmin = atsAdminMode;
+      const atsOver = allData?._atsStatOverride || {};
       const kategoriák = [
         { key:'ats_osszes_km',     nev: 'Összes KM',              ikon:'🛣️', egyseg:'km', fn: x => Math.round(x.u.atsTotalKm||0) },
         { key:'ats_osszes_profit', nev: 'Összes Profit',           ikon:'💰', egyseg:'Ft', fn: x => Math.round((x.u.atsTotalRevenue||0)-(x.u.atsTotalFine||0)) },
@@ -3070,7 +3071,8 @@
         { key:'ats_fuvarok_szama', nev: 'Fuvarok száma',           ikon:'📋', egyseg:'db', fn: x => x.jobs.length },
       ];
       grid.innerHTML = kategoriák.map(kat => {
-        const sorted = d.map(x => ({ nev: x.nev, ertek: kat.fn(x) })).sort((a,b) => b.ertek-a.ertek).filter(x => x.ertek > 0);
+        const autoData = d.map(x => ({ nev: x.nev, ertek: kat.fn(x) })).sort((a,b) => b.ertek-a.ertek).filter(x => x.ertek > 0);
+        const sorted = atsOver[kat.key] ?? autoData;
         return `
           <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
@@ -3078,6 +3080,7 @@
                 <span style="font-size:20px;">${kat.ikon}</span>
                 <div style="font-size:14px;font-weight:700;color:#fff;">${kat.nev}</div>
               </div>
+              ${isAdmin ? `<button onclick="editATSRanglistaKat('${kat.key}','${kat.nev}','${kat.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
             </div>
             ${renderTopListAuto(sorted, kat.egyseg, 3)}
           </div>`;
@@ -3087,25 +3090,92 @@
     function renderATSHeti() {
       const d = getATSDrivers();
       const grid = document.getElementById('ats-heti-grid');
+      const isAdmin = atsAdminMode;
+      const atsOver = allData?._atsStatOverride || {};
       const NAPOK_H = ['Hétfő','Kedd','Szerda','Csütörtök','Péntek','Szombat','Vasárnap'];
-      const topKm = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.atsWeeklyKm||0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
+
+      const autoTopKm = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.atsWeeklyKm||0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
+      const topKm = atsOver['ats_heti_km'] ?? autoTopKm;
+
       grid.innerHTML = `
         <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-            <span style="font-size:20px;">🛣️</span>
-            <div style="font-size:14px;font-weight:700;color:#fff;">Heti Top KM</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:20px;">🛣️</span>
+              <div style="font-size:14px;font-weight:700;color:#fff;">Heti Top KM</div>
+            </div>
+            ${isAdmin ? `<button onclick="editATSHetiKat('ats_heti_km','Heti Top KM','km')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
           </div>
           ${renderTopListAuto(topKm, 'km', topKm.length||10)}
         </div>`;
+
       const napiGrid = document.getElementById('ats-napi-grid');
       napiGrid.innerHTML = NAPOK_H.map(nap => {
-        const napKm = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.atsWeeklyKmDays?.[nap]||0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
+        const autoNapKm = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.atsWeeklyKmDays?.[nap]||0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
+        const napKm = atsOver[`ats_napi_${nap}`] ?? autoNapKm;
         return `
           <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
-            <div style="font-size:15px;font-weight:700;color:#1d6ed8;margin-bottom:12px;">📅 ${nap}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div style="font-size:15px;font-weight:700;color:#1d6ed8;">📅 ${nap}</div>
+              ${isAdmin ? `<button onclick="editATSHetiKat('ats_napi_${nap}','${nap}','km')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
+            </div>
             ${renderTopListAuto(napKm, 'km', napKm.length||10)}
           </div>`;
       }).join('');
+    }
+
+    // ══ ATS STATISZTIKA SZERKESZTÉS ══
+    async function saveATSOverride() {
+      if (!allData) return;
+      allData._atsStatOverride = allData._atsStatOverride || {};
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
+        });
+      } catch(e) { alert('❌ Mentési hiba!'); }
+    }
+
+    function editATSRanglistaKat(key, nev, egyseg) {
+      const atsOver = allData?._atsStatOverride || {};
+      const d = getATSDrivers();
+      const kategoriák = {
+        'ats_osszes_km':     x => Math.round(x.u.atsTotalKm||0),
+        'ats_osszes_profit': x => Math.round((x.u.atsTotalRevenue||0)-(x.u.atsTotalFine||0)),
+        'ats_osszes_suly':   x => x.u.atsTotalTons||0,
+        'ats_fuvarok_szama': x => x.jobs.length,
+      };
+      const autoData = d.map(x => ({ nev: x.nev, ertek: (kategoriák[key]||(() => 0))(x) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
+      const current = atsOver[key] ?? autoData;
+      openModal(nev + ' szerkesztése', current, egyseg, async (rows) => {
+        if (!allData._atsStatOverride) allData._atsStatOverride = {};
+        if (rows === null) delete allData._atsStatOverride[key];
+        else allData._atsStatOverride[key] = rows;
+        await saveATSOverride();
+        renderATSRanglista();
+      });
+    }
+
+    function editATSHetiKat(key, nev, egyseg) {
+      const atsOver = allData?._atsStatOverride || {};
+      const d = getATSDrivers();
+      const NAPOK_H = ['Hétfő','Kedd','Szerda','Csütörtök','Péntek','Szombat','Vasárnap'];
+      let autoData;
+      if (key === 'ats_heti_km') {
+        autoData = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.atsWeeklyKm||0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
+      } else {
+        const nap = key.replace('ats_napi_','');
+        autoData = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.atsWeeklyKmDays?.[nap]||0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
+      }
+      const current = atsOver[key] ?? autoData;
+      openModal(nev + ' szerkesztése', current, egyseg, async (rows) => {
+        if (!allData._atsStatOverride) allData._atsStatOverride = {};
+        if (rows === null) delete allData._atsStatOverride[key];
+        else allData._atsStatOverride[key] = rows;
+        await saveATSOverride();
+        renderATSHeti();
+      });
     }
 
 
