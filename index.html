@@ -1399,21 +1399,18 @@
   </footer>
 
   <script>
-    const JSONBIN_BIN_ID = '6a3fbe69f5f4af5e2938b935';
-    const JSONBIN_API_KEY = '$2a$10$OB8kZNrtFNe0s7C2d6hb0.7VdkwwjqOkjTwft0F9luq0kK';
+    const FIREBASE_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
 
     let allData = null;
     let allJobs = null;
 
     async function loadJsonBin(force = false) {
-      if (!force && allData !== null && allJobs !== null) return true; // már van adat, ne írja felül
+      if (!force && allData !== null && allJobs !== null) return true;
       try {
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-          headers: { 'X-Master-Key': JSONBIN_API_KEY }
-        });
+        const res = await fetch(`${FIREBASE_URL}/srtdata.json`);
         const json = await res.json();
-        allData = json.record.data || {};
-        allJobs = json.record.jobs || {};
+        allData = json?.data || {};
+        allJobs = json?.jobs || {};
         avatarBetolt();
         bgBetolt();
         return true;
@@ -1744,9 +1741,9 @@
       }
 
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
 
@@ -1772,9 +1769,9 @@
       jobs.splice(reversedIdx, 1);
       allJobs[driverName] = jobs;
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
         showDriverJobs(driverName);
@@ -1894,9 +1891,9 @@
       delete allData[driverId];
       delete allJobs[driverName];
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
         document.getElementById('jobs-view').style.display = 'none';
@@ -2654,9 +2651,9 @@
       if (!allData) return;
       allData._statOverride = statOverride || {};
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
       } catch(e) { alert('❌ Mentési hiba!'); }
@@ -3045,9 +3042,9 @@
       const [id, u] = entry;
       u[key] = num;
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
         showDriverJobs(driverName);
@@ -3074,9 +3071,9 @@
         u[key] = num;
       }
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
         showATSDriverJobs(driverName);
@@ -3090,9 +3087,9 @@
       if (!allData._ats_drivers) return;
       allData._ats_drivers = allData._ats_drivers.filter(n => n !== name);
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
         renderATSDrivers();
@@ -3116,9 +3113,9 @@
       allJobsList.splice(realIdx, 1);
       allJobs[driverName] = allJobsList;
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
         showATSDriverJobs(driverName);
@@ -3279,9 +3276,9 @@
       if (!allData) return;
       allData._atsStatOverride = allData._atsStatOverride || {};
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
       } catch(e) { alert('❌ Mentési hiba!'); }
@@ -3426,9 +3423,9 @@
         if (!allData) await loadJsonBin(true);
         allData._szovegek = szovegek;
         try {
-          await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          await fetch(`${FIREBASE_URL}/srtdata.json`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: allData, jobs: allJobs })
           });
         } catch(e) { alert('❌ Mentési hiba!'); }
@@ -3445,9 +3442,9 @@
         if (!allData) await loadJsonBin(true);
         allData._szovegek = szovegek;
         try {
-          await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+          await fetch(`${FIREBASE_URL}/srtdata.json`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: allData, jobs: allJobs })
           });
           location.reload();
@@ -3517,9 +3514,9 @@
 
         if (!allData) await loadJsonBin(true);
         allData['_avatar_' + avatarId] = imageUrl;
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
       } catch(e) {
@@ -3736,9 +3733,9 @@
         if (!allData) await loadJsonBin(true);
         if (!allData._hatterek) allData._hatterek = {};
         allData._hatterek[pageKey] = url;
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
 
@@ -3784,9 +3781,9 @@
         // JSONBin-ből is töröljük
         if (!allData) await loadJsonBin(true);
         allData._media = { kepek: [], videok: allData._media?.videok || [] };
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: allData, jobs: allJobs })
         });
         renderMedia();
@@ -3893,3 +3890,4 @@
   </div>
 </body>
 </html>
+
