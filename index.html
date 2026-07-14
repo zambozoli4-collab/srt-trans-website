@@ -1433,6 +1433,7 @@
     let adminMode = false;
     let adminRole = null;
     let currentDriver = null;
+    let currentATSDriver = null;
 
     function isAdminMode() { return adminMode; }
 
@@ -2335,8 +2336,12 @@
         const curHash = window.location.hash.replace('#','');
         const isATS = curHash.startsWith('ats-');
         if (isATS) {
-          // ATS oldalon vagyunk — ATS-t frissítjük és visszaállítjuk a nézetet
+          // ATS oldalon vagyunk — ATS-t frissítjük
+          allData = null; // kényszerített újratöltés
+          await loadJsonBin(true);
           await renderATSDrivers();
+          // Ha van kiválasztott sofőr, frissítjük a fuvar listáját is
+          if (currentATSDriver) await showATSDriverJobs(currentATSDriver);
           if (curHash === 'ats-statisztika' || curHash === 'ats-statisztika-ranglista') {
             renderATSStatisztika();
           } else if (curHash === 'ats-statisztika-heti') {
@@ -2862,6 +2867,7 @@
 
     // ══ ATS SOFŐR FUVAROK MEGJELENÍTÉS ══
     async function showATSDriverJobs(name) {
+      currentATSDriver = name;
       document.getElementById('atsDetailName').textContent = name;
       document.getElementById('atsDetailSub').textContent = 'American Truck Simulator sofőr';
       document.getElementById('atsDetailAvatar').innerHTML = '<span style="font-size:24px;">🎮</span>';
