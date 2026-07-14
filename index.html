@@ -2620,7 +2620,12 @@
       document.getElementById('game-panel-ats').style.display = isEts ? 'none' : 'block';
       document.getElementById('game-tab-ets').classList.toggle('active', isEts);
       document.getElementById('game-tab-ats').classList.toggle('active', !isEts);
-      if (!isEts) renderATSDrivers();
+      if (!isEts) {
+        window.location.hash = 'ats-fuvarok';
+        renderATSDrivers();
+      } else {
+        window.location.hash = 'fuvarok';
+      }
     }
 
     // ══ ATS NÉZET VÁLTÓ ══
@@ -2628,7 +2633,7 @@
       const isFuvarok = view === 'fuvarok';
       document.getElementById('ats-view-fuvarok-panel').style.display = isFuvarok ? 'block' : 'none';
       document.getElementById('ats-view-statisztika-panel').style.display = isFuvarok ? 'none' : 'block';
-      const btnF2 = document.getElementById('btn-ats-fuvarok');
+      window.location.hash = isFuvarok ? 'ats-fuvarok' : 'ats-statisztika';      const btnF2 = document.getElementById('btn-ats-fuvarok');
       const btnS2 = document.getElementById('btn-ats-statisztika');
       btnF2.style.background = isFuvarok ? 'var(--orange)' : 'var(--card)';
       btnF2.style.color = isFuvarok ? '#fff' : 'var(--muted)';
@@ -2646,6 +2651,7 @@
       document.getElementById('ats-stat-tab-heti').style.display = isRanglista ? 'none' : 'block';
       document.getElementById('ats-stat-btn-ranglista').classList.toggle('active', isRanglista);
       document.getElementById('ats-stat-btn-heti').classList.toggle('active', !isRanglista);
+      window.location.hash = isRanglista ? 'ats-statisztika-ranglista' : 'ats-statisztika-heti';
       if (!isRanglista) renderATSHeti();
       else renderATSRanglista();
     }
@@ -2656,6 +2662,7 @@
       document.getElementById('ats-heti-napi').style.display = isOssz ? 'none' : 'block';
       document.getElementById('ats-heti-btn-osszesites').classList.toggle('active', isOssz);
       document.getElementById('ats-heti-btn-napi').classList.toggle('active', !isOssz);
+      window.location.hash = isOssz ? 'ats-statisztika-heti' : 'ats-statisztika-heti-napi';
     }
     // ══ ATS ADMIN BEJELENTKEZÉS ══
     let atsAdminMode = false;
