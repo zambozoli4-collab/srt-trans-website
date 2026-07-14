@@ -1270,120 +1270,113 @@
     </div>
   </div> <!-- /game-panel-ets -->
 
-  <!-- ══════════ ATS PANEL ══════════ -->
-  <div id="game-panel-ats" style="display:none;">
-    <h2 class="section-title">American Truck Simulator Fuvarok</h2>
+      <!-- ══════════ ATS PANEL ══════════ -->
+      <div id="game-panel-ats" style="display:none;">
+        <h2 class="section-title">American Truck Simulator Fuvarok</h2>
 
-    <!-- Admin panel + nézet váltó (ugyanolyan mint ETS2-nél) -->
-    <div id="ats-admin-panel" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-      <div id="ats-admin-login-form" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <input id="ats-admin-username" type="text" placeholder="Discord felhasználónév" onkeydown="if(event.key==='Enter')atsRequestCode()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 200px;" />
-        <button onclick="atsRequestCode()" style="padding: 8px 16px; border-radius: 8px; background: #5865f2; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">📨 Kód kérése</button>
-        <input id="ats-admin-discord-code" type="text" placeholder="6 jegyű kód" maxlength="6" onkeydown="if(event.key==='Enter')atsAdminLogin()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 120px; display:none;" />
-        <button id="ats-admin-verify-btn" onclick="atsAdminLogin()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; display:none;">✅ Belépés</button>
-        <span id="ats-admin-code-msg" style="font-size: 12px; color: #4ade80;"></span>
-      </div>
-      <div id="ats-admin-status" style="display: none; align-items: center; gap: 10px;">
-        <span id="ats-admin-status-label" style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Admin mód aktív</span>
-        <button onclick="atsAdminLogout()" style="padding: 6px 12px; border-radius: 8px; background: rgba(239,68,68,0.15); color: #f87171; font-size: 12px; border: 1px solid rgba(239,68,68,0.3); cursor: pointer;">Kilépés</button>
-      </div>
-      <button onclick="switchATSView('fuvarok')" id="btn-ats-fuvarok" style="padding: 8px 18px; border-radius: 8px; background: var(--orange); color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">🎮 American Truck Simulator Fuvarok</button>
-      <button onclick="switchATSView('statisztika')" id="btn-ats-statisztika" style="padding: 8px 18px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer;">📊 ATS Statisztika</button>
-    </div>
-
-    <!-- ATS FUVAROK nézet -->
-    <div id="ats-view-fuvarok-panel" style="display:block;">
-      <div class="fuvarok-layout" style="display: flex; gap: 24px; align-items: flex-start;">
-
-        <!-- ATS Sofőr lista oldalsáv -->
-        <div id="ats-drivers-sidebar" style="min-width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; flex-shrink: 0;">
-          <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase;">🎮 Sofőrök</div>
-          <div id="atsDriversList" style="padding: 8px 0;">
-            <div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>
+        <!-- Admin panel + nézet váltó (ugyanolyan mint ETS2-nél) -->
+        <div id="ats-admin-panel" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div id="ats-admin-login-form" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <input id="ats-admin-username" type="text" placeholder="Discord felhasználónév" onkeydown="if(event.key==='Enter')atsRequestCode()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 200px;" />
+            <button onclick="atsRequestCode()" style="padding: 8px 16px; border-radius: 8px; background: #5865f2; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">📨 Kód kérése</button>
+            <input id="ats-admin-discord-code" type="text" placeholder="6 jegyű kód" maxlength="6" onkeydown="if(event.key==='Enter')atsAdminLogin()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 120px; display:none;" />
+            <button id="ats-admin-verify-btn" onclick="atsAdminLogin()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; display:none;">✅ Belépés</button>
+            <span id="ats-admin-code-msg" style="font-size: 12px; color: #4ade80;"></span>
           </div>
+          <div id="ats-admin-status" style="display: none; align-items: center; gap: 10px;">
+            <span id="ats-admin-status-label" style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Admin mód aktív</span>
+            <button onclick="atsAdminLogout()" style="padding: 6px 12px; border-radius: 8px; background: rgba(239,68,68,0.15); color: #f87171; font-size: 12px; border: 1px solid rgba(239,68,68,0.3); cursor: pointer;">Kilépés</button>
+          </div>
+          <button onclick="switchATSView('fuvarok')" id="btn-ats-fuvarok" style="padding: 8px 18px; border-radius: 8px; background: var(--orange); color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">🎮 American Truck Simulator Fuvarok</button>
+          <button onclick="switchATSView('statisztika')" id="btn-ats-statisztika" style="padding: 8px 18px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer;">📊 ATS Statisztika</button>
         </div>
 
-        <!-- ATS Jobb oldal: sofőr részletek -->
-        <div style="flex: 1; min-width: 0;">
-          <div id="ats-jobs-view">
-            <!-- Fejléc -->
-            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; justify-content: space-between;">
-              <div style="display:flex; align-items:center; gap:16px;">
-                <div id="atsDetailAvatar" style="width: 56px; height: 52px; border-radius: 10px; background: linear-gradient(135deg, #1d4ed8, #1e40af); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;"></div>
-                <div>
-                  <div id="atsDetailName" style="font-size: 20px; font-weight: 800; color: #fff;"></div>
-                  <div id="atsDetailSub" style="font-size: 13px; color: var(--muted); margin-top: 2px;"></div>
+        <!-- ATS FUVAROK nézet -->
+        <div id="ats-view-fuvarok-panel" style="display:block;">
+        <div class="fuvarok-layout" style="display: flex; gap: 24px; align-items: flex-start;">
+          <!-- ATS Sofőr lista oldalsáv -->
+          <div id="ats-drivers-sidebar" style="min-width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; flex-shrink: 0;">
+            <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase;">🎮 Sofőrök</div>
+            <div id="atsDriversList" style="padding: 8px 0;">
+              <div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>
+            </div>
+          </div>
+          <!-- ATS Jobb oldal -->
+          <div style="flex: 1; min-width: 0;">
+            <div id="ats-jobs-view">
+              <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; justify-content: space-between;">
+                <div style="display:flex; align-items:center; gap:16px;">
+                  <div id="atsDetailAvatar" style="width: 56px; height: 52px; border-radius: 10px; background: linear-gradient(135deg, #1d4ed8, #1e40af); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;"></div>
+                  <div>
+                    <div id="atsDetailName" style="font-size: 20px; font-weight: 800; color: #fff;"></div>
+                    <div id="atsDetailSub" style="font-size: 13px; color: var(--muted); margin-top: 2px;"></div>
+                  </div>
                 </div>
+                <div id="atsSpeedingStats" style="text-align:right; flex-shrink:0;"></div>
               </div>
-              <div id="atsSpeedingStats" style="text-align:right; flex-shrink:0;"></div>
-            </div>
-
-            <!-- ATS Statisztika kártyák -->
-            <div id="atsStatsGrid" class="stats-grid" style="margin-bottom: 16px;"></div>
-
-            <!-- ATS Fuvar táblázat -->
-            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
-              <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
-                <div style="font-size: 15px; font-weight: 700; color: #fff;">📋 Fuvar előzmények</div>
-                <div id="atsJobCount" style="font-size: 12px; color: var(--muted); background: rgba(255,255,255,0.06); padding: 3px 10px; border-radius: 999px;"></div>
+              <div id="atsStatsGrid" class="stats-grid" style="margin-bottom: 16px;"></div>
+              <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
+                <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                  <div style="font-size: 15px; font-weight: 700; color: #fff;">📋 Fuvar előzmények</div>
+                  <div id="atsJobCount" style="font-size: 12px; color: var(--muted); background: rgba(255,255,255,0.06); padding: 3px 10px; border-radius: 999px;"></div>
+                </div>
+                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <div style="min-width: 900px;">
+                <div class="job-table-header" style="display: grid; grid-template-columns: 40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px; gap: 0; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);">
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">#</div>
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">KAMION</div>
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600;">ÚTVONAL / ÁRU</div>
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">FELVÉTEL / LEADÁS</div>
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">FOGYASZTÁS</div>
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">TONNA</div>
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">KM</div>
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">SEBESSÉG</div>
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">MAX km/h</div>
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BEVÉTEL</div>
+                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BÜNTETÉS</div>
+                </div>
+                <div id="atsJobsList" style="max-height: 600px; overflow-y: auto;"></div>
+                </div><!-- /min-width -->
+                </div><!-- /overflow-x -->
               </div>
-              <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-              <div style="min-width: 900px;">
-              <div class="job-table-header" style="display: grid; grid-template-columns: 40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px; gap: 0; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);">
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">#</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">KAMION</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600;">ÚTVONAL / ÁRU</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">FELVÉTEL / LEADÁS</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">FOGYASZTÁS</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">TONNA</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">KM</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">SEBESSÉG</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">MAX km/h</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BEVÉTEL</div>
-                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BÜNTETÉS</div>
-              </div>
-              <div id="atsJobsList" style="max-height: 600px; overflow-y: auto;"></div>
-              </div><!-- /min-width -->
-              </div><!-- /overflow-x -->
             </div>
           </div>
         </div>
-      </div>
-    </div>
+        </div> <!-- /ats-view-fuvarok-panel -->
 
-    <!-- ATS STATISZTIKA nézet -->
-    <div id="ats-view-statisztika-panel" style="display:none;">
-      <div class="tab-nav" style="margin-bottom: 24px;">
-        <button class="tab-btn active" id="ats-stat-btn-ranglista" onclick="switchATSStatTab('ranglista')">🏆 Ranglista</button>
-        <button class="tab-btn" id="ats-stat-btn-heti" onclick="switchATSStatTab('heti')">📅 Heti</button>
-      </div>
-      <div id="ats-stat-tab-ranglista" style="display:block;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px,1fr)); gap: 20px;" id="ats-ranglista-grid">
-          <div style="color:var(--muted); padding: 32px; text-align:center;">Betöltés...</div>
-        </div>
-      </div>
-      <div id="ats-stat-tab-heti" style="display:none;">
-        <div class="tab-nav" style="margin-bottom: 20px;">
-          <button class="tab-btn active" id="ats-heti-btn-osszesites" onclick="switchATSHetiTab('osszesites')">📊 Összesítés</button>
-          <button class="tab-btn" id="ats-heti-btn-napi" onclick="switchATSHetiTab('napi')">📆 Napi bontás</button>
-        </div>
-        <div id="ats-heti-osszesites" style="display:block;">
-          <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap:20px;" id="ats-heti-grid">
-            <div style="color:var(--muted); padding:32px; text-align:center;">Betöltés...</div>
+        <!-- ATS STATISZTIKA nézet -->
+        <div id="ats-view-statisztika-panel" style="display:none;">
+          <div class="tab-nav" style="margin-bottom: 24px;">
+            <button class="tab-btn active" id="ats-stat-btn-ranglista" onclick="switchATSStatTab('ranglista')">🏆 Ranglista</button>
+            <button class="tab-btn" id="ats-stat-btn-heti" onclick="switchATSStatTab('heti')">📅 Heti</button>
           </div>
-        </div>
-        <div id="ats-heti-napi" style="display:none;">
-          <div id="ats-napi-grid" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap:16px;">
-            <div style="color:var(--muted); padding:32px; text-align:center;">Betöltés...</div>
+          <div id="ats-stat-tab-ranglista" style="display:block;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px,1fr)); gap: 20px;" id="ats-ranglista-grid">
+              <div style="color:var(--muted); padding: 32px; text-align:center;">Betöltés...</div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+          <div id="ats-stat-tab-heti" style="display:none;">
+            <div class="tab-nav" style="margin-bottom: 20px;">
+              <button class="tab-btn active" id="ats-heti-btn-osszesites" onclick="switchATSHetiTab('osszesites')">📊 Összesítés</button>
+              <button class="tab-btn" id="ats-heti-btn-napi" onclick="switchATSHetiTab('napi')">📆 Napi bontás</button>
+            </div>
+            <div id="ats-heti-osszesites" style="display:block;">
+              <div style="display:grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap:20px;" id="ats-heti-grid">
+                <div style="color:var(--muted); padding:32px; text-align:center;">Betöltés...</div>
+              </div>
+            </div>
+            <div id="ats-heti-napi" style="display:none;">
+              <div id="ats-napi-grid" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap:16px;">
+                <div style="color:var(--muted); padding:32px; text-align:center;">Betöltés...</div>
+              </div>
+            </div>
+          </div>
+        </div> <!-- /ats-view-statisztika-panel -->
 
-  </div> <!-- /game-panel-ats -->
+      </div> <!-- /game-panel-ats -->
 
-    </div>
-  </div>
+    </div> <!-- /container-wide -->
+  </div> <!-- /page-fuvarok -->
 
   <!-- FOOTER -->
   <footer class="site-footer">
