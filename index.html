@@ -2914,7 +2914,7 @@
       if (sel) { sel.style.borderLeftColor = '#1d6ed8'; sel.style.background = 'rgba(29,110,216,0.1)'; }
       await loadJsonBin(allData === null);
       const jobs = (allJobs?.[name] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
-      const u = Object.values(allData || {}).find(d => d && d.truckyName === name) || {};
+      const u = Object.values(allData || {}).find(d => d && d.truckyName && d.truckyName.toLowerCase() === name.toLowerCase()) || {};
 
       // Fejléc frissítése — ugyanolyan mint ETS2-nél
       document.getElementById('atsDetailName').textContent = name;
@@ -3163,7 +3163,8 @@
       if (!allData) return [];
       const atsIds = allData._ats_drivers || [];
       return atsIds.map(name => {
-        const u = Object.values(allData).find(d => d && d.truckyName === name) || {};
+        const nameLower = name.toLowerCase();
+        const u = Object.values(allData).find(d => d && d.truckyName && d.truckyName.toLowerCase() === nameLower) || {};
         const jobs = (allJobs?.[name] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
         return { nev: name, u, jobs };
       });
