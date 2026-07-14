@@ -3065,10 +3065,24 @@
       const isAdmin = atsAdminMode;
       const atsOver = allData?._atsStatOverride || {};
       const kategoriák = [
-        { key:'ats_osszes_km',     nev: 'Összes KM',              ikon:'🛣️', egyseg:'km', fn: x => Math.round(x.u.atsTotalKm||0) },
-        { key:'ats_osszes_profit', nev: 'Összes Profit',           ikon:'💰', egyseg:'Ft', fn: x => Math.round((x.u.atsTotalRevenue||0)-(x.u.atsTotalFine||0)) },
-        { key:'ats_osszes_suly',   nev: 'Összes Szállított Súly', ikon:'⚖️', egyseg:'t',  fn: x => x.u.atsTotalTons||0 },
-        { key:'ats_fuvarok_szama', nev: 'Fuvarok száma',           ikon:'📋', egyseg:'db', fn: x => x.jobs.length },
+        { key:'ats_osszes_km',     nev:'Összes KM',              ikon:'🛣️', egyseg:'km', fn: x => Math.round(x.u.atsTotalKm||0) },
+        { key:'ats_osszes_profit', nev:'Összes Profit',           ikon:'💰', egyseg:'Ft', fn: x => Math.round((x.u.atsTotalRevenue||0)-(x.u.atsTotalFine||0)) },
+        { key:'ats_osszes_suly',   nev:'Összes Szállított Súly', ikon:'⚖️', egyseg:'t',  fn: x => x.u.atsTotalTons||0 },
+        { key:'ats_havi_suly',     nev:'Havi Szállított Súly',   ikon:'📦', egyseg:'t',  fn: x => {
+          const now2 = new Date();
+          const thisMonth = `${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
+          return x.jobs.filter(j=>j.datum&&j.datum.startsWith(thisMonth)).reduce((s,j)=>s+(j.tonna||0),0);
+        }},
+        { key:'ats_havi_km',       nev:'Havi KM',                ikon:'📍', egyseg:'km', fn: x => {
+          const now2 = new Date();
+          const thisMonth = `${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
+          return Math.round(x.jobs.filter(j=>j.datum&&j.datum.startsWith(thisMonth)).reduce((s,j)=>s+(j.km||0),0));
+        }},
+        { key:'ats_havi_profit',   nev:'Havi Profit',            ikon:'📈', egyseg:'Ft', fn: x => {
+          const now2 = new Date();
+          const thisMonth = `${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
+          return Math.round(x.jobs.filter(j=>j.datum&&j.datum.startsWith(thisMonth)).reduce((s,j)=>s+(j.bevételFt||0)-(j.büntFt||0),0));
+        }},
       ];
       grid.innerHTML = kategoriák.map(kat => {
         const autoData = d.map(x => ({ nev: x.nev, ertek: kat.fn(x) })).sort((a,b) => b.ertek-a.ertek).filter(x => x.ertek > 0);
@@ -3095,19 +3109,30 @@
       const NAPOK_H = ['Hétfő','Kedd','Szerda','Csütörtök','Péntek','Szombat','Vasárnap'];
 
       const autoTopKm = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.atsWeeklyKm||0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
-      const topKm = atsOver['ats_heti_km'] ?? autoTopKm;
+      const autoTopFogy = d.map(x => {
+        const fJobs = x.jobs.filter(j=>j.avgFuelJob>0);
+        const avg = fJobs.length ? fJobs.reduce((s,j)=>s+j.avgFuelJob,0)/fJobs.length : 0;
+        return { nev: x.nev, ertek: Math.round(avg*10)/10 };
+      }).filter(x=>x.ertek>0).sort((a,b)=>a.ertek-b.ertek);
+      const autoTopSuly = d.map(x => ({ nev: x.nev, ertek: x.jobs.reduce((s,j)=>s+(j.tonna||0),0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
 
-      grid.innerHTML = `
+      const sections = [
+        { key:'ats_heti_km',    nev:'Heti Top KM',                   ikon:'🛣️', egyseg:'km',      data: atsOver['ats_heti_km'] ?? autoTopKm,   count: autoTopKm.length||10 },
+        { key:'ats_heti_fogy',  nev:'Top 3 Legjobb Fogyasztás',      ikon:'⛽', egyseg:'L/100km', data: atsOver['ats_heti_fogy'] ?? autoTopFogy, count: 3 },
+        { key:'ats_heti_suly',  nev:'Top 3 Legtöbb Szállított Súly', ikon:'⚖️', egyseg:'t',       data: atsOver['ats_heti_suly'] ?? autoTopSuly, count: 3 },
+      ];
+
+      grid.innerHTML = sections.map(s => `
         <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:20px;">🛣️</span>
-              <div style="font-size:14px;font-weight:700;color:#fff;">Heti Top KM</div>
+              <span style="font-size:20px;">${s.ikon}</span>
+              <div style="font-size:14px;font-weight:700;color:#fff;">${s.nev}</div>
             </div>
-            ${isAdmin ? `<button onclick="editATSHetiKat('ats_heti_km','Heti Top KM','km')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
+            ${isAdmin ? `<button onclick="editATSHetiKat('${s.key}','${s.nev}','${s.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
           </div>
-          ${renderTopListAuto(topKm, 'km', topKm.length||10)}
-        </div>`;
+          ${renderTopListAuto(s.data, s.egyseg, s.count)}
+        </div>`).join('');
 
       const napiGrid = document.getElementById('ats-napi-grid');
       napiGrid.innerHTML = NAPOK_H.map(nap => {
@@ -3116,7 +3141,7 @@
         return `
           <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div style="font-size:15px;font-weight:700;color:#1d6ed8;">📅 ${nap}</div>
+              <div style="font-size:15px;font-weight:700;color:var(--orange);">📅 ${nap}</div>
               ${isAdmin ? `<button onclick="editATSHetiKat('ats_napi_${nap}','${nap}','km')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
             </div>
             ${renderTopListAuto(napKm, 'km', napKm.length||10)}
