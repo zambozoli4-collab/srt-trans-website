@@ -1863,7 +1863,7 @@
 
       list.innerHTML = drivers.map(([id, u]) => {
         const name = u.truckyName || id;
-        const jobs = allJobs[name] ? allJobs[name].length : 0;
+        const jobs = (allJobs[name] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats').length;
         const km = formatNum(Math.round(u.totalKm || 0));
         return `
           <div class="driver-sidebar-item" onclick="showDriverJobs('${name}')" id="driver-${name.replace(/[^a-zA-Z0-9]/g,'_')}"
@@ -2882,9 +2882,9 @@
         return;
       }
       list.innerHTML = atsDriverIds.map(name => {
-        const u = Object.values(allData).find(d => d && d.truckyName === name) || {};
+        const u = Object.values(allData).find(d => d && d.truckyName && d.truckyName.toLowerCase() === name.toLowerCase()) || {};
         const atsJobs = (allJobs?.[name] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
-        const km = formatNum(Math.round(u.atsTotalKm || 0));
+        const km = formatNum(u.atsOsszesOverride?.atsTotalKm ?? Math.round(atsJobs.reduce((s,j)=>s+(j.km||0),0)));
         const deleteBtn = atsAdminMode ? `<button onclick="event.stopPropagation();deleteATSDriver('${name.replace(/'/g,"\\'")}');" style="margin-left:auto;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:13px;flex-shrink:0;">🗑️</button>` : '';
         return `
           <div class="driver-sidebar-item" onclick="showATSDriverJobs('${name.replace(/'/g,"\\'")}');event.stopPropagation();" id="ats-driver-${name.replace(/[^a-zA-Z0-9]/g,'_')}"
@@ -2918,7 +2918,10 @@
 
       // Fejléc frissítése — ugyanolyan mint ETS2-nél
       document.getElementById('atsDetailName').textContent = name;
-      document.getElementById('atsDetailSub').textContent = `${jobs.length} fuvar · ${formatNum(Math.round(u.atsTotalKm || 0))} km összes`;
+      const atsOsszesKm = u.atsOsszesOverride?.atsTotalKm ?? Math.round(jobs.reduce((s,j)=>s+(j.km||0),0));
+      const atsOsszesTonna = u.atsOsszesOverride?.atsTotalTons ?? jobs.reduce((s,j)=>s+(j.tonna||0),0);
+      const atsOsszesBevetel = u.atsOsszesOverride?.atsTotalRevenue ?? jobs.reduce((s,j)=>s+(j.bevételFt||0),0);
+      document.getElementById('atsDetailSub').textContent = `${jobs.length} fuvar · ${formatNum(atsOsszesKm)} km összes`;
 
       // Gyors fuvarok doboz — ugyanolyan mint ETS2-nél
       const gyorsFuvarok = jobs.filter(j => (j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 101));
@@ -2952,14 +2955,14 @@
       const atsEditBtn = (key, label, val, unit) => atsAdminMode ? `<button onclick="editATSDriverStat('${name.replace(/'/g,"\\'")}','${key}','${label}',${val},'${unit}')" style="position:absolute;top:8px;right:8px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:10px;">✏️</button>` : '';
       document.getElementById('atsStatsGrid').innerHTML = `
         <div class="stat-card" style="position:relative;">
-          ${atsEditBtn('atsTotalKm','Összes KM',Math.round(u.atsTotalKm||0),'km')}
-          <div class="stat-label">Összes KM</div><div class="stat-value orange">${formatNum(Math.round(u.atsTotalKm||0))} km</div></div>
+          ${atsEditBtn('atsTotalKm','Összes KM',atsOsszesKm,'km')}
+          <div class="stat-label">Összes KM</div><div class="stat-value orange">${formatNum(atsOsszesKm)} km</div></div>
         <div class="stat-card" style="position:relative;">
-          ${atsEditBtn('atsTotalTons','Összes Tonna',Math.round(u.atsTotalTons||0),'t')}
-          <div class="stat-label">Összes Tonna</div><div class="stat-value">${formatNum(Math.round(u.atsTotalTons||0))} t</div></div>
+          ${atsEditBtn('atsTotalTons','Összes Tonna',Math.round(atsOsszesTonna),'t')}
+          <div class="stat-label">Összes Tonna</div><div class="stat-value">${formatNum(Math.round(atsOsszesTonna))} t</div></div>
         <div class="stat-card" style="position:relative;">
-          ${atsEditBtn('atsTotalRevenue','Összes Bevétel',Math.round(u.atsTotalRevenue||0),'Ft')}
-          <div class="stat-label">Összes Bevétel</div><div class="stat-value">${formatNum(Math.round(u.atsTotalRevenue||0))} Ft</div></div>
+          ${atsEditBtn('atsTotalRevenue','Összes Bevétel',Math.round(atsOsszesBevetel),'Ft')}
+          <div class="stat-label">Összes Bevétel</div><div class="stat-value">${formatNum(Math.round(atsOsszesBevetel))} Ft</div></div>
         <div class="stat-card" style="position:relative;">
           ${atsEditBtn('atsHaviKm','Havi KM',Math.round(haviKm),'km')}
           <div class="stat-label">Havi KM</div><div class="stat-value orange">${formatNum(Math.round(haviKm))} km</div></div>
@@ -3060,12 +3063,13 @@
       const entry = Object.entries(allData).find(([id, u]) => u && u.truckyName === driverName);
       if (!entry) { alert('❌ Nem találtuk a sofőrt!'); return; }
       const [id, u] = entry;
-      // Havi adatoknál nem direkt mező van — fuvarok alapján számolódik
-      // Csak az ATS total mezőket mentjük direkt
+      // Havi és Összes adatok is fuvarok alapján számolódnak — direkt csak override-ként menthetők
       if (key.startsWith('atsHavi')) {
-        // Havi adatoknál override mezőt használunk
         if (!u.atsHaviOverride) u.atsHaviOverride = {};
         u.atsHaviOverride[key] = num;
+      } else if (key === 'atsTotalKm' || key === 'atsTotalTons' || key === 'atsTotalRevenue') {
+        if (!u.atsOsszesOverride) u.atsOsszesOverride = {};
+        u.atsOsszesOverride[key] = num;
       } else {
         u[key] = num;
       }
@@ -3176,9 +3180,9 @@
       const isAdmin = atsAdminMode;
       const atsOver = allData?._atsStatOverride || {};
       const kategoriák = [
-        { key:'ats_osszes_km',     nev:'Összes KM',              ikon:'🛣️', egyseg:'km', fn: x => Math.round(x.u.atsTotalKm||0) },
-        { key:'ats_osszes_profit', nev:'Összes Profit',           ikon:'💰', egyseg:'Ft', fn: x => Math.round((x.u.atsTotalRevenue||0)-(x.u.atsTotalFine||0)) },
-        { key:'ats_osszes_suly',   nev:'Összes Szállított Súly', ikon:'⚖️', egyseg:'t',  fn: x => x.u.atsTotalTons||0 },
+        { key:'ats_osszes_km',     nev:'Összes KM',              ikon:'🛣️', egyseg:'km', fn: x => x.u.atsOsszesOverride?.atsTotalKm ?? Math.round(x.jobs.reduce((s,j)=>s+(j.km||0),0)) },
+        { key:'ats_osszes_profit', nev:'Összes Profit',           ikon:'💰', egyseg:'Ft', fn: x => x.u.atsOsszesOverride?.atsTotalProfit ?? Math.round(x.jobs.reduce((s,j)=>s+(j.bevételFt||0)-(j.büntFt||0),0)) },
+        { key:'ats_osszes_suly',   nev:'Összes Szállított Súly', ikon:'⚖️', egyseg:'t',  fn: x => x.u.atsOsszesOverride?.atsTotalTons ?? x.jobs.reduce((s,j)=>s+(j.tonna||0),0) },
         { key:'ats_havi_suly',     nev:'Havi Szállított Súly',   ikon:'📦', egyseg:'t',  fn: x => {
           const now2 = new Date();
           const thisMonth = `${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
@@ -3219,13 +3223,20 @@
       const atsOver = allData?._atsStatOverride || {};
       const NAPOK_H = ['Hétfő','Kedd','Szerda','Csütörtök','Péntek','Szombat','Vasárnap'];
 
-      const autoTopKm = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.atsWeeklyKm||0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
+      // Aktuális naptári hét (hétfő 00:00 - következő hétfő 00:00)
+      const now3 = new Date();
+      const dow = (now3.getDay() + 6) % 7; // 0 = hétfő
+      const weekStart = new Date(now3); weekStart.setHours(0,0,0,0); weekStart.setDate(now3.getDate() - dow);
+      const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 7);
+      const heti = x => x.jobs.filter(j => { if (!j.datum) return false; const dt = new Date(j.datum); return dt >= weekStart && dt < weekEnd; });
+
+      const autoTopKm = d.map(x => ({ nev: x.nev, ertek: Math.round(heti(x).reduce((s,j)=>s+(j.km||0),0)) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
       const autoTopFogy = d.map(x => {
-        const fJobs = x.jobs.filter(j=>j.avgFuelJob>0);
+        const fJobs = heti(x).filter(j=>j.avgFuelJob>0);
         const avg = fJobs.length ? fJobs.reduce((s,j)=>s+j.avgFuelJob,0)/fJobs.length : 0;
         return { nev: x.nev, ertek: Math.round(avg*10)/10 };
       }).filter(x=>x.ertek>0).sort((a,b)=>a.ertek-b.ertek);
-      const autoTopSuly = d.map(x => ({ nev: x.nev, ertek: x.jobs.reduce((s,j)=>s+(j.tonna||0),0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
+      const autoTopSuly = d.map(x => ({ nev: x.nev, ertek: heti(x).reduce((s,j)=>s+(j.tonna||0),0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
 
       const sections = [
         { key:'ats_heti_km',    nev:'Heti Top KM',                   ikon:'🛣️', egyseg:'km',      data: atsOver['ats_heti_km'] ?? autoTopKm,   count: autoTopKm.length||10 },
@@ -3246,8 +3257,11 @@
         </div>`).join('');
 
       const napiGrid = document.getElementById('ats-napi-grid');
-      napiGrid.innerHTML = NAPOK_H.map(nap => {
-        const autoNapKm = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.atsWeeklyKmDays?.[nap]||0) })).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
+      napiGrid.innerHTML = NAPOK_H.map((nap, napIdx) => {
+        const autoNapKm = d.map(x => {
+          const napJobs = heti(x).filter(j => (new Date(j.datum).getDay() + 6) % 7 === napIdx);
+          return { nev: x.nev, ertek: Math.round(napJobs.reduce((s,j)=>s+(j.km||0),0)) };
+        }).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
         const napKm = atsOver[`ats_napi_${nap}`] ?? autoNapKm;
         return `
           <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
