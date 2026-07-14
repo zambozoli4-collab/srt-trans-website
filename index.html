@@ -2147,20 +2147,21 @@
     } else if (startPage === 'ats-statisztika' || startPage === 'ats-statisztika-ranglista') {
       showPage('fuvarok');
       switchGameTab('ats', true);
-      switchATSView('statisztika');
-      switchATSStatTab('ranglista');
+      setTimeout(async () => {
+        try { switchATSView('statisztika'); switchATSStatTab('ranglista'); } catch(e) {}
+      }, 200);
     } else if (startPage === 'ats-statisztika-heti') {
       showPage('fuvarok');
       switchGameTab('ats', true);
-      switchATSView('statisztika');
-      switchATSStatTab('heti');
-      switchATSHetiTab('osszesites');
+      setTimeout(async () => {
+        try { switchATSView('statisztika'); switchATSStatTab('heti'); switchATSHetiTab('osszesites'); } catch(e) {}
+      }, 200);
     } else if (startPage === 'ats-statisztika-heti-napi') {
       showPage('fuvarok');
       switchGameTab('ats', true);
-      switchATSView('statisztika');
-      switchATSStatTab('heti');
-      switchATSHetiTab('napi');
+      setTimeout(async () => {
+        try { switchATSView('statisztika'); switchATSStatTab('heti'); switchATSHetiTab('napi'); } catch(e) {}
+      }, 200);
     } else if (startPage && document.getElementById('page-' + startPage)) {
       showPage(startPage);
     }
@@ -2977,28 +2978,37 @@
 
     // ══ ATS STATISZTIKA ══
     async function renderATSStatisztika() {
-      await loadJsonBin(allData === null);
-      // Csak az aktuális tab tartalmát frissítjük, nem váltunk tab-ot
-      const curHash = window.location.hash.replace('#','');
-      if (curHash === 'ats-statisztika-heti' || curHash === 'ats-statisztika-heti-napi') {
-        // Heti tab aktív — csak azt frissítjük
-        document.getElementById('ats-stat-tab-ranglista').style.display = 'none';
-        document.getElementById('ats-stat-tab-heti').style.display = 'block';
-        document.getElementById('ats-stat-btn-ranglista').classList.remove('active');
-        document.getElementById('ats-stat-btn-heti').classList.add('active');
-        renderATSHeti();
-        if (curHash === 'ats-statisztika-heti-napi') {
-          switchATSHetiTab('napi');
+      try {
+        await loadJsonBin(allData === null);
+        const curHash = window.location.hash.replace('#','');
+        if (curHash === 'ats-statisztika-heti' || curHash === 'ats-statisztika-heti-napi') {
+          const r = document.getElementById('ats-stat-tab-ranglista');
+          const h = document.getElementById('ats-stat-tab-heti');
+          const rb = document.getElementById('ats-stat-btn-ranglista');
+          const hb = document.getElementById('ats-stat-btn-heti');
+          if (r) r.style.display = 'none';
+          if (h) h.style.display = 'block';
+          if (rb) rb.classList.remove('active');
+          if (hb) hb.classList.add('active');
+          renderATSHeti();
+          if (curHash === 'ats-statisztika-heti-napi') {
+            switchATSHetiTab('napi');
+          } else {
+            switchATSHetiTab('osszesites');
+          }
         } else {
-          switchATSHetiTab('osszesites');
+          const r = document.getElementById('ats-stat-tab-ranglista');
+          const h = document.getElementById('ats-stat-tab-heti');
+          const rb = document.getElementById('ats-stat-btn-ranglista');
+          const hb = document.getElementById('ats-stat-btn-heti');
+          if (r) r.style.display = 'block';
+          if (h) h.style.display = 'none';
+          if (rb) rb.classList.add('active');
+          if (hb) hb.classList.remove('active');
+          renderATSRanglista();
         }
-      } else {
-        // Ranglista tab aktív (alapértelmezett)
-        document.getElementById('ats-stat-tab-ranglista').style.display = 'block';
-        document.getElementById('ats-stat-tab-heti').style.display = 'none';
-        document.getElementById('ats-stat-btn-ranglista').classList.add('active');
-        document.getElementById('ats-stat-btn-heti').classList.remove('active');
-        renderATSRanglista();
+      } catch(e) {
+        console.error('renderATSStatisztika hiba:', e.message);
       }
     }
 
