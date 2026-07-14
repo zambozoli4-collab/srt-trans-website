@@ -1928,7 +1928,8 @@
       document.getElementById('detailName').textContent = driverName;
 
       const u = Object.values(allData).find(d => d.truckyName === driverName) || {};
-      const jobs = allJobs[driverName] || [];
+      // ETS2-nél csak az ETS2 fuvarokat mutatjuk (ATS fuvarokat kiszűrjük)
+      const jobs = (allJobs[driverName] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
       document.getElementById('detailSub').textContent = `${jobs.length} fuvar · ${formatNum(Math.round(u.totalKm || 0))} km összes`;
 
       // Gyors fuvar statisztika
