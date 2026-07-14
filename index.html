@@ -2777,6 +2777,9 @@
         }
         atsAdminMode = true;
         atsAdminRole = data.role;
+        sessionStorage.setItem('srt_ats_admin_user', username);
+        sessionStorage.setItem('srt_ats_admin_role', atsAdminRole);
+        sessionStorage.setItem('srt_ats_discord_auth', '1');
         document.getElementById('ats-admin-login-form').style.display = 'none';
         document.getElementById('ats-admin-status').style.display = 'flex';
         document.getElementById('ats-admin-status-label').textContent =
@@ -2790,6 +2793,9 @@
     function atsAdminLogout() {
       atsAdminMode = false;
       atsAdminRole = null;
+      sessionStorage.removeItem('srt_ats_admin_user');
+      sessionStorage.removeItem('srt_ats_admin_role');
+      sessionStorage.removeItem('srt_ats_discord_auth');
       document.getElementById('ats-admin-login-form').style.display = 'flex';
       document.getElementById('ats-admin-status').style.display = 'none';
       document.getElementById('ats-admin-username').value = '';
@@ -2799,6 +2805,20 @@
       document.getElementById('ats-admin-code-msg').textContent = '';
       renderATSDrivers();
     }
+
+    // ══ ATS AUTO-LOGIN (frissítés után visszaállítja az admin állapotot) ══
+    (function atsAutoLogin() {
+      const savedUser = sessionStorage.getItem('srt_ats_admin_user') || '';
+      const savedRole = sessionStorage.getItem('srt_ats_admin_role');
+      const auth = sessionStorage.getItem('srt_ats_discord_auth');
+      if (!savedUser || !savedRole || !auth) return;
+      atsAdminMode = true;
+      atsAdminRole = savedRole;
+      document.getElementById('ats-admin-login-form').style.display = 'none';
+      document.getElementById('ats-admin-status').style.display = 'flex';
+      document.getElementById('ats-admin-status-label').textContent =
+        savedRole === 'admin' ? `✅ Admin: ${savedUser}` : `✅ Helyettes: ${savedUser}`;
+    })();
 
     // ══ ATS SOFŐR LISTA — csak az ATS-hez bindelt sofőrök ══
     async function renderATSDrivers() {
