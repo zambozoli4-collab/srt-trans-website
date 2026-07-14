@@ -3023,12 +3023,19 @@
     }
 
     // ══ ATS FUVAR TÖRLÉS ══
-    async function deleteATSJob(driverName, reversedIdx) {
+    async function deleteATSJob(driverName, atsIdx) {
       if (!atsAdminMode) return;
-      if (!confirm(`Biztosan törlöd a ${reversedIdx + 1}. fuvart?`)) return;
-      const jobs = allJobs[driverName] || [];
-      jobs.splice(reversedIdx, 1);
-      allJobs[driverName] = jobs;
+      if (!confirm(`Biztosan törlöd a ${atsIdx + 1}. fuvart?`)) return;
+      // Az ATS fuvarok szűrt listájából megkeressük a tényleges indexet az allJobs-ban
+      const allJobsList = allJobs[driverName] || [];
+      const atsJobs = allJobsList.filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
+      const jobToDelete = atsJobs[atsIdx];
+      if (!jobToDelete) { alert('Nem található a fuvar!'); return; }
+      // Megkeressük az allJobs listában
+      const realIdx = allJobsList.indexOf(jobToDelete);
+      if (realIdx === -1) { alert('Nem található a fuvar!'); return; }
+      allJobsList.splice(realIdx, 1);
+      allJobs[driverName] = allJobsList;
       try {
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
           method: 'PUT',
