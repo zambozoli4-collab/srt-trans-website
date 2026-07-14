@@ -1853,6 +1853,17 @@
       }
 
       const drivers = Object.entries(allData).filter(([id]) => !id.startsWith('_'));
+      drivers.sort((a, b) => {
+        const sa = a[1] && a[1].statusMessageId;
+        const sb = b[1] && b[1].statusMessageId;
+        if (!sa && !sb) return 0;
+        if (!sa) return 1;
+        if (!sb) return -1;
+        try {
+          const ba = BigInt(sa), bb = BigInt(sb);
+          return ba < bb ? -1 : (ba > bb ? 1 : 0);
+        } catch(e) { return String(sa).localeCompare(String(sb)); }
+      });
       if (!drivers.length) {
         list.innerHTML = '<div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">⚠️ Nincs sofőr</div>';
         return;
@@ -3890,4 +3901,3 @@
   </div>
 </body>
 </html>
-
