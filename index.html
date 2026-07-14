@@ -1859,9 +1859,17 @@
       }
 
       const drivers = Object.entries(allData).filter(([id]) => !id.startsWith('_'));
+      // Kézi sorrend-kivétel: kellermilan150 valójában imibazsi1 és Macika1990 közé tartozik,
+      // de a statusMessageId alapú sorrend hibásan legelőre tenné - ezért itt beékeljük.
+      const SORT_KEY_OVERRIDE = { 'kellermilan150': '1500447554830340227' };
+      const sortKeyFor = (entry) => {
+        const name = entry[1] && entry[1].truckyName;
+        if (name && SORT_KEY_OVERRIDE[name]) return SORT_KEY_OVERRIDE[name];
+        return entry[1] && entry[1].statusMessageId;
+      };
       drivers.sort((a, b) => {
-        const sa = a[1] && a[1].statusMessageId;
-        const sb = b[1] && b[1].statusMessageId;
+        const sa = sortKeyFor(a);
+        const sb = sortKeyFor(b);
         if (!sa && !sb) return 0;
         if (!sa) return 1;
         if (!sb) return -1;
