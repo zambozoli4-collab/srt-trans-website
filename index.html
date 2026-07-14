@@ -1272,11 +1272,22 @@
 
   <!-- ══════════ ATS PANEL ══════════ -->
   <div id="game-panel-ats" style="display:none;">
-    <h2 class="section-title">🎮 American Truck Simulator Fuvarok</h2>
+    <h2 class="section-title">American Truck Simulator Fuvarok</h2>
 
-    <!-- ATS nézet váltó -->
-    <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-      <button onclick="switchATSView('fuvarok')" id="btn-ats-fuvarok" style="padding: 8px 18px; border-radius: 8px; background: #1d6ed8; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">🎮 American Truck Simulator Fuvarok</button>
+    <!-- Admin panel + nézet váltó (ugyanolyan mint ETS2-nél) -->
+    <div id="ats-admin-panel" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <div id="ats-admin-login-form" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <input id="ats-admin-username" type="text" placeholder="Discord felhasználónév" onkeydown="if(event.key==='Enter')atsRequestCode()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 200px;" />
+        <button onclick="atsRequestCode()" style="padding: 8px 16px; border-radius: 8px; background: #5865f2; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">📨 Kód kérése</button>
+        <input id="ats-admin-discord-code" type="text" placeholder="6 jegyű kód" maxlength="6" onkeydown="if(event.key==='Enter')atsAdminLogin()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 120px; display:none;" />
+        <button id="ats-admin-verify-btn" onclick="atsAdminLogin()" style="padding: 8px 16px; border-radius: 8px; background: #e85d04; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; display:none;">✅ Belépés</button>
+        <span id="ats-admin-code-msg" style="font-size: 12px; color: #4ade80;"></span>
+      </div>
+      <div id="ats-admin-status" style="display: none; align-items: center; gap: 10px;">
+        <span id="ats-admin-status-label" style="font-size: 13px; color: #4ade80; font-weight: 600;">✅ Admin mód aktív</span>
+        <button onclick="atsAdminLogout()" style="padding: 6px 12px; border-radius: 8px; background: rgba(239,68,68,0.15); color: #f87171; font-size: 12px; border: 1px solid rgba(239,68,68,0.3); cursor: pointer;">Kilépés</button>
+      </div>
+      <button onclick="switchATSView('fuvarok')" id="btn-ats-fuvarok" style="padding: 8px 18px; border-radius: 8px; background: var(--orange); color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">🎮 American Truck Simulator Fuvarok</button>
       <button onclick="switchATSView('statisztika')" id="btn-ats-statisztika" style="padding: 8px 18px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer;">📊 ATS Statisztika</button>
     </div>
 
@@ -1342,23 +1353,16 @@
 
     <!-- ATS STATISZTIKA nézet -->
     <div id="ats-view-statisztika-panel" style="display:none;">
-
-      <!-- Fő fülek: Ranglista / Heti -->
       <div class="tab-nav" style="margin-bottom: 24px;">
         <button class="tab-btn active" id="ats-stat-btn-ranglista" onclick="switchATSStatTab('ranglista')">🏆 Ranglista</button>
         <button class="tab-btn" id="ats-stat-btn-heti" onclick="switchATSStatTab('heti')">📅 Heti</button>
       </div>
-
-      <!-- RANGLISTA TAB -->
       <div id="ats-stat-tab-ranglista" style="display:block;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px,1fr)); gap: 20px;" id="ats-ranglista-grid">
           <div style="color:var(--muted); padding: 32px; text-align:center;">Betöltés...</div>
         </div>
       </div>
-
-      <!-- HETI TAB -->
       <div id="ats-stat-tab-heti" style="display:none;">
-        <!-- Alfülek -->
         <div class="tab-nav" style="margin-bottom: 20px;">
           <button class="tab-btn active" id="ats-heti-btn-osszesites" onclick="switchATSHetiTab('osszesites')">📊 Összesítés</button>
           <button class="tab-btn" id="ats-heti-btn-napi" onclick="switchATSHetiTab('napi')">📆 Napi bontás</button>
@@ -1374,8 +1378,8 @@
           </div>
         </div>
       </div>
-
     </div>
+
   </div> <!-- /game-panel-ats -->
 
     </div>
@@ -2633,10 +2637,10 @@
       document.getElementById('ats-view-statisztika-panel').style.display = isFuvarok ? 'none' : 'block';
       const btnF2 = document.getElementById('btn-ats-fuvarok');
       const btnS2 = document.getElementById('btn-ats-statisztika');
-      btnF2.style.background = isFuvarok ? '#1d6ed8' : 'var(--card)';
+      btnF2.style.background = isFuvarok ? 'var(--orange)' : 'var(--card)';
       btnF2.style.color = isFuvarok ? '#fff' : 'var(--muted)';
       btnF2.style.border = isFuvarok ? 'none' : '1px solid var(--border)';
-      btnS2.style.background = !isFuvarok ? '#1d6ed8' : 'var(--card)';
+      btnS2.style.background = !isFuvarok ? 'var(--orange)' : 'var(--card)';
       btnS2.style.color = !isFuvarok ? '#fff' : 'var(--muted)';
       btnS2.style.border = !isFuvarok ? 'none' : '1px solid var(--border)';
       if (!isFuvarok) renderATSStatisztika();
@@ -2660,7 +2664,82 @@
       document.getElementById('ats-heti-btn-osszesites').classList.toggle('active', isOssz);
       document.getElementById('ats-heti-btn-napi').classList.toggle('active', !isOssz);
     }
-    // ══ ATS SOFŐR LISTA RENDERELÉS ══
+    // ══ ATS ADMIN BEJELENTKEZÉS ══
+    let atsAdminMode = false;
+    let atsAdminRole = null;
+
+    async function atsRequestCode() {
+      const username = (document.getElementById('ats-admin-username').value || '').trim();
+      if (!username) return;
+      const msg = document.getElementById('ats-admin-code-msg');
+      msg.style.color = '#f97316';
+      msg.textContent = '⏳ Kód küldése...';
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/request-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordName: username })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.style.color = '#4ade80';
+          msg.textContent = '✅ Kód elküldve Discord DM-ben!';
+          document.getElementById('ats-admin-discord-code').style.display = 'inline-block';
+          document.getElementById('ats-admin-verify-btn').style.display = 'inline-block';
+          document.getElementById('ats-admin-discord-code').focus();
+        } else {
+          msg.style.color = '#f87171';
+          msg.textContent = '❌ ' + (data.error || 'Hiba');
+        }
+      } catch(e) {
+        msg.style.color = '#f87171';
+        msg.textContent = '❌ Kapcsolati hiba';
+      }
+    }
+
+    async function atsAdminLogin() {
+      const username = (document.getElementById('ats-admin-username').value || '').trim();
+      const code = (document.getElementById('ats-admin-discord-code').value || '').trim();
+      const msg = document.getElementById('ats-admin-code-msg');
+      if (!code) { msg.style.color='#f87171'; msg.textContent='❌ Add meg a kódot!'; return; }
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/verify-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordName: username, code })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          msg.style.color = '#f87171';
+          msg.textContent = '❌ ' + (data.error || 'Hibás kód');
+          return;
+        }
+        atsAdminMode = true;
+        atsAdminRole = data.role;
+        document.getElementById('ats-admin-login-form').style.display = 'none';
+        document.getElementById('ats-admin-status').style.display = 'flex';
+        document.getElementById('ats-admin-status-label').textContent =
+          atsAdminRole === 'admin' ? `✅ Admin: ${username}` : `✅ Helyettes: ${username}`;
+        renderATSDrivers();
+      } catch(e) {
+        document.getElementById('ats-admin-code-msg').textContent = '❌ Kapcsolati hiba';
+      }
+    }
+
+    function atsAdminLogout() {
+      atsAdminMode = false;
+      atsAdminRole = null;
+      document.getElementById('ats-admin-login-form').style.display = 'flex';
+      document.getElementById('ats-admin-status').style.display = 'none';
+      document.getElementById('ats-admin-username').value = '';
+      document.getElementById('ats-admin-discord-code').value = '';
+      document.getElementById('ats-admin-discord-code').style.display = 'none';
+      document.getElementById('ats-admin-verify-btn').style.display = 'none';
+      document.getElementById('ats-admin-code-msg').textContent = '';
+      renderATSDrivers();
+    }
+
+    // ══ ATS SOFŐR LISTA — csak az ATS-hez bindelt sofőrök ══
     async function renderATSDrivers() {
       const list = document.getElementById('atsDriversList');
       list.innerHTML = '<div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>';
@@ -2676,15 +2755,15 @@
       }
       list.innerHTML = atsDriverIds.map(name => {
         const u = Object.values(allData).find(d => d && d.truckyName === name) || {};
-        const jobs = (allJobs?.[name] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
+        const atsJobs = (allJobs?.[name] || []).filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats');
         const km = formatNum(Math.round(u.atsTotalKm || 0));
         return `
           <div class="driver-sidebar-item" onclick="showATSDriverJobs('${name.replace(/'/g,"\\'")}');event.stopPropagation();" id="ats-driver-${name.replace(/[^a-zA-Z0-9]/g,'_')}"
             style="padding: 10px 18px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 10px;">
-            <div style="width: 40px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #1d4ed8, #1e40af); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px;">🎮</div>
+            <div style="width: 40px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #1d4ed8, #1e40af); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; font-size: 18px;">🎮</div>
             <div class="driver-sidebar-name-wrap" style="min-width: 0;">
               <div style="font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</div>
-              <div style="font-size: 11px; color: var(--muted);">${km} km · ${jobs.length} fuvar</div>
+              <div style="font-size: 11px; color: var(--muted);">${km} km · ${atsJobs.length} fuvar</div>
             </div>
           </div>`;
       }).join('');
