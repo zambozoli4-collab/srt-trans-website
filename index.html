@@ -1511,7 +1511,8 @@
         renderDrivers();
         if (currentDriver) showDriverJobs(currentDriver);
       } catch(e) {
-        document.getElementById('admin-code-msg').textContent = '❌ Kapcsolati hiba';
+        console.error('adminLogin hiba:', e.message);
+        document.getElementById('admin-code-msg').textContent = '❌ Hiba: ' + e.message;
       }
     }
 
@@ -2808,16 +2809,21 @@
 
     // ══ ATS AUTO-LOGIN (frissítés után visszaállítja az admin állapotot) ══
     (function atsAutoLogin() {
-      const savedUser = sessionStorage.getItem('srt_ats_admin_user') || '';
-      const savedRole = sessionStorage.getItem('srt_ats_admin_role');
-      const auth = sessionStorage.getItem('srt_ats_discord_auth');
-      if (!savedUser || !savedRole || !auth) return;
-      atsAdminMode = true;
-      atsAdminRole = savedRole;
-      document.getElementById('ats-admin-login-form').style.display = 'none';
-      document.getElementById('ats-admin-status').style.display = 'flex';
-      document.getElementById('ats-admin-status-label').textContent =
-        savedRole === 'admin' ? `✅ Admin: ${savedUser}` : `✅ Helyettes: ${savedUser}`;
+      try {
+        const savedUser = sessionStorage.getItem('srt_ats_admin_user') || '';
+        const savedRole = sessionStorage.getItem('srt_ats_admin_role');
+        const auth = sessionStorage.getItem('srt_ats_discord_auth');
+        if (!savedUser || !savedRole || !auth) return;
+        atsAdminMode = true;
+        atsAdminRole = savedRole;
+        const loginForm = document.getElementById('ats-admin-login-form');
+        const statusDiv = document.getElementById('ats-admin-status');
+        const statusLabel = document.getElementById('ats-admin-status-label');
+        if (loginForm) loginForm.style.display = 'none';
+        if (statusDiv) statusDiv.style.display = 'flex';
+        if (statusLabel) statusLabel.textContent =
+          savedRole === 'admin' ? `✅ Admin: ${savedUser}` : `✅ Helyettes: ${savedUser}`;
+      } catch(e) { console.log('ATS autoLogin hiba:', e.message); }
     })();
 
     // ══ ATS SOFŐR LISTA — csak az ATS-hez bindelt sofőrök ══
