@@ -2087,7 +2087,8 @@
             case 'freight_market': fuvarTipusLabel = '📋 Piaci'; fuvarTipusColor = '#60a5fa'; break;
             case 'cargo_market': fuvarTipusLabel = '📋 Piaci'; fuvarTipusColor = '#60a5fa'; break;
             case 'quick_job': fuvarTipusLabel = '⚡ Gyors'; fuvarTipusColor = '#f87171'; break;
-            case 'external_contracts': fuvarTipusLabel = '📦 Pickup'; fuvarTipusColor = '#a78bfa'; break;
+            case 'pickup': fuvarTipusLabel = '📦 Pickup'; fuvarTipusColor = '#a78bfa'; break;
+            case 'external_contracts': fuvarTipusLabel = '📋 Szerződéses'; fuvarTipusColor = 'rgba(255,255,255,0.5)'; break;
             case 'external_market': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
             case 'world_of_trucks': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
             default: fuvarTipusLabel = '📋 ' + j.fuvarTipus; fuvarTipusColor = 'rgba(255,255,255,0.5)';
@@ -3114,15 +3115,16 @@
         var kamion = j.kamion || '-';
         var fuvarTipusLabel = '-';
         var fuvarTipusColor = 'rgba(255,255,255,0.5)';
-        if (j.fuvarTipus) {
-          switch(j.fuvarTipus) {
+        if (j.piacTipus) {
+          switch(j.piacTipus) {
             case 'freight_market': fuvarTipusLabel = '📋 Piaci'; fuvarTipusColor = '#60a5fa'; break;
             case 'cargo_market': fuvarTipusLabel = '📋 Piaci'; fuvarTipusColor = '#60a5fa'; break;
             case 'quick_job': fuvarTipusLabel = '⚡ Gyors'; fuvarTipusColor = '#f87171'; break;
-            case 'external_contracts': fuvarTipusLabel = '📦 Pickup'; fuvarTipusColor = '#a78bfa'; break;
+            case 'pickup': fuvarTipusLabel = '📦 Pickup'; fuvarTipusColor = '#a78bfa'; break;
+            case 'external_contracts': fuvarTipusLabel = '📋 Szerződéses'; fuvarTipusColor = 'rgba(255,255,255,0.5)'; break;
             case 'external_market': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
             case 'world_of_trucks': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
-            default: fuvarTipusLabel = '📋 ' + j.fuvarTipus; fuvarTipusColor = 'rgba(255,255,255,0.5)';
+            default: fuvarTipusLabel = '📋 ' + j.piacTipus; fuvarTipusColor = 'rgba(255,255,255,0.5)';
           }
         }
         var felvetel = j.felvételIdeje || j.datumFormazva || '-';
