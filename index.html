@@ -2627,7 +2627,7 @@
         { key:'havi_profit',   nev:'Havi Profit',            ikon:'📈', egyseg:'Ft' },
       ];
       grid.innerHTML = kategoriák.map(kat => `
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-size:20px;">${kat.ikon}</span>
@@ -2635,7 +2635,9 @@
             </div>
             ${isAdmin ? `<button onclick="editRanglistaKat('${kat.key}','${kat.nev}','${kat.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
           </div>
+          <div style="max-height:280px;overflow-y:auto;padding-right:4px;">
           ${renderTopListAuto(stat.ranglista[kat.key], kat.egyseg, 3)}
+          </div>
         </div>`).join('');
     }
 
@@ -2649,7 +2651,7 @@
         { key:'top_suly',       nev:'Top 3 Legtöbb Szállított Súly', ikon:'⚖️', egyseg:'t',   count: 3 },
       ];
       grid.innerHTML = sections.map(s => `
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-size:20px;">${s.ikon}</span>
@@ -2657,7 +2659,9 @@
             </div>
             ${isAdmin ? `<button onclick="editHetiSection('${s.key}','${s.nev}','${s.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
           </div>
+          <div style="max-height:280px;overflow-y:auto;padding-right:4px;">
           ${renderTopListAuto(stat.heti[s.key], s.egyseg, s.count)}
+          </div>
         </div>`).join('');
     }
 
@@ -2666,12 +2670,14 @@
       const grid = document.getElementById('napi-grid');
       const isAdmin = isAdminMode();
       grid.innerHTML = NAPOK.map(nap => `
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
             <div style="font-size:15px;font-weight:700;color:var(--orange);">📅 ${nap}</div>
             ${isAdmin ? `<button onclick="editNapiSection('${nap}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
           </div>
+          <div style="max-height:280px;overflow-y:auto;padding-right:4px;">
           ${renderTopListAuto(stat.napi[nap], 'km', stat.napi[nap]?.length||10)}
+          </div>
         </div>`).join('');
     }
 
@@ -3317,7 +3323,7 @@
         const autoData = d.map(x => ({ nev: x.nev, ertek: kat.fn(x) })).sort((a,b) => b.ertek-a.ertek).filter(x => x.ertek > 0);
         const sorted = atsOver[kat.key] ?? autoData;
         return `
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <span style="font-size:20px;">${kat.ikon}</span>
@@ -3325,7 +3331,9 @@
               </div>
               ${isAdmin ? `<button onclick="editATSRanglistaKat('${kat.key}','${kat.nev}','${kat.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
             </div>
+            <div style="max-height:280px;overflow-y:auto;padding-right:4px;">
             ${renderTopListAuto(sorted, kat.egyseg, 3)}
+            </div>
           </div>`;
       }).join('');
     }
@@ -3359,7 +3367,7 @@
       ];
 
       grid.innerHTML = sections.map(s => `
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-size:20px;">${s.ikon}</span>
@@ -3367,7 +3375,9 @@
             </div>
             ${isAdmin ? `<button onclick="editATSHetiKat('${s.key}','${s.nev}','${s.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
           </div>
+          <div style="max-height:280px;overflow-y:auto;padding-right:4px;">
           ${renderTopListAuto(s.data, s.egyseg, s.count)}
+          </div>
         </div>`).join('');
 
       const napiGrid = document.getElementById('ats-napi-grid');
@@ -3378,12 +3388,14 @@
         }).sort((a,b)=>b.ertek-a.ertek).filter(x=>x.ertek>0);
         const napKm = atsOver[`ats_napi_${nap}`] ?? autoNapKm;
         return `
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
               <div style="font-size:15px;font-weight:700;color:var(--orange);">📅 ${nap}</div>
               ${isAdmin ? `<button onclick="editATSHetiKat('ats_napi_${nap}','${nap}','km')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
             </div>
+            <div style="max-height:280px;overflow-y:auto;padding-right:4px;">
             ${renderTopListAuto(napKm, 'km', napKm.length||10)}
+            </div>
           </div>`;
       }).join('');
     }
