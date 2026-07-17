@@ -2558,7 +2558,22 @@
     function autoNapiAdatok() {
       const d = getDrivers();
       const res = {};
-      NAPOK.forEach(nap => { res[nap] = d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.weeklyKm?.[nap]||0) })); });
+      const now = new Date();
+      const dow = (now.getDay() + 6) % 7; // 0 = hétfő
+      const weekStart = new Date(now); weekStart.setHours(0,0,0,0); weekStart.setDate(now.getDate() - dow);
+      const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 7);
+
+      NAPOK.forEach((nap, napIdx) => {
+        res[nap] = d.map(x => {
+          const jobs = (allJobs[jobKey(x.nev)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
+          const napiJobs = jobs.filter(j => {
+            if (!j.datum) return false;
+            const dt = new Date(j.datum);
+            return dt >= weekStart && dt < weekEnd && (dt.getDay() + 6) % 7 === napIdx;
+          });
+          return { nev: x.nev, ertek: Math.round(napiJobs.reduce((s, j) => s + (j.km || 0), 0)) };
+        });
+      });
       return res;
     }
 
