@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SRT TRANS KFT.</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -1399,6 +1402,7 @@
   </footer>
 
   <script>
+    console.log('%c[SRT] index.html verzió: 2026-07-17-fix-napi-heti-v3 (élő fuvar-alapú Napi+Heti számítás, override-üres-tömb javítás, kényszerített friss betöltés)', 'color:#f97316;font-weight:bold;font-size:12px;');
     const FIREBASE_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
 
     let allData = null;
@@ -2593,6 +2597,7 @@
       const d = getDrivers();
       const res = {};
       const { weekStart, weekEnd } = getCurrentWeekRange();
+      console.log(`[SRT DEBUG] Napi bontás hét-ablak: ${weekStart.toLocaleString('hu-HU')} — ${weekEnd.toLocaleString('hu-HU')}`);
       NAPOK.forEach((nap, napIdx) => {
         res[nap] = d.map(x => {
           const jobs = (allJobs[jobKey(x.nev)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
@@ -2604,6 +2609,19 @@
           });
           return { nev: x.nev, ertek: Math.round(napiJobs.reduce((s, j) => s + (j.km || 0), 0)) };
         });
+      });
+      // Diagnosztika: minden sofőrnél kiírja hány ETS2 fuvarja van összesen elmentve,
+      // és ebből mennyi esik a jelenlegi hét ablakába. Ha egy sofőrnél 0/0 az érték
+      // annak ellenére, hogy tudod, hogy vezetett a héten, az arra utal, hogy a
+      // fuvar `datum` mezője hiányzik/érvénytelen, vagy más a sofőr nevének kulcsa.
+      d.forEach(x => {
+        const allDriverJobs = (allJobs[jobKey(x.nev)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
+        const inWeek = allDriverJobs.filter(j => {
+          if (!j.datum) return false;
+          const dt = new Date(j.datum);
+          return !isNaN(dt.getTime()) && dt >= weekStart && dt < weekEnd;
+        });
+        console.log(`[SRT DEBUG] ${x.nev}: összes ETS2 fuvar mentve = ${allDriverJobs.length}, ebből e heti = ${inWeek.length}`);
       });
       return res;
     }
@@ -2662,13 +2680,22 @@
     }
 
     async function renderStatisztika() {
-      await loadJsonBin(allData === null);
+      // JAVÍTVA: korábban csak akkor húzta le újra a Firebase-t, ha allData
+      // még null volt (azaz csak az ELSŐ betöltéskor) — utána a memóriában lévő,
+      // esetleg percekkel/órákkal korábbi másolatra támaszkodott, és csak a 30
+      // másodperces autoRefreshTick frissítette a háttérben. Ez azt eredményezte,
+      // hogy fület váltva/oldalra visszatérve régi adatot lehetett látni annak
+      // ellenére, hogy közben a bot már elmentett egy új fuvart. Mostantól MINDIG
+      // friss adatot húz le, amikor a statisztika nézet renderelődik.
+      await loadJsonBin(true);
       // Betöltjük a mentett felülírásokat
       statOverride = allData?._statOverride || null;
       renderRanglista();
       renderHeti();
       renderNapi();
+      console.log(`[SRT DEBUG] Statisztika frissítve: ${new Date().toLocaleTimeString('hu-HU')} | sofőrök: ${getDrivers().length} | összes fuvar (mind sofőr): ${Object.values(allJobs||{}).reduce((s,arr)=>s+(arr?.length||0),0)}`);
     }
+
 
     function renderRanglista() {
       const stat = getStatAdatok();
