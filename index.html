@@ -2547,28 +2547,59 @@
         havi_profit:   d.map(x => ({ nev: x.nev, ertek: calcProfit(x.u,'monthly') })),
       };
     }
+    // Aktuális hét (hétfő 00:00 - következő hétfő 00:00). Mindig a "most" alapján
+    // számolódik újra, így minden hétfőn automatikusan nullázódik minden heti/napi
+    // statisztika — nem kell hozzá kézi "nullázás" gomb.
+    function getCurrentWeekRange() {
+      const now = new Date();
+      const dow = (now.getDay() + 6) % 7; // 0 = hétfő ... 6 = vasárnap
+      const weekStart = new Date(now); weekStart.setHours(0,0,0,0); weekStart.setDate(now.getDate() - dow);
+      const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 7);
+      return { weekStart, weekEnd };
+    }
+
+    // Egy sofőr adott heti (jelen naptári hét) ETS2 fuvarjai, dátum szerint szűrve.
+    function getWeeklyJobsFor(nev) {
+      const { weekStart, weekEnd } = getCurrentWeekRange();
+      const jobs = (allJobs[jobKey(nev)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
+      return jobs.filter(j => {
+        if (!j.datum) return false;
+        const dt = new Date(j.datum);
+        if (isNaN(dt.getTime())) return false;
+        return dt >= weekStart && dt < weekEnd;
+      });
+    }
+
     function autoHetiAdatok() {
       const d = getDrivers();
       return {
-        top_km:         d.map(x => ({ nev: x.nev, ertek: Math.round(x.u.weeklyTotalKm||0) })),
-        top_fogyasztas: d.map(x => ({ nev: x.nev, ertek: x.u.weeklyAvgFuel||0 })),
-        top_suly:       d.map(x => ({ nev: x.nev, ertek: x.u.weeklyTons||0 })),
+        top_km: d.map(x => {
+          const jobs = getWeeklyJobsFor(x.nev);
+          return { nev: x.nev, ertek: Math.round(jobs.reduce((s,j) => s + (j.km||0), 0)) };
+        }),
+        top_fogyasztas: d.map(x => {
+          const fJobs = getWeeklyJobsFor(x.nev).filter(j => j.avgFuelJob > 0);
+          const avg = fJobs.length ? fJobs.reduce((s,j) => s + j.avgFuelJob, 0) / fJobs.length : 0;
+          return { nev: x.nev, ertek: Math.round(avg*10)/10 };
+        }),
+        top_suly: d.map(x => {
+          const jobs = getWeeklyJobsFor(x.nev);
+          return { nev: x.nev, ertek: jobs.reduce((s,j) => s + (j.tonna||0), 0) };
+        }),
       };
     }
+
     function autoNapiAdatok() {
       const d = getDrivers();
       const res = {};
-      const now = new Date();
-      const dow = (now.getDay() + 6) % 7; // 0 = hétfő
-      const weekStart = new Date(now); weekStart.setHours(0,0,0,0); weekStart.setDate(now.getDate() - dow);
-      const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 7);
-
+      const { weekStart, weekEnd } = getCurrentWeekRange();
       NAPOK.forEach((nap, napIdx) => {
         res[nap] = d.map(x => {
           const jobs = (allJobs[jobKey(x.nev)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
           const napiJobs = jobs.filter(j => {
             if (!j.datum) return false;
             const dt = new Date(j.datum);
+            if (isNaN(dt.getTime())) return false;
             return dt >= weekStart && dt < weekEnd && (dt.getDay() + 6) % 7 === napIdx;
           });
           return { nev: x.nev, ertek: Math.round(napiJobs.reduce((s, j) => s + (j.km || 0), 0)) };
@@ -2583,21 +2614,28 @@
       const autoR = autoRanglistaAdatok();
       const autoH = autoHetiAdatok();
       const autoN = autoNapiAdatok();
+      // FONTOS: egy üres tömb ([]) felülírást ugyanúgy "nincs felülírás"-ként kezelünk,
+      // mint a null/undefined-et. Korábban a "??" operátor egy üresen mentett admin
+      // felülírást is érvényesnek tekintett, ami VÉGLEGESEN ráfagyott egy napra/kategóriára,
+      // és attól kezdve sosem jelent meg élő adat — függetlenül attól, hogy közben
+      // történtek-e valós fuvarok. Ez okozta, hogy egyes napok (pl. Csütörtök–Vasárnap)
+      // tartósan "Nincs adat"-ot mutattak, miközben a többi nap helyesen frissült.
+      const useOverride = (val) => Array.isArray(val) && val.length > 0 ? val : null;
       return {
         ranglista: {
-          osszes_km:     over.ranglista?.osszes_km     ?? autoR.osszes_km,
-          osszes_profit: over.ranglista?.osszes_profit ?? autoR.osszes_profit,
-          osszes_suly:   over.ranglista?.osszes_suly   ?? autoR.osszes_suly,
-          havi_suly:     over.ranglista?.havi_suly     ?? autoR.havi_suly,
-          havi_km:       over.ranglista?.havi_km       ?? autoR.havi_km,
-          havi_profit:   over.ranglista?.havi_profit   ?? autoR.havi_profit,
+          osszes_km:     useOverride(over.ranglista?.osszes_km)     ?? autoR.osszes_km,
+          osszes_profit: useOverride(over.ranglista?.osszes_profit) ?? autoR.osszes_profit,
+          osszes_suly:   useOverride(over.ranglista?.osszes_suly)   ?? autoR.osszes_suly,
+          havi_suly:     useOverride(over.ranglista?.havi_suly)     ?? autoR.havi_suly,
+          havi_km:       useOverride(over.ranglista?.havi_km)       ?? autoR.havi_km,
+          havi_profit:   useOverride(over.ranglista?.havi_profit)   ?? autoR.havi_profit,
         },
         heti: {
-          top_km:         over.heti?.top_km         ?? autoH.top_km,
-          top_fogyasztas: over.heti?.top_fogyasztas ?? autoH.top_fogyasztas,
-          top_suly:       over.heti?.top_suly       ?? autoH.top_suly,
+          top_km:         useOverride(over.heti?.top_km)         ?? autoH.top_km,
+          top_fogyasztas: useOverride(over.heti?.top_fogyasztas) ?? autoH.top_fogyasztas,
+          top_suly:       useOverride(over.heti?.top_suly)       ?? autoH.top_suly,
         },
-        napi: Object.fromEntries(NAPOK.map(nap => [nap, over.napi?.[nap] ?? autoN[nap]])),
+        napi: Object.fromEntries(NAPOK.map(nap => [nap, useOverride(over.napi?.[nap]) ?? autoN[nap]])),
       };
     }
 
