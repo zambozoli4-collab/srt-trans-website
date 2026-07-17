@@ -1399,11 +1399,9 @@
   <!-- FOOTER -->
   <footer class="site-footer">
     <p>© 2025 SRT TRANS KFT. — Készítette: COBRA</p>
-    <p style="opacity:0.35;font-size:10px;margin-top:4px;">build: 2026-07-17-fix-napi-heti-v5</p>
   </footer>
 
   <script>
-    console.log('%c[SRT] index.html verzió: 2026-07-17-fix-napi-heti-v5 (szigorúbb override-ellenőrzés + nyers override napló)', 'color:#f97316;font-weight:bold;font-size:12px;');
     const FIREBASE_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
 
     let allData = null;
@@ -2598,26 +2596,6 @@
       const d = getDrivers();
       const res = {};
       const { weekStart, weekEnd } = getCurrentWeekRange();
-      console.log(`[SRT DEBUG] Napi bontás hét-ablak: ${weekStart.toLocaleString('hu-HU')} — ${weekEnd.toLocaleString('hu-HU')}`);
-      // RÉSZLETES DIAGNOSZTIKA: minden e heti fuvarnál kiírjuk a pontos datum
-      // mezőt, a belőle számolt getDay()-t és hogy melyik magyar napnévre
-      // fordítottuk le — így pontosan látszik, ha egy fuvar rossz napra esik,
-      // vagy egyáltalán nem kerül be egyik napba sem.
-      d.forEach(x => {
-        const jobs = (allJobs[jobKey(x.nev)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
-        const weeklyJobs = jobs.filter(j => {
-          if (!j.datum) return false;
-          const dt = new Date(j.datum);
-          return !isNaN(dt.getTime()) && dt >= weekStart && dt < weekEnd;
-        });
-        if (weeklyJobs.length > 0) {
-          weeklyJobs.forEach(j => {
-            const dt = new Date(j.datum);
-            const napIdx = (dt.getDay() + 6) % 7;
-            console.log(`[SRT DEBUG NAP] ${x.nev} | datum="${j.datum}" | getDay()=${dt.getDay()} | napIdx=${napIdx} → ${NAPOK[napIdx]} | km=${j.km}`);
-          });
-        }
-      });
       NAPOK.forEach((nap, napIdx) => {
         res[nap] = d.map(x => {
           const jobs = (allJobs[jobKey(x.nev)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
@@ -2630,26 +2608,12 @@
           return { nev: x.nev, ertek: Math.round(napiJobs.reduce((s, j) => s + (j.km || 0), 0)) };
         });
       });
-      // Diagnosztika: minden sofőrnél kiírja hány ETS2 fuvarja van összesen elmentve,
-      // és ebből mennyi esik a jelenlegi hét ablakába. Ha egy sofőrnél 0/0 az érték
-      // annak ellenére, hogy tudod, hogy vezetett a héten, az arra utal, hogy a
-      // fuvar `datum` mezője hiányzik/érvénytelen, vagy más a sofőr nevének kulcsa.
-      d.forEach(x => {
-        const allDriverJobs = (allJobs[jobKey(x.nev)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
-        const inWeek = allDriverJobs.filter(j => {
-          if (!j.datum) return false;
-          const dt = new Date(j.datum);
-          return !isNaN(dt.getTime()) && dt >= weekStart && dt < weekEnd;
-        });
-        console.log(`[SRT DEBUG] ${x.nev}: összes ETS2 fuvar mentve = ${allDriverJobs.length}, ebből e heti = ${inWeek.length}`);
-      });
       return res;
     }
 
     // Effektív adatok: felülírás ha van, egyébként auto
     function getStatAdatok() {
       const over = statOverride || (allData?._statOverride) || {};
-      console.log('[SRT DEBUG OVERRIDE] napi felülírás nyers tartalma:', JSON.stringify(over.napi || {}));
       const autoR = autoRanglistaAdatok();
       const autoH = autoHetiAdatok();
       const autoN = autoNapiAdatok();
@@ -2722,7 +2686,6 @@
       renderRanglista();
       renderHeti();
       renderNapi();
-      console.log(`[SRT DEBUG] Statisztika frissítve: ${new Date().toLocaleTimeString('hu-HU')} | sofőrök: ${getDrivers().length} | összes fuvar (mind sofőr): ${Object.values(allJobs||{}).reduce((s,arr)=>s+(arr?.length||0),0)}`);
     }
 
 
