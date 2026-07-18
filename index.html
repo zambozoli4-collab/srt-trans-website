@@ -870,8 +870,8 @@
     </div>
     <div class="container" id="modok-lock" style="text-align:center;padding:80px 24px;">
       <div style="font-size:48px;margin-bottom:16px;">🔒</div>
-      <h2 class="section-title" style="font-size:28px;">Ez a tartalom regisztrációhoz kötött</h2>
-      <p style="color:var(--muted);max-width:440px;margin:0 auto 28px;">A módok letöltéséhez jelentkezz be, vagy regisztrálj egy ingyenes fiókot. Csak pár másodperc!</p>
+      <h2 class="section-title" style="font-size:28px;">Ez a tartalom az SRT ranghoz kötött</h2>
+      <p style="color:var(--muted);max-width:440px;margin:0 auto 28px;">Jelentkezz be / regisztrálj, majd vezess Truckyban, amíg meg nem szerzed az SRT Discord rangot — utána azonnal elérhetővé válik a módok letöltése.</p>
       <button class="btn-trucky" style="font-size:14px;padding:12px 28px;" onclick="openAuthModal()">🔐 Belépés / Regisztráció</button>
     </div>
   </div>
@@ -1405,11 +1405,11 @@
 
     </div> <!-- /container-wide -->
 
-    <!-- ══ TARTALOM ZÁR: csak regisztrált + jóváhagyott felhasználóknak, vagy adminoknak ══ -->
+    <!-- ══ TARTALOM ZÁR: csak regisztrált + jóváhagyott + SRT ranggal rendelkező felhasználóknak, vagy adminoknak ══ -->
     <div id="fuvarok-lock" class="container-wide" style="text-align:center;padding:100px 24px;">
       <div style="font-size:48px;margin-bottom:16px;">🔒</div>
-      <h2 class="section-title" style="font-size:28px;">Ez a tartalom csak regisztrált tagoknak érhető el</h2>
-      <p style="color:var(--muted);max-width:480px;margin:0 auto 24px;" id="fuvarok-lock-text">Regisztrálj vagy jelentkezz be, majd várd meg, míg egy admin jóváhagyja a hozzáférésedet.</p>
+      <h2 class="section-title" style="font-size:28px;">Ez a tartalom az SRT ranghoz kötött</h2>
+      <p style="color:var(--muted);max-width:480px;margin:0 auto 24px;" id="fuvarok-lock-text">Jelentkezz be / regisztrálj, majd vezess Truckyban, amíg meg nem szerzed az SRT Discord rangot — utána azonnal elérhetővé válik a Fuvarok tartalom.</p>
       <button class="btn-trucky" onclick="openAuthModal()" style="padding:12px 28px;font-size:14px;">🔐 Regisztráció / Bejelentkezés</button>
     </div>
   </div> <!-- /page-fuvarok -->
@@ -4401,6 +4401,7 @@
 
     let currentUser = null;
     let currentStatusz = null; // null | 'fuggoben' | 'jovahagyva' | 'elutasitva'
+    let currentVanRangja = false; // van-e élő SRT Discord rangja (a bot ellenőrzi)
 
     function isAdminUser() {
       const discordAdmin = !!(window.isAnySiteAdmin && window.isAnySiteAdmin());
@@ -4877,7 +4878,7 @@
 
     // ── TARTALOM ZÁR: modok-content/fuvarok-content elrejtése/megjelenítése ──
     window.applyContentGate = function() {
-      const unlocked = isAdminUser() || currentStatusz === 'jovahagyva';
+      const unlocked = isAdminUser() || (currentStatusz === 'jovahagyva' && currentVanRangja);
       ['modok', 'fuvarok'].forEach(key => {
         const content = document.getElementById(key + '-content');
         const lock = document.getElementById(key + '-lock');
@@ -4888,21 +4889,40 @@
       refreshAdminTabVisibility();
     };
 
+    // ── SRT DISCORD RANG ÉLŐ ELLENŐRZÉSE A BOTON KERESZTÜL ──
+    async function ellenorziSrtRangot(discordNev, truckyNev) {
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/van-e-srt-rangja', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordName: discordNev, truckyName: truckyNev })
+        });
+        if (!res.ok) return { vanRangja: false, talalt: false };
+        return await res.json();
+      } catch (e) {
+        return { vanRangja: false, talalt: false };
+      }
+    }
+
     // ── A BEJELENTKEZETT FELHASZNÁLÓ SAJÁT JÓVÁHAGYÁSI ÁLLAPOTÁNAK LEKÉRÉSE ──
     async function frissitiSajatAllapotot() {
       const statusMsg = document.getElementById('auth-status-message');
-      if (!currentUser) { currentStatusz = null; applyContentGate(); return; }
+      if (!currentUser) { currentStatusz = null; currentVanRangja = false; applyContentGate(); return; }
       if (isAdminUser()) {
         currentStatusz = 'jovahagyva';
+        currentVanRangja = true;
         statusMsg.innerHTML = '<span style="color:#4ade80;">👑 Admin hozzáférés aktív</span>';
         applyContentGate();
         return;
       }
+      let discordNevMentett = null, truckyNevMentett = null;
       try {
         const res = await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}.json`);
         const data = await res.json();
         currentStatusz = data ? data.statusz : null;
         var marIsmertSofor = data ? !!data.marIsmertSofor : false;
+        discordNevMentett = data ? data.discordNev : null;
+        truckyNevMentett = data ? data.truckyNev : null;
 
         // ── ÖNJAVÍTÁS: ha admin/helyettes Discord névvel regisztrált valaki, de a
         // rekordja mégsem lett automatikusan jóváhagyva (pl. régebbi regisztráció),
@@ -4918,8 +4938,21 @@
       } catch (e) {
         currentStatusz = null;
       }
+
+      currentVanRangja = false;
+      let rangAdat = null;
       if (currentStatusz === 'jovahagyva') {
-        statusMsg.innerHTML = '<span style="color:#4ade80;">✅ A fiókod jóvá van hagyva, minden tartalom elérhető.</span>';
+        rangAdat = await ellenorziSrtRangot(discordNevMentett, truckyNevMentett);
+        currentVanRangja = !!rangAdat.vanRangja;
+      }
+
+      if (currentStatusz === 'jovahagyva' && currentVanRangja) {
+        statusMsg.innerHTML = '<span style="color:#4ade80;">✅ Jóváhagyva, és megvan az SRT rangod is — minden tartalom elérhető!</span>';
+      } else if (currentStatusz === 'jovahagyva' && !currentVanRangja) {
+        const kmSzoveg = (rangAdat && rangAdat.talalt && rangAdat.kmLimit)
+          ? `<br><span style="color:var(--muted);font-size:12px;">Eddig teljesített: <strong>${(rangAdat.totalKm || 0).toLocaleString('hu-HU')} km</strong> / ${rangAdat.kmLimit.toLocaleString('hu-HU')} km</span>`
+          : '';
+        statusMsg.innerHTML = '<span style="color:#f59e0b;">🚚 A fiókod jóvá van hagyva, de még nincs meg az SRT Discord rangod.</span><br><span style="color:var(--muted);font-size:12px;">Vezess Truckyban, amíg el nem éred a szükséges km-t — a bot automatikusan kiosztja a rangot, utána azonnal megnyílik itt a Fuvarok és Módok tartalom.</span>' + kmSzoveg;
       } else if (currentStatusz === 'elutasitva') {
         statusMsg.innerHTML = '<span style="color:#f87171;">❌ A regisztrációdat egy admin elutasította.</span>';
       } else {
