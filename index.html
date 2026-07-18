@@ -869,10 +869,16 @@
       </div>
     </div>
     <div class="container" id="modok-lock" style="text-align:center;padding:80px 24px;">
-      <div style="font-size:48px;margin-bottom:16px;">🔒</div>
-      <h2 class="section-title" style="font-size:28px;">Ez a tartalom az SRT ranghoz kötött</h2>
-      <p style="color:var(--muted);max-width:440px;margin:0 auto 28px;">Jelentkezz be / regisztrálj, majd vezess Truckyban, amíg meg nem szerzed az SRT Discord rangot — utána azonnal elérhetővé válik a módok letöltése.</p>
-      <button class="btn-trucky" style="font-size:14px;padding:12px 28px;" onclick="openAuthModal()">🔐 Belépés / Regisztráció</button>
+      <div id="modok-lock-checking">
+        <div style="font-size:36px;margin-bottom:16px;">⏳</div>
+        <p style="color:var(--muted);">Jogosultság ellenőrzése...</p>
+      </div>
+      <div id="modok-lock-denied" style="display:none;">
+        <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+        <h2 class="section-title" style="font-size:28px;">Ez a tartalom az SRT ranghoz kötött</h2>
+        <p style="color:var(--muted);max-width:440px;margin:0 auto 28px;">Jelentkezz be / regisztrálj, majd vezess Truckyban, amíg meg nem szerzed az SRT Discord rangot — utána azonnal elérhetővé válik a módok letöltése.</p>
+        <button class="btn-trucky" style="font-size:14px;padding:12px 28px;" onclick="openAuthModal()">🔐 Belépés / Regisztráció</button>
+      </div>
     </div>
   </div>
 
@@ -1407,10 +1413,16 @@
 
     <!-- ══ TARTALOM ZÁR: csak regisztrált + jóváhagyott + SRT ranggal rendelkező felhasználóknak, vagy adminoknak ══ -->
     <div id="fuvarok-lock" class="container-wide" style="text-align:center;padding:100px 24px;">
-      <div style="font-size:48px;margin-bottom:16px;">🔒</div>
-      <h2 class="section-title" style="font-size:28px;">Ez a tartalom az SRT ranghoz kötött</h2>
-      <p style="color:var(--muted);max-width:480px;margin:0 auto 24px;" id="fuvarok-lock-text">Jelentkezz be / regisztrálj, majd vezess Truckyban, amíg meg nem szerzed az SRT Discord rangot — utána azonnal elérhetővé válik a Fuvarok tartalom.</p>
-      <button class="btn-trucky" onclick="openAuthModal()" style="padding:12px 28px;font-size:14px;">🔐 Regisztráció / Bejelentkezés</button>
+      <div id="fuvarok-lock-checking">
+        <div style="font-size:36px;margin-bottom:16px;">⏳</div>
+        <p style="color:var(--muted);">Jogosultság ellenőrzése...</p>
+      </div>
+      <div id="fuvarok-lock-denied" style="display:none;">
+        <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+        <h2 class="section-title" style="font-size:28px;">Ez a tartalom az SRT ranghoz kötött</h2>
+        <p style="color:var(--muted);max-width:480px;margin:0 auto 24px;" id="fuvarok-lock-text">Jelentkezz be / regisztrálj, majd vezess Truckyban, amíg meg nem szerzed az SRT Discord rangot — utána azonnal elérhetővé válik a Fuvarok tartalom.</p>
+        <button class="btn-trucky" onclick="openAuthModal()" style="padding:12px 28px;font-size:14px;">🔐 Regisztráció / Bejelentkezés</button>
+      </div>
     </div>
   </div> <!-- /page-fuvarok -->
 
@@ -4402,6 +4414,7 @@
     let currentUser = null;
     let currentStatusz = null; // null | 'fuggoben' | 'jovahagyva' | 'elutasitva'
     let currentVanRangja = false; // van-e élő SRT Discord rangja (a bot ellenőrzi)
+    let gateEllenorzesKesz = false; // igaz, amint az első teljes jogosultság-ellenőrzés lefutott
 
     function isAdminUser() {
       const discordAdmin = !!(window.isAnySiteAdmin && window.isAnySiteAdmin());
@@ -4878,13 +4891,20 @@
 
     // ── TARTALOM ZÁR: modok-content/fuvarok-content elrejtése/megjelenítése ──
     window.applyContentGate = function() {
+      gateEllenorzesKesz = true;
       const unlocked = isAdminUser() || (currentStatusz === 'jovahagyva' && currentVanRangja);
       ['modok', 'fuvarok'].forEach(key => {
         const content = document.getElementById(key + '-content');
         const lock = document.getElementById(key + '-lock');
+        const checking = document.getElementById(key + '-lock-checking');
+        const denied = document.getElementById(key + '-lock-denied');
         if (!content || !lock) return;
         content.style.display = unlocked ? '' : 'none';
         lock.style.display = unlocked ? 'none' : 'block';
+        if (checking && denied) {
+          checking.style.display = gateEllenorzesKesz ? 'none' : 'block';
+          denied.style.display = gateEllenorzesKesz ? 'block' : 'none';
+        }
       });
       refreshAdminTabVisibility();
     };
@@ -4934,6 +4954,16 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify('jovahagyva')
           });
+        }
+
+        // ── Ha a mentett Discord név admin/helyettes névnek felel meg (Cobra/Erik/Boby),
+        // mindig teljes hozzáférést kapnak — nem kell hozzá se Discord-kódos bejelentkezés
+        // ebben a böngészőben, se élő SRT rang-ellenőrzés a boton keresztül. ──
+        if (data && ismertAdminDiscordNev(data.discordNev)) {
+          currentVanRangja = true;
+          statusMsg.innerHTML = '<span style="color:#4ade80;">👑 Admin/helyettes fiók — minden tartalom automatikusan elérhető.</span>';
+          applyContentGate();
+          return;
         }
       } catch (e) {
         currentStatusz = null;
