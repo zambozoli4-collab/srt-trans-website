@@ -4296,6 +4296,16 @@
           <input type="text" id="auth-tagok-kereses" oninput="szurTagokList()" placeholder="🔍 Keresés név, email, Discord vagy Trucky név alapján..." style="flex:1;min-width:180px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:12px;box-sizing:border-box;" />
         </div>
         <div id="auth-tagok-osszesen" style="font-size:11px;color:var(--muted);margin-bottom:10px;"></div>
+
+        <!-- "Elárvult" bejelentkezési fiók törlése önmagában (ha már nincs a listában) -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:14px;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">🧹 Elárvult fiók törlése email alapján (ha valakinek a bejelentkezési fiókja megmaradt, de a listában már nincs)</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <input type="email" id="arva-fiok-email" placeholder="email@pelda.hu" style="flex:1;min-width:160px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:#fff;font-size:12px;box-sizing:border-box;" />
+            <button onclick="torolArvaFiokot()" style="padding:8px 14px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">🗑️ Törlés</button>
+          </div>
+        </div>
+
         <div id="auth-tagok-list" style="display:flex;flex-direction:column;gap:10px;"></div>
       </div>
 
@@ -4711,6 +4721,31 @@
       toltiAdminKerelmeket();
       toltiOsszesTagot();
       if (currentUser && currentUser.uid === uid) frissitiSajatAllapotot();
+    };
+
+    // ── ADMIN: ELÁRVULT BEJELENTKEZÉSI FIÓK TÖRLÉSE (email alapján, ha már nincs a Tagok listában) ──
+    window.torolArvaFiokot = async function() {
+      if (!isAdminUser()) { alert('❌ Csak admin törölhet fiókot.'); return; }
+      const emailEl = document.getElementById('arva-fiok-email');
+      const email = emailEl.value.trim();
+      if (!email) { alert('❌ Add meg az email címet.'); return; }
+      if (!confirm(`Biztosan törlöd a(z) "${email}" bejelentkezési fiókot? Ez nem visszavonható.`)) return;
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/torol-auth-fiok', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+          body: JSON.stringify({ email })
+        });
+        const result = await res.json().catch(() => ({}));
+        if (res.ok) {
+          alert(result.note ? `ℹ️ ${result.note}` : '✅ Fiók törölve, az email cím újra felhasználható.');
+          emailEl.value = '';
+        } else {
+          alert(`❌ Hiba: ${result.error || 'ismeretlen hiba'}`);
+        }
+      } catch (e) {
+        alert('❌ Kapcsolati hiba: ' + e.message);
+      }
     };
 
     window.torolRegisztraciot = async function(uid, nev) {
