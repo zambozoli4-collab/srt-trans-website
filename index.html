@@ -4461,9 +4461,8 @@
     function refreshAdminTabVisibility() {
       const adminTab = document.getElementById('auth-tab-admin');
       const tagokTab = document.getElementById('auth-tab-tagok');
-      const jogosult = isFullAdminUser();
-      if (adminTab) adminTab.style.display = jogosult ? 'block' : 'none';
-      if (tagokTab) tagokTab.style.display = jogosult ? 'block' : 'none';
+      if (adminTab) adminTab.style.display = isFullAdminUser() ? 'block' : 'none';
+      if (tagokTab) tagokTab.style.display = isAdminUser() ? 'block' : 'none';
     }
 
     function magyarHiba(kod) {
@@ -4655,7 +4654,7 @@
     }
 
     window.jovahagyRegisztraciot = async function(uid) {
-      if (!isFullAdminUser()) { alert('❌ Csak a főadmin (Cobra) hagyhat jóvá kérelmeket.'); return; }
+      if (!isAdminUser()) { alert('❌ Csak admin hagyhat jóvá kérelmeket.'); return; }
       await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -4667,7 +4666,7 @@
     };
 
     window.elutasitRegisztraciot = async function(uid) {
-      if (!isFullAdminUser()) { alert('❌ Csak a főadmin (Cobra) utasíthat el kérelmeket.'); return; }
+      if (!isAdminUser()) { alert('❌ Csak admin utasíthat el kérelmeket.'); return; }
       await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -4680,7 +4679,7 @@
 
     // ── ADMIN: TAGOK VISSZAVONÁSA / ÚJRA-JÓVÁHAGYÁSA / TÖRLÉSE ──
     window.visszavonRegisztraciot = async function(uid) {
-      if (!isFullAdminUser()) { alert('❌ Csak a főadmin (Cobra) vonhat vissza jóváhagyást.'); return; }
+      if (!isAdminUser()) { alert('❌ Csak admin vonhat vissza jóváhagyást.'); return; }
       if (!confirm('Biztosan visszavonod ennek a tagnak a jóváhagyását? Ekkor a Fuvarok/Módok tartalom újra elzáródik neki.')) return;
       await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json`, {
         method: 'PUT',
@@ -4693,9 +4692,32 @@
     };
 
     window.torolRegisztraciot = async function(uid, nev) {
-      if (!isFullAdminUser()) { alert('❌ Csak a főadmin (Cobra) törölhet regisztrációt.'); return; }
-      if (!confirm(`Biztosan törlöd "${nev || 'ez a tag'}" weboldali regisztrációját? Ez nem vonja vissza a Firebase-bejelentkezési fiókját, csak a jóváhagyási rekordot törli — a tartalom-hozzáférése azonnal elzáródik.`)) return;
+      if (!isAdminUser()) { alert('❌ Csak admin törölhet regisztrációt.'); return; }
+      if (!confirm(`Biztosan törlöd "${nev || 'ez a tag'}" weboldali regisztrációját? Ez a weboldali hozzáférését ÉS a Discord szerverről is kirúgja. Ez nem visszavonható!`)) return;
+
+      const rec = osszesTagAdat.find(r => r.uid === uid);
+      const discordNev = rec ? rec.discordNev : null;
+
       await fetch(`${DB_URL}/regisztraciok/${uid}.json`, { method: 'DELETE' });
+
+      // ── Kirúgás a Discord szerverről is ──
+      if (discordNev) {
+        try {
+          const kickRes = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/kick-member', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+            body: JSON.stringify({ discordName: discordNev })
+          });
+          if (!kickRes.ok) {
+            const kickErr = await kickRes.json().catch(() => ({}));
+            console.warn('Discord kirúgás nem sikerült:', kickErr.error || kickRes.status);
+            alert(`⚠️ A weboldali fiók törölve, de a Discord kirúgás nem sikerült (${kickErr.error || 'ismeretlen hiba'}). Lehet, hogy a Discord név nem egyezik pontosan, vagy már nincs a szerveren.`);
+          }
+        } catch (e) {
+          console.warn('Discord kirúgás hiba:', e.message);
+        }
+      }
+
       toltiAdminKerelmeket();
       toltiOsszesTagot();
       if (currentUser && currentUser.uid === uid) frissitiSajatAllapotot();
@@ -4706,8 +4728,8 @@
     async function toltiOsszesTagot() {
       const listEl = document.getElementById('auth-tagok-list');
       const osszesenEl = document.getElementById('auth-tagok-osszesen');
-      if (!isFullAdminUser()) {
-        listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">❌ Ehhez csak a főadminnak (Cobra) van jogosultsága.</div>';
+      if (!isAdminUser()) {
+        listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">❌ Ehhez admin jogosultság szükséges.</div>';
         return;
       }
       listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;">Betöltés...</div>';
