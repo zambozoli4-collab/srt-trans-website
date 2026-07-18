@@ -4715,12 +4715,31 @@
 
     window.torolRegisztraciot = async function(uid, nev) {
       if (!isAdminUser()) { alert('❌ Csak admin törölhet regisztrációt.'); return; }
-      if (!confirm(`Biztosan törlöd "${nev || 'ez a tag'}" weboldali regisztrációját? Ez a weboldali hozzáférését ÉS a Discord szerverről is kirúgja. Ez nem visszavonható!`)) return;
+      if (!confirm(`Biztosan törlöd "${nev || 'ez a tag'}" weboldali regisztrációját? Ez a weboldali hozzáférését, a bejelentkezési fiókját (email cím felszabadul) ÉS a Discord szerverről is kirúgja. Ez nem visszavonható!`)) return;
 
       const rec = osszesTagAdat.find(r => r.uid === uid);
       const discordNev = rec ? rec.discordNev : null;
+      const email = rec ? rec.email : null;
 
       await fetch(`${DB_URL}/regisztraciok/${uid}.json`, { method: 'DELETE' });
+
+      // ── Firebase Authentication fiók törlése is (hogy az email cím felszabaduljon) ──
+      if (email) {
+        try {
+          const authDelRes = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/torol-auth-fiok', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+            body: JSON.stringify({ email })
+          });
+          if (!authDelRes.ok) {
+            const authErr = await authDelRes.json().catch(() => ({}));
+            console.warn('Fiók-törlés nem sikerült:', authErr.error || authDelRes.status);
+            alert(`⚠️ A weboldali rekord törölve, de a bejelentkezési fiók (email cím) törlése nem sikerült: ${authErr.error || 'ismeretlen hiba'}. Ezt kézzel törölheted a Firebase Console → Authentication → Users résznél.`);
+          }
+        } catch (e) {
+          console.warn('Fiók-törlés hiba:', e.message);
+        }
+      }
 
       // ── Kirúgás a Discord szerverről is ──
       if (discordNev) {
