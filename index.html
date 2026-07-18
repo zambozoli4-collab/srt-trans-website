@@ -742,6 +742,7 @@
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Csapat</button>
       </nav>
       <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
+      <button class="btn-trucky" id="auth-header-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="openAuthModal()">🔐 Belépés</button>
       <!-- Hamburger gomb mobilra -->
       <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menü">
         <span></span><span></span><span></span>
@@ -759,6 +760,7 @@
     <button class="nav-btn" id="mob-nav-kozosseg" onclick="showPage('kozosseg');closeMobileNav()">💬 Közösség</button>
     <button class="nav-btn" id="mob-nav-csapat" onclick="showPage('csapat');closeMobileNav()">👥 Csapat</button>
     <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky letöltés</a>
+    <button class="btn-trucky" id="auth-mobile-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="openAuthModal();closeMobileNav()">🔐 Belépés</button>
   </div>
 
   <!-- ══════════ PAGE: HOME ══════════ -->
@@ -777,7 +779,7 @@
   <div class="page" id="page-modok" style="position:relative;">
     <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-modok" data-for="page-modok"></div>
     <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-modok"></div>
-    <div class="container">
+    <div class="container" id="modok-content" style="display:none;">
       <p class="section-eyebrow">Letöltések</p>
       <h2 class="section-title">Módok a játékhoz</h2>
 
@@ -863,6 +865,12 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="container" id="modok-lock" style="text-align:center;padding:80px 24px;">
+      <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+      <h2 class="section-title" style="font-size:28px;">Ez a tartalom regisztrációhoz kötött</h2>
+      <p style="color:var(--muted);max-width:440px;margin:0 auto 28px;">A módok letöltéséhez jelentkezz be, vagy regisztrálj egy ingyenes fiókot. Csak pár másodperc!</p>
+      <button class="btn-trucky" style="font-size:14px;padding:12px 28px;" onclick="openAuthModal()">🔐 Belépés / Regisztráció</button>
     </div>
   </div>
 
@@ -956,7 +964,7 @@
             🖼️ Kép feltöltése
             <input type="file" id="kep-upload-input" accept="image/*" style="display:none;" onchange="feltoltKep(this)"/>
           </label>
-          <button onclick="osszesTorles()" style="padding:8px 16px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">🗑️ Összes kép törlése</button>
+          <button id="osszes-torles-btn" onclick="osszesTorles()" style="display:none; padding:8px 16px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">🗑️ Összes kép törlése</button>
           <span id="upload-status-kep" style="font-size:12px; color:var(--muted); margin-left:10px;"></span>
         </div>
         <div style="max-height: 70vh; overflow-y: auto; padding-right: 4px;">
@@ -1120,7 +1128,7 @@
     <!-- Hegyi háttér -->
     <div id="fuvarok-bg" style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80');background-size:cover;background-position:center 40%;background-repeat:no-repeat;pointer-events:none;display:none;"></div>
     <div id="fuvarok-overlay" style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;"></div>
-    <div class="container-wide">
+    <div class="container-wide" id="fuvarok-content" style="display:none;">
       <p class="section-eyebrow">Sofőr statisztikák</p>
 
       <!-- Játék választó fülek -->
@@ -1394,11 +1402,19 @@
       </div> <!-- /game-panel-ats -->
 
     </div> <!-- /container-wide -->
+
+    <!-- ══ TARTALOM ZÁR: csak regisztrált + jóváhagyott felhasználóknak, vagy adminoknak ══ -->
+    <div id="fuvarok-lock" class="container-wide" style="text-align:center;padding:100px 24px;">
+      <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+      <h2 class="section-title" style="font-size:28px;">Ez a tartalom csak regisztrált tagoknak érhető el</h2>
+      <p style="color:var(--muted);max-width:480px;margin:0 auto 24px;" id="fuvarok-lock-text">Regisztrálj vagy jelentkezz be, majd várd meg, míg egy admin jóváhagyja a hozzáférésedet.</p>
+      <button class="btn-trucky" onclick="openAuthModal()" style="padding:12px 28px;font-size:14px;">🔐 Regisztráció / Bejelentkezés</button>
+    </div>
   </div> <!-- /page-fuvarok -->
 
   <!-- FOOTER -->
   <footer class="site-footer">
-    <p>© 2025 SRT TRANS KFT. — Készítette: COBRA</p>
+    <p>© 2025 SRT TRANS KFT. — Készítette: <span id="cobra-titkos-trigger" onclick="cobraTitkosKattintas()" style="cursor:default;">COBRA</span></p>
   </footer>
 
   <script>
@@ -1442,6 +1458,80 @@
     let currentATSDriver = null;
 
     function isAdminMode() { return adminMode; }
+
+    // Globális admin-ellenőrző: igaz, ha BÁRMELYIK admin-bejelentkezés aktív
+    // (ETS2 Fuvarok admin, ATS admin, vagy Média admin). Ezt használja a
+    // Fuvarok/Módok tartalom-zár (lásd a Firebase Authentication script-et lentebb).
+    window.isAnySiteAdmin = function() {
+      return !!(adminMode || (typeof atsAdminMode !== 'undefined' && atsAdminMode) || (typeof mediaAdminMode !== 'undefined' && mediaAdminMode));
+    };
+
+    // Teljes jogú admin (Cobra) vs. helyettes (Erik, Boby) megkülönböztetése.
+    // Igaz, ha BÁRMELYIK bejelentkezett admin-munkamenet 'admin' szerepkörű
+    // (nem 'helyettes'). Ezt használja pl. a "Kérelmek" (regisztráció-jóváhagyás)
+    // panel láthatósága és a Média oldal törlés-jogosultsága.
+    window.isFullAdmin = function() {
+      return !!(
+        adminRole === 'admin' ||
+        (typeof atsAdminRole !== 'undefined' && atsAdminRole === 'admin') ||
+        (typeof mediaAdminRole !== 'undefined' && mediaAdminRole === 'admin')
+      );
+    };
+
+    // ══════════ COBRA TITKOS ADMIN BELÉPÉS ══════════
+    // A lábléc "COBRA" feliratára 5 gyors kattintás (3 másodpercen belül) felfedi
+    // az "🔑 Admin Belépés" fület a bejelentkezési modalban. Senki más nem tudja,
+    // hogy ez létezik, csak akinek elárulod a trükköt.
+    let cobraKattintasSzamlalo = 0;
+    let cobraKattintasIdozito = null;
+    function cobraTitkosKattintas() {
+      cobraKattintasSzamlalo++;
+      clearTimeout(cobraKattintasIdozito);
+      cobraKattintasIdozito = setTimeout(() => { cobraKattintasSzamlalo = 0; }, 3000);
+      if (cobraKattintasSzamlalo >= 5) {
+        cobraKattintasSzamlalo = 0;
+        const tab = document.getElementById('auth-tab-adminlogin');
+        if (tab) tab.style.display = 'block';
+        if (window.openAuthModal) window.openAuthModal();
+        if (window.switchAuthTab) window.switchAuthTab('adminlogin');
+      }
+    }
+
+    // A modal "Admin Belépés" fülének gombjai a MÁR MEGLÉVŐ Discord-kódos admin
+    // bejelentkezést (requestDiscordCode / adminLogin) hívják meg, "Cobra"
+    // felhasználónévvel előre kitöltve — így minden meglévő jogosultság (Fuvarok
+    // admin, média-bundle, szerkesztő gombok) ugyanúgy aktiválódik, mint eddig.
+    async function adminModalKerKod() {
+      document.getElementById('admin-username').value = 'Cobra';
+      const msgEl = document.getElementById('auth-admin-login-msg');
+      msgEl.style.color = '#f97316';
+      msgEl.textContent = '⏳ Kód küldése...';
+      await requestDiscordCode();
+      const eredetiMsg = document.getElementById('admin-code-msg');
+      if (eredetiMsg) {
+        msgEl.textContent = eredetiMsg.textContent;
+        msgEl.style.color = eredetiMsg.style.color;
+      }
+      document.getElementById('auth-admin-login-code-row').style.display = 'block';
+    }
+
+    async function adminModalBelepes() {
+      const code = document.getElementById('auth-admin-login-code').value.trim();
+      const msgEl = document.getElementById('auth-admin-login-msg');
+      if (!code) { msgEl.style.color = '#f87171'; msgEl.textContent = '❌ Add meg a kódot!'; return; }
+      document.getElementById('admin-username').value = 'Cobra';
+      document.getElementById('admin-discord-code').value = code;
+      await adminLogin();
+      const eredetiMsg = document.getElementById('admin-code-msg');
+      if (window.isFullAdmin && window.isFullAdmin()) {
+        msgEl.style.color = '#4ade80';
+        msgEl.textContent = '✅ Sikeres admin belépés! A modal bezáródik...';
+        setTimeout(() => { if (window.closeAuthModal) window.closeAuthModal(); }, 1200);
+      } else if (eredetiMsg) {
+        msgEl.textContent = eredetiMsg.textContent;
+        msgEl.style.color = eredetiMsg.style.color;
+      }
+    }
 
     async function requestDiscordCode() {
       const username = (document.getElementById('admin-username').value || '').trim();
@@ -1506,17 +1596,22 @@
           setTimeout(szerkesztoGombokMutat, 300);
           // Cobra automatikusan média admin is
           mediaAdminMode = true;
+          mediaAdminRole = 'admin';
           sessionStorage.setItem('srt_media_user', username);
           sessionStorage.setItem('srt_media_auth', '1');
+          sessionStorage.setItem('srt_media_role', 'admin');
           document.getElementById('admin-login-form-media').style.display = 'none';
           document.getElementById('admin-status-media').style.display = 'flex';
           document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${username}`;
           document.getElementById('kep-upload-panel').style.display = 'flex';
           document.getElementById('video-upload-panel').style.display = 'block';
+          const osszesTorlesBtn = document.getElementById('osszes-torles-btn');
+          if (osszesTorlesBtn) osszesTorlesBtn.style.display = 'inline-block';
           renderMedia();
         }
         renderDrivers();
         if (currentDriver) showDriverJobs(currentDriver);
+        if (window.applyContentGate) window.applyContentGate();
       } catch(e) {
         console.error('adminLogin hiba:', e.message);
         document.getElementById('admin-code-msg').textContent = '❌ Hiba: ' + e.message;
@@ -1539,6 +1634,7 @@
       szerkesztoGombokElrejt();
       renderDrivers();
       if (currentDriver) showDriverJobs(currentDriver);
+      if (window.applyContentGate) window.applyContentGate();
     }
 
     // FONTOS: ennek a deklarációnak ITT, az autoLogin() előtt kell lennie.
@@ -1550,6 +1646,7 @@
     // a "kék/sötét háttér, semmi nem töltődik be" jelenséget ATS-nél nem, csak ETS2-nél,
     // mert csak akkor futott le ez az ág, ha Cobra admin kódot írtál be és frissítettél).
     let mediaAdminMode = false;
+    let mediaAdminRole = null;
 
     (function autoLogin() {
       const savedUser = sessionStorage.getItem('srt_admin_user') || '';
@@ -1566,9 +1663,11 @@
         setTimeout(szerkesztoGombokMutat, 500);
         // Cobra automatikusan média admin is
         mediaAdminMode = true;
+        mediaAdminRole = 'admin';
         if (!sessionStorage.getItem('srt_media_auth')) {
           sessionStorage.setItem('srt_media_user', savedUser);
           sessionStorage.setItem('srt_media_auth', '1');
+          sessionStorage.setItem('srt_media_role', 'admin');
           document.getElementById('admin-login-form-media').style.display = 'none';
           document.getElementById('admin-status-media').style.display = 'flex';
           document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${savedUser}`;
@@ -1576,6 +1675,8 @@
           document.getElementById('video-upload-panel').style.display = 'block';
           renderMedia();
         }
+        const osszesTorlesBtn = document.getElementById('osszes-torles-btn');
+        if (osszesTorlesBtn) osszesTorlesBtn.style.display = 'inline-block';
       }
     })();
 
@@ -1628,13 +1729,18 @@
           return;
         }
         mediaAdminMode = true;
+        mediaAdminRole = data.role;
         sessionStorage.setItem('srt_media_user', username);
         sessionStorage.setItem('srt_media_auth', '1');
+        sessionStorage.setItem('srt_media_role', data.role);
         document.getElementById('admin-login-form-media').style.display = 'none';
         document.getElementById('admin-status-media').style.display = 'flex';
-        document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${username}`;
+        document.getElementById('admin-status-label-media').textContent =
+          data.role === 'admin' ? `✅ Média admin: ${username}` : `✅ Média helyettes: ${username}`;
         document.getElementById('kep-upload-panel').style.display = 'flex';
         document.getElementById('video-upload-panel').style.display = 'block';
+        const osszesTorlesBtn = document.getElementById('osszes-torles-btn');
+        if (osszesTorlesBtn) osszesTorlesBtn.style.display = data.role === 'admin' ? 'inline-block' : 'none';
         renderMedia();
       } catch(e) {
         document.getElementById('media-code-msg').textContent = '❌ Kapcsolati hiba';
@@ -1643,8 +1749,10 @@
 
     function adminLogoutMedia() {
       mediaAdminMode = false;
+      mediaAdminRole = null;
       sessionStorage.removeItem('srt_media_user');
       sessionStorage.removeItem('srt_media_auth');
+      sessionStorage.removeItem('srt_media_role');
       document.getElementById('admin-login-form-media').style.display = 'flex';
       document.getElementById('admin-status-media').style.display = 'none';
       document.getElementById('admin-username-media').value = '';
@@ -1655,6 +1763,8 @@
       document.getElementById('media-upload-panel').style.display = 'none';
       document.getElementById('kep-upload-panel').style.display = 'none';
       document.getElementById('video-upload-panel').style.display = 'none';
+      const osszesTorlesBtn = document.getElementById('osszes-torles-btn');
+      if (osszesTorlesBtn) osszesTorlesBtn.style.display = 'none';
       renderMedia();
     }
 
@@ -1662,13 +1772,18 @@
     (function autoLoginMedia() {
       const savedUser = sessionStorage.getItem('srt_media_user') || '';
       const mediaAuth = sessionStorage.getItem('srt_media_auth');
+      const savedRole = sessionStorage.getItem('srt_media_role');
       if (!savedUser || !mediaAuth) return;
       mediaAdminMode = true;
+      if (savedRole) mediaAdminRole = savedRole;
       document.getElementById('admin-login-form-media').style.display = 'none';
       document.getElementById('admin-status-media').style.display = 'flex';
-      document.getElementById('admin-status-label-media').textContent = `✅ Média admin: ${savedUser}`;
+      document.getElementById('admin-status-label-media').textContent =
+        mediaAdminRole === 'admin' ? `✅ Média admin: ${savedUser}` : `✅ Média helyettes: ${savedUser}`;
       document.getElementById('kep-upload-panel').style.display = 'flex';
       document.getElementById('video-upload-panel').style.display = 'block';
+      const osszesTorlesBtn = document.getElementById('osszes-torles-btn');
+      if (osszesTorlesBtn) osszesTorlesBtn.style.display = mediaAdminRole === 'admin' ? 'inline-block' : 'none';
       // Újrarajzolás hogy a törlés gombok megjelenjenek
       renderMedia();
     })();
@@ -1743,7 +1858,8 @@
     }
 
     async function deleteMedia(tipus, idx) {
-      if (!mediaAdminMode && !sessionStorage.getItem('srt_media_auth')) return;
+      const fullMediaAdmin = mediaAdminRole === 'admin' || sessionStorage.getItem('srt_media_role') === 'admin';
+      if (!fullMediaAdmin) { alert('❌ Csak a főadmin (Cobra) törölhet médiát.'); return; }
       if (!confirm(`Biztosan törlöd a ${tipus === 'kep' ? 'képet' : 'videót'}?`)) return;
       if (!allData._media) return;
 
@@ -1823,7 +1939,7 @@
       } else {
         window._kepekForLightbox = kepek;
         kepekGrid.innerHTML = kepek.map((k, i) => {
-          const isAdmin = mediaAdminMode || !!sessionStorage.getItem('srt_media_auth');
+          const isAdmin = mediaAdminRole === 'admin' || sessionStorage.getItem('srt_media_role') === 'admin';
           return `
           <div style="position: relative; overflow: visible;">
             <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; z-index: 10;">${i + 1}.</div>
@@ -1846,7 +1962,7 @@
         videokGrid.innerHTML = videok.map((v, i) => `
           <div style="position: relative;">
             <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; z-index: 1;">${i + 1}.</div>
-            ${(mediaAdminMode || sessionStorage.getItem('srt_media_auth')) && i >= 1 ? `<button onclick="event.stopPropagation();deleteMedia('video', ${i - 1})" style="position: absolute; top: 8px; right: 8px; background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; z-index: 1;">🗑️</button>` : ''}
+            ${(mediaAdminRole === 'admin' || sessionStorage.getItem('srt_media_role') === 'admin') && i >= 1 ? `<button onclick="event.stopPropagation();deleteMedia('video', ${i - 1})" style="position: absolute; top: 8px; right: 8px; background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; z-index: 1;">🗑️</button>` : ''}
             <div class="video-thumb" onclick="openVideoModal(window._videokForModal, ${i})">
               <img src="https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg" alt="${v.cim}" loading="lazy" />
               <div class="video-thumb-play">▶</div>
@@ -2987,6 +3103,7 @@
         document.getElementById('ats-admin-status-label').textContent =
           atsAdminRole === 'admin' ? `✅ Admin: ${username}` : `✅ Helyettes: ${username}`;
         renderATSDrivers();
+        if (window.applyContentGate) window.applyContentGate();
       } catch(e) {
         document.getElementById('ats-admin-code-msg').textContent = '❌ Kapcsolati hiba';
       }
@@ -3006,6 +3123,7 @@
       document.getElementById('ats-admin-verify-btn').style.display = 'none';
       document.getElementById('ats-admin-code-msg').textContent = '';
       renderATSDrivers();
+      if (window.applyContentGate) window.applyContentGate();
     }
 
     // ══ ATS AUTO-LOGIN (frissítés után visszaállítja az admin állapotot) ══
@@ -3975,6 +4093,8 @@
 
     // ══════════ ÖSSZES KÉP TÖRLÉSE ══════════
     async function osszesTorles() {
+      const fullMediaAdmin = mediaAdminRole === 'admin' || sessionStorage.getItem('srt_media_role') === 'admin';
+      if (!fullMediaAdmin) { alert('❌ Csak a főadmin (Cobra) törölheti az összes képet.'); return; }
       if (!confirm('Biztosan törlöd AZ ÖSSZES képet? Ez nem visszavonható!')) return;
       if (!confirm('Megerősítés: valóban törlöd az összes feltöltött képet?')) return;
       try {
@@ -4074,6 +4194,124 @@
   </div>
 
 
+  <!-- ══ BEJELENTKEZÉS / REGISZTRÁCIÓ MODAL ══ -->
+  <div id="auth-modal" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:20px;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;min-width:320px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;position:relative;">
+      <button onclick="closeAuthModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+
+      <!-- Fül váltó -->
+      <div style="display:flex;gap:6px;margin-bottom:20px;">
+        <button id="auth-tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--orange-dim);color:var(--orange);font-weight:700;cursor:pointer;font-size:13px;">Bejelentkezés</button>
+        <button id="auth-tab-regisztracio" onclick="switchAuthTab('regisztracio')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">Regisztráció</button>
+        <button id="auth-tab-admin" onclick="switchAuthTab('admin')" style="display:none;flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">👑 Kérelmek</button>
+        <button id="auth-tab-adminlogin" onclick="switchAuthTab('adminlogin')" style="display:none;flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">🔑 Admin Belépés</button>
+      </div>
+
+      <!-- BEJELENTKEZÉS ŰRLAP -->
+      <div id="auth-form-login">
+        <input type="email" id="login-email" placeholder="Email cím" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <input type="password" id="login-jelszo" placeholder="Jelszó" style="width:100%;padding:12px;margin-bottom:16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <button onclick="bejelentkezik()" style="width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">Bejelentkezés</button>
+      </div>
+
+      <!-- REGISZTRÁCIÓS / JELENTKEZÉSI ŰRLAP -->
+      <div id="auth-form-regisztracio" style="display:none;">
+
+        <!-- FELTÉTELEK -->
+        <div data-edit="jelentkezes_feltetelek" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:var(--muted);line-height:1.55;max-height:260px;overflow-y:auto;">
+          <p style="color:#fff;font-weight:700;margin-bottom:6px;">1. Feltételek</p>
+          <p>• Csak eredeti Euro Truck Simulator 2 játékkal lehet jelentkezni.</p>
+          <p>• Minimum 16 évesnek kell lenned.</p>
+          <p style="color:#fff;font-weight:700;margin:12px 0 6px;">2. Jelentkezés</p>
+          <p>Jelentkezz a weboldalon, majd írj a Discord szerverünkön a jelentkezés szobában.</p>
+          <p style="color:#fff;font-weight:700;margin:12px 0 6px;">3. Kezdés</p>
+          <p>• Le kell vezetned legalább 3000 km-t Truckyban — nincs szigorú határidő, ha ez tovább tart, az sem gond.</p>
+          <p>• Fontos, hogy szabályosan közlekedj, szabályszegés nem elfogadott.</p>
+          <p>• Ha valamilyen okból nem tudsz elvinni egy fuvart, az sem probléma — csak jelezd az indokát.</p>
+          <p style="color:#fff;font-weight:700;margin:12px 0 6px;">4. Ellenőrzés</p>
+          <p>A bot automatikusan ellenőrzi, hogy megvan-e a 3000 km, és ha igen, megkapod az SRT rangot, amivel a Discordon minden szobához hozzáférsz.</p>
+          <p style="color:#fff;font-weight:700;margin:12px 0 6px;">5. Végleges felvétel</p>
+          <p>Ha minden rendben van, a bot engedélyezi a végleges felvételt.</p>
+          <p style="margin-top:12px;">A weboldalon részletes ranglista adatok is szerepelnek: heti lebontásban látod, ki vitt több fuvart, mennyi profitot termeltél a fuvarok után, és az üzemanyag-fogyasztásod (liter) is nyomon követhető. Emellett American Truck Simulatorral is versenyzünk nálunk, és pickup rendszerünk is van, ha az is érdekel.</p>
+        </div>
+
+        <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:18px;font-size:13px;color:var(--text);cursor:pointer;">
+          <input type="checkbox" id="reg-elfogad-szabalyzat" style="margin-top:3px;" />
+          Elolvastam, megértettem és elfogadom a cég szabályzatát. *
+        </label>
+
+        <p style="color:#fff;font-weight:700;font-size:14px;margin-bottom:10px;">Fiók Létrehozása</p>
+        <input type="text" id="reg-nev" placeholder="Felhasználónév *" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <input type="email" id="reg-email" placeholder="Email cím *" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <input type="password" id="reg-jelszo" placeholder="Jelszó (min. 6 karakter) *" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <input type="password" id="reg-jelszo-megerosites" placeholder="Jelszó megerősítése *" style="width:100%;padding:12px;margin-bottom:18px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+
+        <p style="color:#fff;font-weight:700;font-size:14px;margin-bottom:10px;">Személyes és Kapcsolati Adatok</p>
+        <input type="text" id="reg-discord" placeholder="Discord Név *" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <input type="text" id="reg-trucky-nev" placeholder="Trucky Név (Trucky felhasználóneved) *" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <p style="font-size:11px;color:var(--muted);margin:-6px 0 10px;">A pontosan ugyanaz a Trucky felhasználónév kell, amivel a <a href="https://hub.truckyapp.com/users" target="_blank" style="color:var(--orange);">hub.truckyapp.com</a>-on regisztrálsz — így tudja a bot automatikusan összekötni a Discord és a Trucky fiókodat.</p>
+        <input type="number" id="reg-eletkor" placeholder="Életkor *" min="1" max="120" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <input type="text" id="reg-steam" placeholder="Steam Profil Link (opcionális)" style="width:100%;padding:12px;margin-bottom:18px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+
+        <p style="color:#fff;font-weight:700;font-size:14px;margin-bottom:10px;">Játék és Tapasztalat</p>
+
+        <p style="font-size:13px;color:var(--text);margin-bottom:6px;">Rendelkezel eredeti Euro Truck Simulator 2 játékkal? *</p>
+        <div style="display:flex;gap:16px;margin-bottom:14px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="reg-ets2-eredeti" value="igen" /> Igen</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="reg-ets2-eredeti" value="nem" /> Nem</label>
+        </div>
+
+        <input type="text" id="reg-ota-jatszol" placeholder="Mióta játszol ETS2-vel? (pl. 2 éve, 6 hónapja) *" style="width:100%;padding:12px;margin-bottom:14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+
+        <p style="font-size:13px;color:var(--text);margin-bottom:6px;">Voltál már másik cég tagja? *</p>
+        <div style="display:flex;gap:16px;margin-bottom:10px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="reg-mas-vtc" value="igen" /> Igen</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="reg-mas-vtc" value="nem" /> Nem</label>
+        </div>
+        <input type="text" id="reg-mas-vtc-melyik" placeholder="Ha igen, melyik? (nem kötelező)" style="width:100%;padding:12px;margin-bottom:14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+
+        <p style="font-size:13px;color:var(--text);margin-bottom:6px;">Voltál már korábban a SRT TRANS KFT. tagja? *</p>
+        <div style="display:flex;gap:16px;margin-bottom:18px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="reg-volt-mar-tagja" value="igen" /> Igen</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="reg-volt-mar-tagja" value="nem" /> Nem</label>
+        </div>
+
+        <p style="color:#fff;font-weight:700;font-size:14px;margin-bottom:10px;">Egyéb</p>
+        <textarea id="reg-egyeb" placeholder="Van bármi egyéb, amit szeretnél megosztani magadról? (nem kötelező)" style="width:100%;min-height:60px;padding:12px;margin-bottom:18px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea>
+
+        <button onclick="regisztral()" style="width:100%;padding:14px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">Fiók Létrehozása</button>
+      </div>
+
+      <!-- ADMIN: FÜGGŐBEN LÉVŐ REGISZTRÁCIÓK -->
+      <div id="auth-form-admin" style="display:none;max-height:340px;overflow-y:auto;">
+        <div id="auth-admin-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+      <!-- ADMIN BELÉPÉS: Cobra Discord-kódos bejelentkezése -->
+      <div id="auth-form-adminlogin" style="display:none;text-align:center;">
+        <p style="color:var(--muted);font-size:12px;margin-bottom:16px;">Ez a bejelentkezés Discordon keresztül küld egy 6 jegyű kódot a "Cobra" fióknak. Csak akkor tudsz belépni, ha hozzáférsz a Cobra Discord fiók DM-jeihez.</p>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;text-align:left;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Felhasználónév</div>
+          <div style="font-weight:700;color:#fff;font-size:14px;">Cobra</div>
+        </div>
+        <button onclick="adminModalKerKod()" style="width:100%;padding:12px;background:#5865f2;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;margin-bottom:12px;">📨 Kód kérése Discordon</button>
+        <div id="auth-admin-login-code-row" style="display:none;">
+          <input type="text" id="auth-admin-login-code" placeholder="6 jegyű kód" maxlength="6" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;text-align:center;letter-spacing:2px;" />
+          <button onclick="adminModalBelepes()" style="width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">✅ Belépés</button>
+        </div>
+        <div id="auth-admin-login-msg" style="font-size:13px;margin-top:12px;"></div>
+      </div>
+
+      <div id="auth-status-loggedin" style="display:none;text-align:center;">
+        <p style="color:var(--text);margin-bottom:8px;">Bejelentkezve mint:<br><strong id="auth-current-email"></strong></p>
+        <div id="auth-status-message" style="font-size:13px;margin-bottom:16px;"></div>
+        <button onclick="kijelentkezik()" style="width:100%;padding:12px;background:rgba(255,255,255,0.08);color:var(--text);border:1px solid var(--border);border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">Kijelentkezés</button>
+      </div>
+
+      <div id="auth-error" style="color:#f87171;font-size:13px;margin-top:12px;text-align:center;"></div>
+    </div>
+  </div>
+
   <!-- LIGHTBOX -->
   <div id="lightbox" onclick="if(event.target===this)closeLightbox()">
     <button id="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -4093,5 +4331,413 @@
     <button class="video-modal-arrow" id="video-modal-next" onclick="videoModalNav(1)">&#8250;</button>
     <div id="video-modal-counter"></div>
   </div>
+
+  <!-- ══ FIREBASE AUTHENTICATION ══ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      updateProfile,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA2u78m_krnePaoFnHORCTbre8V2k1wxEY",
+      authDomain: "srt-trans-c52a7.firebaseapp.com",
+      databaseURL: "https://srt-trans-c52a7-default-rtdb.firebaseio.com",
+      projectId: "srt-trans-c52a7",
+      storageBucket: "srt-trans-c52a7.firebasestorage.app",
+      messagingSenderId: "688513849309",
+      appId: "1:688513849309:web:577df27113dd803b758834"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const DB_URL = firebaseConfig.databaseURL;
+
+    // Ha admin e-mail címhez is szeretnéd kötni a hozzáférést (a Discord admin-login MELLETT),
+    // írd ide Erik, Boby és Cobra Firebase-regisztrációs email címét:
+    const ADMIN_EMAILS = [
+      // 'erik@pelda.hu',
+      // 'boby@pelda.hu',
+      // 'cobra@pelda.hu'
+    ];
+
+    // Ismert admin/helyettes Discord nevek (ugyanaz a lista, mint a bot ADMIN_DISCORD
+    // objektumában az index.js-ben). Ha valaki ilyen Discord névvel regisztrál a
+    // weboldalon, a fiókja AZONNAL jóváhagyásra kerül — nincs szükség admin megerősítésre.
+    const ISMERT_ADMIN_DISCORD_NEVEK = [
+      'cobra', 'cobra086', 'boby', 'bobydik', 'eric', 'eric19792'
+    ];
+    function ismertAdminDiscordNev(discordNev) {
+      const lower = (discordNev || '').trim().toLowerCase();
+      return ISMERT_ADMIN_DISCORD_NEVEK.includes(lower);
+    }
+
+    let currentUser = null;
+    let currentStatusz = null; // null | 'fuggoben' | 'jovahagyva' | 'elutasitva'
+
+    function isAdminUser() {
+      const discordAdmin = !!(window.isAnySiteAdmin && window.isAnySiteAdmin());
+      const emailAdmin = !!(currentUser && ADMIN_EMAILS.includes(currentUser.email));
+      return discordAdmin || emailAdmin;
+    }
+
+    // Teljes jogú admin (Cobra) — ő látja/kezelheti a "Kérelmek" (regisztráció-jóváhagyás)
+    // panelt. Erik és Boby ('helyettes' szerepkör) NEM kapnak ehhez hozzáférést, csak a
+    // Fuvarok admin panelt és a Média feltöltést (törlés nélkül).
+    function isFullAdminUser() {
+      const discordFullAdmin = !!(window.isFullAdmin && window.isFullAdmin());
+      const emailAdmin = !!(currentUser && ADMIN_EMAILS.includes(currentUser.email));
+      return discordFullAdmin || emailAdmin;
+    }
+
+    // ── MODAL NYITÁS / ZÁRÁS ──
+    window.openAuthModal = function() {
+      document.getElementById('auth-error').textContent = '';
+      document.getElementById('auth-modal').style.display = 'flex';
+      refreshAdminTabVisibility();
+    };
+    window.closeAuthModal = function() {
+      document.getElementById('auth-modal').style.display = 'none';
+    };
+
+    // ── FÜL VÁLTÁS (bejelentkezés / regisztráció / admin kérelmek) ──
+    window.switchAuthTab = function(tab) {
+      const loginTab = document.getElementById('auth-tab-login');
+      const regTab = document.getElementById('auth-tab-regisztracio');
+      const adminTab = document.getElementById('auth-tab-admin');
+      const adminLoginTab = document.getElementById('auth-tab-adminlogin');
+      const loginForm = document.getElementById('auth-form-login');
+      const regForm = document.getElementById('auth-form-regisztracio');
+      const adminForm = document.getElementById('auth-form-admin');
+      const adminLoginForm = document.getElementById('auth-form-adminlogin');
+      document.getElementById('auth-error').textContent = '';
+
+      [loginTab, regTab, adminTab, adminLoginTab].forEach(t => { if (t) { t.style.background = 'transparent'; t.style.color = 'var(--muted)'; } });
+      loginForm.style.display = 'none';
+      regForm.style.display = 'none';
+      adminForm.style.display = 'none';
+      adminLoginForm.style.display = 'none';
+
+      if (tab === 'login') {
+        loginForm.style.display = 'block';
+        loginTab.style.background = 'var(--orange-dim)'; loginTab.style.color = 'var(--orange)';
+      } else if (tab === 'regisztracio') {
+        regForm.style.display = 'block';
+        regTab.style.background = 'var(--orange-dim)'; regTab.style.color = 'var(--orange)';
+      } else if (tab === 'admin') {
+        adminForm.style.display = 'block';
+        adminTab.style.background = 'var(--orange-dim)'; adminTab.style.color = 'var(--orange)';
+        toltiAdminKerelmeket();
+      } else if (tab === 'adminlogin') {
+        adminLoginForm.style.display = 'block';
+        adminLoginTab.style.background = 'var(--orange-dim)'; adminLoginTab.style.color = 'var(--orange)';
+      }
+    };
+
+    function refreshAdminTabVisibility() {
+      const adminTab = document.getElementById('auth-tab-admin');
+      if (!adminTab) return;
+      adminTab.style.display = isFullAdminUser() ? 'block' : 'none';
+    }
+
+    function magyarHiba(kod) {
+      const map = {
+        'auth/email-already-in-use': 'Ez az email cím már regisztrálva van.',
+        'auth/invalid-email': 'Érvénytelen email cím.',
+        'auth/weak-password': 'A jelszó túl gyenge (minimum 6 karakter).',
+        'auth/invalid-credential': 'Hibás email cím vagy jelszó.',
+        'auth/wrong-password': 'Hibás jelszó.',
+        'auth/user-not-found': 'Nincs ilyen felhasználó regisztrálva.',
+        'auth/too-many-requests': 'Túl sok próbálkozás, próbáld később.'
+      };
+      return map[kod] || kod;
+    }
+
+    // ── MÁR ISMERT SOFŐR FELISMERÉSE ──
+    // Megnézi a bot saját adatbázisát (srtdata.json → data), hogy szerepel-e már ott
+    // valaki ugyanezzel a Discord vagy Trucky névvel (= már regisztrálva van Discordon
+    // és/vagy Truckyban). Ha igen, a weboldal nem fogja felkínálni a Trucky-regisztrációt.
+    async function marIsmertSoforE(truckyName) {
+      try {
+        const res = await fetch(`${DB_URL}/srtdata.json`);
+        const record = await res.json();
+        const driverData = (record && record.data) || {};
+        const tLower = (truckyName || '').trim().toLowerCase();
+        return Object.entries(driverData).some(([key, u]) => {
+          if (key.startsWith('_') || !u) return false;
+          const uTrucky = (u.truckyName || '').toLowerCase();
+          return tLower && uTrucky === tLower;
+        });
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // ── REGISZTRÁCIÓ / JELENTKEZÉS ──
+    window.regisztral = async function() {
+      const errEl = document.getElementById('auth-error');
+      errEl.textContent = '';
+
+      const nev = document.getElementById('reg-nev').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const jelszo = document.getElementById('reg-jelszo').value;
+      const jelszoMegerosites = document.getElementById('reg-jelszo-megerosites').value;
+      const discordNev = document.getElementById('reg-discord').value.trim();
+      const truckyNev = document.getElementById('reg-trucky-nev').value.trim();
+      const eletkor = parseInt(document.getElementById('reg-eletkor').value, 10);
+      const steam = document.getElementById('reg-steam').value.trim();
+      const otaJatszol = document.getElementById('reg-ota-jatszol').value.trim();
+      const masVtcMelyik = document.getElementById('reg-mas-vtc-melyik').value.trim();
+      const egyeb = document.getElementById('reg-egyeb').value.trim();
+
+      const ets2Eredeti = (document.querySelector('input[name="reg-ets2-eredeti"]:checked') || {}).value;
+      const masVtc = (document.querySelector('input[name="reg-mas-vtc"]:checked') || {}).value;
+      const voltMarTagja = (document.querySelector('input[name="reg-volt-mar-tagja"]:checked') || {}).value;
+
+      const elfogadSzabalyzat = document.getElementById('reg-elfogad-szabalyzat').checked;
+
+      // ── VALIDÁCIÓ ──
+      if (!elfogadSzabalyzat) {
+        errEl.textContent = '❌ El kell fogadnod a cég szabályzatát.';
+        return;
+      }
+      if (!nev || !email || !jelszo || !jelszoMegerosites || !discordNev || !truckyNev || !eletkor || !otaJatszol) {
+        errEl.textContent = '❌ Minden csillaggal (*) jelölt mezőt ki kell tölteni.';
+        return;
+      }
+      if (jelszo !== jelszoMegerosites) {
+        errEl.textContent = '❌ A két jelszó nem egyezik.';
+        return;
+      }
+      if (isNaN(eletkor) || eletkor < 16) {
+        errEl.textContent = '❌ Minimum 16 évesnek kell lenned a jelentkezéshez.';
+        return;
+      }
+      if (!ets2Eredeti) {
+        errEl.textContent = '❌ Válaszolj arra, hogy rendelkezel-e eredeti ETS2 játékkal.';
+        return;
+      }
+      if (ets2Eredeti === 'nem') {
+        errEl.textContent = '❌ Sajnos csak eredeti Euro Truck Simulator 2 játékkal lehet jelentkezni.';
+        return;
+      }
+      if (!masVtc) {
+        errEl.textContent = '❌ Válaszolj arra, hogy voltál-e már másik cég tagja.';
+        return;
+      }
+      if (!voltMarTagja) {
+        errEl.textContent = '❌ Válaszolj arra, hogy voltál-e már korábban a SRT TRANS KFT. tagja.';
+        return;
+      }
+
+      try {
+        const marTagja = await marIsmertSoforE(truckyNev);
+        const adminNev = ismertAdminDiscordNev(discordNev);
+
+        const cred = await createUserWithEmailAndPassword(auth, email, jelszo);
+        await updateProfile(cred.user, { displayName: nev });
+
+        // ── Teljes jelentkezési adatlap mentése ──
+        // Ismert admin/helyettes Discord név esetén (Cobra, Erik, Boby) a fiók
+        // AZONNAL jóváhagyásra kerül, nincs szükség admin megerősítésre.
+        await fetch(`${DB_URL}/regisztraciok/${cred.user.uid}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nev: nev,
+            email: email,
+            discordNev: discordNev,
+            truckyNev: truckyNev,
+            eletkor: eletkor,
+            steam: steam,
+            ets2Eredeti: ets2Eredeti,
+            otaJatszol: otaJatszol,
+            masVtc: masVtc,
+            masVtcMelyik: masVtcMelyik,
+            voltMarTagja: voltMarTagja,
+            egyeb: egyeb,
+            marIsmertSofor: marTagja,
+            statusz: adminNev ? 'jovahagyva' : 'fuggoben',
+            letrehozva: new Date().toISOString()
+          })
+        });
+      } catch (e) {
+        errEl.textContent = magyarHiba(e.code);
+      }
+    };
+
+    // ── BEJELENTKEZÉS ──
+    window.bejelentkezik = async function() {
+      const email = document.getElementById('login-email').value.trim();
+      const jelszo = document.getElementById('login-jelszo').value;
+      const errEl = document.getElementById('auth-error');
+      errEl.textContent = '';
+      try {
+        await signInWithEmailAndPassword(auth, email, jelszo);
+      } catch (e) {
+        errEl.textContent = magyarHiba(e.code);
+      }
+    };
+
+    // ── KIJELENTKEZÉS ──
+    window.kijelentkezik = function() {
+      signOut(auth);
+    };
+
+    // ── ADMIN: FÜGGŐBEN LÉVŐ KÉRELMEK BETÖLTÉSE ──
+    async function toltiAdminKerelmeket() {
+      const listEl = document.getElementById('auth-admin-list');
+      if (!isFullAdminUser()) {
+        listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">❌ Ehhez csak a főadminnak (Cobra) van jogosultsága.</div>';
+        return;
+      }
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;">Betöltés...</div>';
+      try {
+        const res = await fetch(`${DB_URL}/regisztraciok.json`);
+        const data = await res.json() || {};
+        const fuggoben = Object.entries(data).filter(([uid, rec]) => rec && rec.statusz === 'fuggoben');
+        if (fuggoben.length === 0) {
+          listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">Nincs függőben lévő kérelem.</div>';
+          return;
+        }
+        listEl.innerHTML = fuggoben.map(([uid, rec]) => `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <div style="font-weight:700;color:#fff;font-size:14px;">${(rec.nev || 'Névtelen').replace(/</g,'&lt;')} <span style="color:var(--muted);font-weight:400;font-size:12px;">(${rec.eletkor || '?'} év)</span> ${rec.marIsmertSofor ? '<span style="color:#4ade80;font-size:11px;font-weight:700;">· ✅ már ismert sofőr</span>' : ''}</div>
+            <div style="color:var(--muted);font-size:12px;margin-bottom:8px;">${(rec.email || '').replace(/</g,'&lt;')}</div>
+            <div style="font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px;">
+              <div>💬 Discord: <strong>${(rec.discordNev || '-').replace(/</g,'&lt;')}</strong> · 🚛 Trucky: <strong>${(rec.truckyNev || '-').replace(/</g,'&lt;')}</strong></div>
+              <div>🎮 Eredeti ETS2: <strong>${rec.ets2Eredeti === 'igen' ? 'Igen' : 'Nem'}</strong> · Mióta játszik: <strong>${(rec.otaJatszol || '-').replace(/</g,'&lt;')}</strong></div>
+              <div>🏢 Volt már másik cégnél: <strong>${rec.masVtc === 'igen' ? ('Igen — ' + (rec.masVtcMelyik || '?')) : 'Nem'}</strong></div>
+              <div>🔁 Volt már korábban itt tag: <strong>${rec.voltMarTagja === 'igen' ? 'Igen' : 'Nem'}</strong></div>
+              ${rec.steam ? `<div>🎮 Steam: <a href="${rec.steam.replace(/"/g,'')}" target="_blank" style="color:var(--orange);">${rec.steam.replace(/</g,'&lt;')}</a></div>` : ''}
+              ${rec.egyeb ? `<div>➕ Egyéb: <em>${rec.egyeb.replace(/</g,'&lt;')}</em></div>` : ''}
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="jovahagyRegisztraciot('${uid}')" style="flex:1;padding:8px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:12px;">✅ Jóváhagyás</button>
+              <button onclick="elutasitRegisztraciot('${uid}')" style="flex:1;padding:8px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:12px;">❌ Elutasítás</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">Hiba a betöltéskor.</div>';
+      }
+    }
+
+    window.jovahagyRegisztraciot = async function(uid) {
+      if (!isFullAdminUser()) { alert('❌ Csak a főadmin (Cobra) hagyhat jóvá kérelmeket.'); return; }
+      await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify('jovahagyva')
+      });
+      toltiAdminKerelmeket();
+      if (currentUser && currentUser.uid === uid) frissitiSajatAllapotot();
+    };
+
+    window.elutasitRegisztraciot = async function(uid) {
+      if (!isFullAdminUser()) { alert('❌ Csak a főadmin (Cobra) utasíthat el kérelmeket.'); return; }
+      await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify('elutasitva')
+      });
+      toltiAdminKerelmeket();
+      if (currentUser && currentUser.uid === uid) frissitiSajatAllapotot();
+    };
+
+    // ── TARTALOM ZÁR: modok-content/fuvarok-content elrejtése/megjelenítése ──
+    window.applyContentGate = function() {
+      const unlocked = isAdminUser() || currentStatusz === 'jovahagyva';
+      ['modok', 'fuvarok'].forEach(key => {
+        const content = document.getElementById(key + '-content');
+        const lock = document.getElementById(key + '-lock');
+        if (!content || !lock) return;
+        content.style.display = unlocked ? '' : 'none';
+        lock.style.display = unlocked ? 'none' : 'block';
+      });
+      refreshAdminTabVisibility();
+    };
+
+    // ── A BEJELENTKEZETT FELHASZNÁLÓ SAJÁT JÓVÁHAGYÁSI ÁLLAPOTÁNAK LEKÉRÉSE ──
+    async function frissitiSajatAllapotot() {
+      const statusMsg = document.getElementById('auth-status-message');
+      if (!currentUser) { currentStatusz = null; applyContentGate(); return; }
+      if (isAdminUser()) {
+        currentStatusz = 'jovahagyva';
+        statusMsg.innerHTML = '<span style="color:#4ade80;">👑 Admin hozzáférés aktív</span>';
+        applyContentGate();
+        return;
+      }
+      try {
+        const res = await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}.json`);
+        const data = await res.json();
+        currentStatusz = data ? data.statusz : null;
+        var marIsmertSofor = data ? !!data.marIsmertSofor : false;
+
+        // ── ÖNJAVÍTÁS: ha admin/helyettes Discord névvel regisztrált valaki, de a
+        // rekordja mégsem lett automatikusan jóváhagyva (pl. régebbi regisztráció),
+        // itt is azonnal jóváhagyjuk — nekik soha nem kell várniuk megerősítésre. ──
+        if (data && currentStatusz !== 'jovahagyva' && ismertAdminDiscordNev(data.discordNev)) {
+          currentStatusz = 'jovahagyva';
+          await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}/statusz.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify('jovahagyva')
+          });
+        }
+      } catch (e) {
+        currentStatusz = null;
+      }
+      if (currentStatusz === 'jovahagyva') {
+        statusMsg.innerHTML = '<span style="color:#4ade80;">✅ A fiókod jóvá van hagyva, minden tartalom elérhető.</span>';
+      } else if (currentStatusz === 'elutasitva') {
+        statusMsg.innerHTML = '<span style="color:#f87171;">❌ A regisztrációdat egy admin elutasította.</span>';
+      } else {
+        const truckyFelhivas = marIsmertSofor
+          ? ''
+          : '<br><br><a href="https://hub.truckyapp.com/users" target="_blank" style="display:inline-block;padding:10px 18px;background:var(--orange-dim);color:var(--orange);border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;">🚛 Regisztrálj a Trucky rendszerben is, az SRT TRANS KFT.-hez →</a>';
+        statusMsg.innerHTML = '<span style="color:#f59e0b;">⏳ A fiókod egy admin jóváhagyására vár.</span><br><span style="color:var(--muted);font-size:12px;">Most menj a Discord szerverünkre, és írj a jelentkezés szobában — utána vezesd le a 3000 km-t Truckyban (nincs szigorú határidő). A bot automatikusan ellenőrzi a teljesítést, és megkapod az SRT rangot.</span>' + truckyFelhivas;
+      }
+      applyContentGate();
+    }
+
+    // ── FELHASZNÁLÓI ÁLLAPOT FIGYELÉSE ──
+    // Ez fut le mindig, amikor betöltődik az oldal, VAGY amikor be/kijelentkezik valaki.
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      const headerBtn = document.getElementById('auth-header-btn');
+      const mobileBtn = document.getElementById('auth-mobile-btn');
+      const loginForm = document.getElementById('auth-form-login');
+      const regForm = document.getElementById('auth-form-regisztracio');
+      const tabs = document.querySelector('#auth-modal > div > div');
+      const loggedInBox = document.getElementById('auth-status-loggedin');
+
+      if (user) {
+        const nev = user.displayName || user.email;
+        headerBtn.textContent = '👤 ' + nev;
+        if (mobileBtn) mobileBtn.textContent = '👤 ' + nev;
+        loginForm.style.display = 'none';
+        regForm.style.display = 'none';
+        if (tabs) tabs.style.display = 'none';
+        loggedInBox.style.display = 'block';
+        document.getElementById('auth-current-email').textContent = user.email;
+        await frissitiSajatAllapotot();
+      } else {
+        headerBtn.textContent = '🔐 Belépés';
+        if (mobileBtn) mobileBtn.textContent = '🔐 Belépés';
+        loggedInBox.style.display = 'none';
+        if (tabs) tabs.style.display = 'flex';
+        currentStatusz = null;
+        switchAuthTab('login');
+        applyContentGate();
+      }
+      refreshAdminTabVisibility();
+    });
+  </script>
 </body>
 </html>
