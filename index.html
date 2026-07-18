@@ -56,20 +56,22 @@
     .header-inner {
       max-width: 1120px; margin: 0 auto;
       padding: 0 24px; height: 64px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
     .logo {
       font-family: 'Barlow Condensed', sans-serif;
       font-size: 22px; font-weight: 800;
       color: var(--orange); text-decoration: none; letter-spacing: 0.05em;
+      white-space: nowrap; flex-shrink: 0;
     }
     .logo span { color: var(--text); }
-    .nav { display: flex; gap: 4px; align-items: center; }
+    .nav { display: flex; gap: 2px; align-items: center; flex-shrink: 1; }
     .nav-btn {
       background: none; border: none; cursor: pointer;
       color: var(--muted); font-family: 'Inter', sans-serif;
       font-size: 14px; font-weight: 500;
-      padding: 6px 13px; border-radius: 8px;
+      padding: 6px 10px; border-radius: 8px;
+      white-space: nowrap;
       transition: color 0.2s, background 0.2s;
     }
     .nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.06); }
@@ -4204,6 +4206,7 @@
         <button id="auth-tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--orange-dim);color:var(--orange);font-weight:700;cursor:pointer;font-size:13px;">Bejelentkezés</button>
         <button id="auth-tab-regisztracio" onclick="switchAuthTab('regisztracio')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">Regisztráció</button>
         <button id="auth-tab-admin" onclick="switchAuthTab('admin')" style="display:none;flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">👑 Kérelmek</button>
+        <button id="auth-tab-tagok" onclick="switchAuthTab('tagok')" style="display:none;flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">👥 Tagok</button>
         <button id="auth-tab-adminlogin" onclick="switchAuthTab('adminlogin')" style="display:none;flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">🔑 Admin Belépés</button>
       </div>
 
@@ -4285,6 +4288,15 @@
       <!-- ADMIN: FÜGGŐBEN LÉVŐ REGISZTRÁCIÓK -->
       <div id="auth-form-admin" style="display:none;max-height:340px;overflow-y:auto;">
         <div id="auth-admin-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+      <!-- ADMIN: ÖSSZES REGISZTRÁLT TAG (állapottól függetlenül) -->
+      <div id="auth-form-tagok" style="display:none;max-height:340px;overflow-y:auto;">
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+          <input type="text" id="auth-tagok-kereses" oninput="szurTagokList()" placeholder="🔍 Keresés név, email, Discord vagy Trucky név alapján..." style="flex:1;min-width:180px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:12px;box-sizing:border-box;" />
+        </div>
+        <div id="auth-tagok-osszesen" style="font-size:11px;color:var(--muted);margin-bottom:10px;"></div>
+        <div id="auth-tagok-list" style="display:flex;flex-direction:column;gap:10px;"></div>
       </div>
 
       <!-- ADMIN BELÉPÉS: Cobra Discord-kódos bejelentkezése -->
@@ -4410,17 +4422,20 @@
       const loginTab = document.getElementById('auth-tab-login');
       const regTab = document.getElementById('auth-tab-regisztracio');
       const adminTab = document.getElementById('auth-tab-admin');
+      const tagokTab = document.getElementById('auth-tab-tagok');
       const adminLoginTab = document.getElementById('auth-tab-adminlogin');
       const loginForm = document.getElementById('auth-form-login');
       const regForm = document.getElementById('auth-form-regisztracio');
       const adminForm = document.getElementById('auth-form-admin');
+      const tagokForm = document.getElementById('auth-form-tagok');
       const adminLoginForm = document.getElementById('auth-form-adminlogin');
       document.getElementById('auth-error').textContent = '';
 
-      [loginTab, regTab, adminTab, adminLoginTab].forEach(t => { if (t) { t.style.background = 'transparent'; t.style.color = 'var(--muted)'; } });
+      [loginTab, regTab, adminTab, tagokTab, adminLoginTab].forEach(t => { if (t) { t.style.background = 'transparent'; t.style.color = 'var(--muted)'; } });
       loginForm.style.display = 'none';
       regForm.style.display = 'none';
       adminForm.style.display = 'none';
+      tagokForm.style.display = 'none';
       adminLoginForm.style.display = 'none';
 
       if (tab === 'login') {
@@ -4433,6 +4448,10 @@
         adminForm.style.display = 'block';
         adminTab.style.background = 'var(--orange-dim)'; adminTab.style.color = 'var(--orange)';
         toltiAdminKerelmeket();
+      } else if (tab === 'tagok') {
+        tagokForm.style.display = 'block';
+        tagokTab.style.background = 'var(--orange-dim)'; tagokTab.style.color = 'var(--orange)';
+        toltiOsszesTagot();
       } else if (tab === 'adminlogin') {
         adminLoginForm.style.display = 'block';
         adminLoginTab.style.background = 'var(--orange-dim)'; adminLoginTab.style.color = 'var(--orange)';
@@ -4441,8 +4460,10 @@
 
     function refreshAdminTabVisibility() {
       const adminTab = document.getElementById('auth-tab-admin');
-      if (!adminTab) return;
-      adminTab.style.display = isFullAdminUser() ? 'block' : 'none';
+      const tagokTab = document.getElementById('auth-tab-tagok');
+      const jogosult = isFullAdminUser();
+      if (adminTab) adminTab.style.display = jogosult ? 'block' : 'none';
+      if (tagokTab) tagokTab.style.display = jogosult ? 'block' : 'none';
     }
 
     function magyarHiba(kod) {
@@ -4566,6 +4587,10 @@
             letrehozva: new Date().toISOString()
           })
         });
+        closeAuthModal();
+        alert(adminNev
+          ? '✅ Sikeres regisztráció! Admin fiókként azonnal minden tartalom elérhető.'
+          : '✅ Sikeres regisztráció! A fiókod egy admin jóváhagyására vár — státuszodat bármikor megnézheted a fejlécben lévő neved/emailed gombra kattintva.');
       } catch (e) {
         errEl.textContent = magyarHiba(e.code);
       }
@@ -4579,6 +4604,7 @@
       errEl.textContent = '';
       try {
         await signInWithEmailAndPassword(auth, email, jelszo);
+        closeAuthModal();
       } catch (e) {
         errEl.textContent = magyarHiba(e.code);
       }
@@ -4636,6 +4662,7 @@
         body: JSON.stringify('jovahagyva')
       });
       toltiAdminKerelmeket();
+      toltiOsszesTagot();
       if (currentUser && currentUser.uid === uid) frissitiSajatAllapotot();
     };
 
@@ -4647,7 +4674,107 @@
         body: JSON.stringify('elutasitva')
       });
       toltiAdminKerelmeket();
+      toltiOsszesTagot();
       if (currentUser && currentUser.uid === uid) frissitiSajatAllapotot();
+    };
+
+    // ── ADMIN: TAGOK VISSZAVONÁSA / ÚJRA-JÓVÁHAGYÁSA / TÖRLÉSE ──
+    window.visszavonRegisztraciot = async function(uid) {
+      if (!isFullAdminUser()) { alert('❌ Csak a főadmin (Cobra) vonhat vissza jóváhagyást.'); return; }
+      if (!confirm('Biztosan visszavonod ennek a tagnak a jóváhagyását? Ekkor a Fuvarok/Módok tartalom újra elzáródik neki.')) return;
+      await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify('fuggoben')
+      });
+      toltiAdminKerelmeket();
+      toltiOsszesTagot();
+      if (currentUser && currentUser.uid === uid) frissitiSajatAllapotot();
+    };
+
+    window.torolRegisztraciot = async function(uid, nev) {
+      if (!isFullAdminUser()) { alert('❌ Csak a főadmin (Cobra) törölhet regisztrációt.'); return; }
+      if (!confirm(`Biztosan törlöd "${nev || 'ez a tag'}" weboldali regisztrációját? Ez nem vonja vissza a Firebase-bejelentkezési fiókját, csak a jóváhagyási rekordot törli — a tartalom-hozzáférése azonnal elzáródik.`)) return;
+      await fetch(`${DB_URL}/regisztraciok/${uid}.json`, { method: 'DELETE' });
+      toltiAdminKerelmeket();
+      toltiOsszesTagot();
+      if (currentUser && currentUser.uid === uid) frissitiSajatAllapotot();
+    };
+
+    // ── ADMIN: ÖSSZES REGISZTRÁLT TAG BETÖLTÉSE (állapottól függetlenül) ──
+    let osszesTagAdat = [];
+    async function toltiOsszesTagot() {
+      const listEl = document.getElementById('auth-tagok-list');
+      const osszesenEl = document.getElementById('auth-tagok-osszesen');
+      if (!isFullAdminUser()) {
+        listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">❌ Ehhez csak a főadminnak (Cobra) van jogosultsága.</div>';
+        return;
+      }
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;">Betöltés...</div>';
+      try {
+        const res = await fetch(`${DB_URL}/regisztraciok.json`);
+        const data = await res.json() || {};
+        osszesTagAdat = Object.entries(data).map(([uid, rec]) => ({ uid, ...rec }))
+          .sort((a, b) => (b.letrehozva || '').localeCompare(a.letrehozva || ''));
+        osszesenEl.textContent = `Összesen ${osszesTagAdat.length} regisztrált tag.`;
+        renderTagokList(osszesTagAdat);
+      } catch (e) {
+        listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">Hiba a betöltéskor.</div>';
+      }
+    }
+
+    function statuszBadge(statusz) {
+      if (statusz === 'jovahagyva') return '<span style="color:#4ade80;font-size:11px;font-weight:700;border:1px solid rgba(74,222,128,0.3);background:rgba(74,222,128,0.12);padding:2px 8px;border-radius:20px;">✅ Jóváhagyva</span>';
+      if (statusz === 'elutasitva') return '<span style="color:#f87171;font-size:11px;font-weight:700;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.12);padding:2px 8px;border-radius:20px;">❌ Elutasítva</span>';
+      return '<span style="color:#f59e0b;font-size:11px;font-weight:700;border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.12);padding:2px 8px;border-radius:20px;">⏳ Függőben</span>';
+    }
+
+    function renderTagokList(lista) {
+      const listEl = document.getElementById('auth-tagok-list');
+      if (lista.length === 0) {
+        listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">Nincs találat.</div>';
+        return;
+      }
+      listEl.innerHTML = lista.map(rec => {
+        const nevEsc = (rec.nev || 'Névtelen').replace(/</g,'&lt;');
+        let gombok = '';
+        if (rec.statusz === 'fuggoben') {
+          gombok = `
+            <button onclick="jovahagyRegisztraciot('${rec.uid}')" style="flex:1;padding:7px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Jóváhagyás</button>
+            <button onclick="elutasitRegisztraciot('${rec.uid}')" style="flex:1;padding:7px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">❌ Elutasítás</button>`;
+        } else if (rec.statusz === 'jovahagyva') {
+          gombok = `<button onclick="visszavonRegisztraciot('${rec.uid}')" style="flex:1;padding:7px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">↩️ Visszavonás</button>`;
+        } else if (rec.statusz === 'elutasitva') {
+          gombok = `<button onclick="jovahagyRegisztraciot('${rec.uid}')" style="flex:1;padding:7px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Mégis jóváhagyom</button>`;
+        }
+        gombok += `<button onclick="torolRegisztraciot('${rec.uid}', '${nevEsc.replace(/'/g,"")}')" style="padding:7px 10px;background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">🗑️</button>`;
+        return `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
+              <div style="font-weight:700;color:#fff;font-size:14px;">${nevEsc} <span style="color:var(--muted);font-weight:400;font-size:12px;">(${rec.eletkor || '?'} év)</span></div>
+              ${statuszBadge(rec.statusz)}
+            </div>
+            <div style="color:var(--muted);font-size:12px;margin-bottom:8px;">${(rec.email || '').replace(/</g,'&lt;')}</div>
+            <div style="font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px;">
+              <div>💬 Discord: <strong>${(rec.discordNev || '-').replace(/</g,'&lt;')}</strong> · 🚛 Trucky: <strong>${(rec.truckyNev || '-').replace(/</g,'&lt;')}</strong></div>
+              ${rec.marIsmertSofor ? '<div style="color:#4ade80;">✅ Már ismert sofőr</div>' : ''}
+            </div>
+            <div style="display:flex;gap:6px;">${gombok}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.szurTagokList = function() {
+      const q = (document.getElementById('auth-tagok-kereses').value || '').trim().toLowerCase();
+      if (!q) { renderTagokList(osszesTagAdat); return; }
+      const szurt = osszesTagAdat.filter(rec =>
+        (rec.nev || '').toLowerCase().includes(q) ||
+        (rec.email || '').toLowerCase().includes(q) ||
+        (rec.discordNev || '').toLowerCase().includes(q) ||
+        (rec.truckyNev || '').toLowerCase().includes(q)
+      );
+      renderTagokList(szurt);
     };
 
     // ── TARTALOM ZÁR: modok-content/fuvarok-content elrejtése/megjelenítése ──
