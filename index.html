@@ -4586,6 +4586,17 @@
             letrehozva: new Date().toISOString()
           })
         });
+
+        // ── Admin-csapat értesítése Discordon (csak valódi, elbírálásra váró kérelemnél) ──
+        if (!adminNev) {
+          fetch('https://srt-trans-trucky-bot-production.up.railway.app/uj-jelentkezes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nev, email, discordNev, truckyNev, eletkor, marIsmertSofor: marTagja })
+          }).catch(() => {}); // csendes hiba — a regisztráció ettől függetlenül sikeres
+
+        }
+
         closeAuthModal();
         alert(adminNev
           ? '✅ Sikeres regisztráció! Admin fiókként azonnal minden tartalom elérhető.'
