@@ -744,6 +744,12 @@
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Csapat</button>
       </nav>
       <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
+      <div style="position:relative;" id="ceg-ranglista-wrap">
+        <button id="ceg-ranglista-btn" onclick="cegRanglistaKattintas()" title="Cég ranglista" style="background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">🏆</button>
+        <div id="ceg-ranglista-dropdown" style="display:none;position:absolute;top:46px;right:0;width:280px;max-height:400px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:200;padding:14px;">
+          <div id="ceg-ranglista-content" style="color:var(--muted);font-size:12px;text-align:center;">Betöltés...</div>
+        </div>
+      </div>
       <button id="jelentkezok-quick-btn" onclick="showPage('jelentkezok')" title="Jelentkezők" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">📋</button>
       <button id="truckytagok-quick-btn" onclick="showPage('truckytagok')" title="Trucky Tagok" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">🚛</button>
       <div style="position:relative;display:none;" id="bell-wrap">
@@ -4979,12 +4985,50 @@
     // Régi néven is elérhető marad (más függvények erre hivatkoznak, pl. jóváhagyás után)
     function frissitiErtesitesek() { renderBell(); }
 
+    // ══════════ 🏆 CÉG RANGLISTA (publikus, mindenki látja) ══════════
+    let cegRanglistaNyitva = false;
+    let cegRanglistaAdat = null;
+
+    window.cegRanglistaKattintas = function() {
+      cegRanglistaNyitva = !cegRanglistaNyitva;
+      document.getElementById('ceg-ranglista-dropdown').style.display = cegRanglistaNyitva ? 'block' : 'none';
+    };
+
+    onValue(ref(db, 'cegRanglista'), (snapshot) => {
+      cegRanglistaAdat = snapshot.val();
+      const contentEl = document.getElementById('ceg-ranglista-content');
+      if (!contentEl) return;
+      if (!cegRanglistaAdat || !cegRanglistaAdat.top10 || cegRanglistaAdat.top10.length === 0) {
+        contentEl.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;">Még nincs adat a cég-ranglistáról.</div>';
+        return;
+      }
+      const helyezesSzoveg = cegRanglistaAdat.sajatHelyezes
+        ? `<div style="text-align:center;margin-bottom:12px;padding:10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);border-radius:8px;">
+             <div style="font-size:11px;color:var(--muted);">Cégünk helyezése</div>
+             <div style="font-size:22px;font-weight:800;color:var(--orange);">#${cegRanglistaAdat.sajatHelyezes}</div>
+           </div>`
+        : `<div style="text-align:center;margin-bottom:12px;font-size:12px;color:var(--muted);">Cégünk nincs a top listában.</div>`;
+      const listaHtml = cegRanglistaAdat.top10.map(c => `
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);${c.sajat ? 'background:rgba(249,115,22,0.08);' : ''}">
+          <div style="min-width:20px;font-size:12px;font-weight:700;color:${c.helyezes<=3?'#fbbf24':'var(--muted)'};">${c.helyezes}.</div>
+          <div style="flex:1;font-size:12px;color:${c.sajat ? 'var(--orange)' : 'var(--text)'};font-weight:${c.sajat ? '700' : '400'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(c.nev||'').replace(/</g,'&lt;')}</div>
+          ${c.ertek ? `<div style="font-size:11px;color:var(--muted);white-space:nowrap;">${formazIdo ? '' : ''}${Math.round(c.ertek).toLocaleString('hu-HU')} km</div>` : ''}
+        </div>
+      `).join('');
+      contentEl.innerHTML = helyezesSzoveg + '<div>' + listaHtml + '</div>';
+    }, (hiba) => console.warn('Cég ranglista figyelési hiba:', hiba.message));
+
     // Kattintás a harangon kívülre: dropdown bezárása
     document.addEventListener('click', (e) => {
       const wrap = document.getElementById('bell-wrap');
       if (bellNyitva && wrap && !wrap.contains(e.target)) {
         bellNyitva = false;
         document.getElementById('bell-dropdown').style.display = 'none';
+      }
+      const cegWrap = document.getElementById('ceg-ranglista-wrap');
+      if (cegRanglistaNyitva && cegWrap && !cegWrap.contains(e.target)) {
+        cegRanglistaNyitva = false;
+        document.getElementById('ceg-ranglista-dropdown').style.display = 'none';
       }
     });
 
