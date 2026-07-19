@@ -3121,6 +3121,7 @@
       } else {
         if (!noHashUpdate) window.location.hash = 'fuvarok';
       }
+      if (window.frissitiFuvarWidgeteket) window.frissitiFuvarWidgeteket();
     }
 
     // ══ ATS NÉZET VÁLTÓ ══
@@ -4704,52 +4705,77 @@
       } catch (e) { return ''; }
     }
 
-    // ── ÉPPEN FUVARBAN (Fuvarok oldal) — "Munka elkezdve" Trucky esemény alapján ──
-    onValue(ref(db, 'aktivFuvarok'), (snapshot) => {
+    // ── ÉPPEN FUVARBAN + LEGUTÓBBI FUVAROK (Fuvarok oldal) — az aktuálisan
+    // kiválasztott játék-fülnek (ETS2/ATS) megfelelően szűrve jelennek meg ──
+    let aktivFuvarokAdat = {};
+    let legutobbiFuvarokAdat = {};
+
+    function aktualisJatekFul() {
+      const etsTab = document.getElementById('game-tab-ets');
+      return (etsTab && etsTab.classList.contains('active')) ? 'ETS2' : 'ATS';
+    }
+
+    window.frissitiFuvarWidgeteket = function() {
+      const aktualisJatek = aktualisJatekFul();
+
+      // -- Éppen fuvarban --
       const box = document.getElementById('aktiv-fuvar-box');
       const listEl = document.getElementById('aktiv-fuvar-list');
-      if (!box || !listEl) return;
-      const adat = snapshot.val() || {};
-      // Biztonsági szűrés: 12 óránál régebbi "aktív" bejegyzést már nem mutatunk
-      // (ha esetleg valamiért nem érkezett meg a befejezés-jelzés).
-      const tizenketOraEzelott = Date.now() - 12 * 60 * 60 * 1000;
-      const lista = Object.values(adat)
-        .filter(e => e.idopont && new Date(e.idopont).getTime() > tizenketOraEzelott)
-        .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''));
-      if (lista.length === 0) { box.style.display = 'none'; return; }
-      box.style.display = 'block';
-      listEl.innerHTML = lista.map(e => `
-        <div style="font-size:13px;color:var(--text);">
-          🚛 <strong>${(e.truckyNev || 'Sofőr').replace(/</g,'&lt;')}</strong>
-          ${e.honnan && e.hova ? ` — ${e.honnan.replace(/</g,'&lt;')} → ${e.hova.replace(/</g,'&lt;')}` : ''}
-          ${e.aru ? ` <span style="color:var(--orange);">(${e.aru.replace(/</g,'&lt;')}${e.tonna ? ', ' + e.tonna + ' t' : ''})</span>` : ''}
-          <span style="color:var(--muted);font-size:11px;"> · indult ${formazIdo(e.idopont)}</span>
-        </div>
-      `).join('');
+      if (box && listEl) {
+        const tizenketOraEzelott = Date.now() - 12 * 60 * 60 * 1000;
+        const lista = Object.values(aktivFuvarokAdat)
+          .filter(e => e.idopont && new Date(e.idopont).getTime() > tizenketOraEzelott)
+          .filter(e => (e.jatek || 'ETS2') === aktualisJatek)
+          .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''));
+        if (lista.length === 0) {
+          box.style.display = 'none';
+        } else {
+          box.style.display = 'block';
+          listEl.innerHTML = lista.map(e => `
+            <div style="font-size:13px;color:var(--text);">
+              🚛 <strong>${(e.truckyNev || 'Sofőr').replace(/</g,'&lt;')}</strong>
+              ${e.honnan && e.hova ? ` — ${e.honnan.replace(/</g,'&lt;')} → ${e.hova.replace(/</g,'&lt;')}` : ''}
+              ${e.aru ? ` <span style="color:var(--orange);">(${e.aru.replace(/</g,'&lt;')}${e.tonna ? ', ' + e.tonna + ' t' : ''})</span>` : ''}
+              <span style="color:var(--muted);font-size:11px;"> · indult ${formazIdo(e.idopont)}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      // -- Legutóbbi fuvarok --
+      const box2 = document.getElementById('ki-vezet-eppen-box');
+      const listEl2 = document.getElementById('ki-vezet-eppen-list');
+      if (box2 && listEl2) {
+        const napjaEzelott = Date.now() - 24 * 60 * 60 * 1000;
+        const lista2 = Object.values(legutobbiFuvarokAdat)
+          .filter(e => e.idopont && new Date(e.idopont).getTime() > napjaEzelott)
+          .filter(e => (e.jatek || 'ETS2') === aktualisJatek)
+          .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''))
+          .slice(0, 10);
+        if (lista2.length === 0) {
+          box2.style.display = 'none';
+        } else {
+          box2.style.display = 'block';
+          listEl2.innerHTML = lista2.map(e => `
+            <div style="font-size:13px;color:var(--text);">
+              🚚 <strong>${(e.truckyNev || 'Sofőr').replace(/</g,'&lt;')}</strong>
+              ${e.honnan && e.hova ? ` — ${e.honnan.replace(/</g,'&lt;')} → ${e.hova.replace(/</g,'&lt;')}` : ''}
+              ${e.km ? ` <span style="color:var(--orange);">(${Math.round(e.km)} km)</span>` : ''}
+              <span style="color:var(--muted);font-size:11px;"> · ${e.jatek || 'ETS2'} · ${formazIdo(e.idopont)}</span>
+            </div>
+          `).join('');
+        }
+      }
+    };
+
+    onValue(ref(db, 'aktivFuvarok'), (snapshot) => {
+      aktivFuvarokAdat = snapshot.val() || {};
+      window.frissitiFuvarWidgeteket();
     }, (hiba) => console.warn('Aktív fuvarok figyelési hiba:', hiba.message));
 
-    // ── LEGUTÓBBI FUVAROK (Fuvarok oldal) — minden leadott fuvarból, megbízhatóan ──
     onValue(ref(db, 'legutobbiFuvarok'), (snapshot) => {
-      const box = document.getElementById('ki-vezet-eppen-box');
-      const listEl = document.getElementById('ki-vezet-eppen-list');
-      if (!box || !listEl) return;
-      const adat = snapshot.val() || {};
-      // Az elmúlt 24 órán belüli fuvarokat mutatjuk
-      const napjaEzelott = Date.now() - 24 * 60 * 60 * 1000;
-      const lista = Object.values(adat)
-        .filter(e => e.idopont && new Date(e.idopont).getTime() > napjaEzelott)
-        .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''))
-        .slice(0, 10);
-      if (lista.length === 0) { box.style.display = 'none'; return; }
-      box.style.display = 'block';
-      listEl.innerHTML = lista.map(e => `
-        <div style="font-size:13px;color:var(--text);">
-          🚚 <strong>${(e.truckyNev || 'Sofőr').replace(/</g,'&lt;')}</strong>
-          ${e.honnan && e.hova ? ` — ${e.honnan.replace(/</g,'&lt;')} → ${e.hova.replace(/</g,'&lt;')}` : ''}
-          ${e.km ? ` <span style="color:var(--orange);">(${Math.round(e.km)} km)</span>` : ''}
-          <span style="color:var(--muted);font-size:11px;"> · ${e.jatek || 'ETS2'} · ${formazIdo(e.idopont)}</span>
-        </div>
-      `.trim()).join('');
+      legutobbiFuvarokAdat = snapshot.val() || {};
+      window.frissitiFuvarWidgeteket();
     }, (hiba) => console.warn('Legutóbbi fuvarok figyelési hiba:', hiba.message));
 
     // ── KÖVETKEZŐ ESEMÉNYEK (Közösség oldal) ──
