@@ -5079,11 +5079,34 @@
         });
         const eredmeny = await res.json().catch(() => ({}));
         if (eredmeny.ok) {
-          alert(`✅ "${truckyNev}" sikeresen felvéve a Trucky céghez!`);
+          const meghivasSzoveg = eredmeny.weboldalMeghivas?.kuldve
+            ? '\n\n📩 Discord DM-ben megkértük, hogy regisztráljon a weboldalunkra is.'
+            : '\n\n⚠️ Nem találtuk meg Discordon, így nem tudtuk megkérni, hogy regisztráljon a weboldalra — ezt érdemes kézzel jelezni neki.';
+          alert(`✅ "${truckyNev}" sikeresen felvéve a Trucky céghez!${meghivasSzoveg}`);
         } else if (eredmeny.ok_de_kezi) {
           alert(`⚠️ "${truckyNev}" jelentkezését nem tudjuk innen elfogadni (${eredmeny.ok_reason || 'nincs SteamID'}) — kérlek, fogadd el kézzel Truckyban.`);
         } else {
           alert(`❌ Nem sikerült: ${eredmeny.error || eredmeny.body || 'ismeretlen hiba'}. Fogadd el kézzel Truckyban.`);
+        }
+      } catch (e) {
+        alert('❌ Kapcsolati hiba: ' + e.message);
+      }
+    };
+
+    window.elutasitTruckyJelentkezest = async function(key, truckyNev) {
+      if (!isAdminUser()) { alert('❌ Csak admin utasíthat el jelentkezést.'); return; }
+      if (!confirm(`Biztosan elutasítod "${truckyNev}" jelentkezését? FONTOS: ez csak a saját nyilvántartásunkból törli — Truckyban is kézzel el kell utasítanod, mert erre nincs API.`)) return;
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/trucky-jelentkezes-elutasitas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+          body: JSON.stringify({ truckyNev })
+        });
+        const eredmeny = await res.json().catch(() => ({}));
+        if (eredmeny.ok) {
+          alert(`❌ "${truckyNev}" jelentkezése törölve a listából. Ne felejtsd el Truckyban is elutasítani!`);
+        } else {
+          alert(`❌ Hiba történt: ${eredmeny.error || 'ismeretlen hiba'}`);
         }
       } catch (e) {
         alert('❌ Kapcsolati hiba: ' + e.message);
@@ -5148,7 +5171,10 @@
               <button onclick="elrejtTruckyEsemeny('jelentkezes_${item.key}')" title="Elrejtés" style="position:absolute;top:6px;right:6px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;">✕</button>
               <div style="font-size:12px;color:#fff;padding-right:18px;">📝 <strong>${(item.truckyNev || 'Valaki').replace(/</g,'&lt;')}</strong> jelentkezett Truckyban (még nincs elbírálva)</div>
               ${item.bemutatkozas ? `<div style="font-size:12px;color:var(--text);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-style:italic;">💬 "${item.bemutatkozas.replace(/</g,'&lt;')}"</div>` : '<div style="font-size:11px;color:var(--muted);margin-top:4px;">(nincs bemutatkozó szöveg)</div>'}
-              <button onclick="elfogadTruckyJelentkezest('${item.key}', '${(item.truckyNev||'').replace(/'/g,"")}', ${item.steamId ? `'${item.steamId}'` : 'null'})" style="margin-top:8px;width:100%;padding:6px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Elfogadás Truckyban</button>
+              <div style="display:flex;gap:6px;margin-top:8px;">
+                <button onclick="elfogadTruckyJelentkezest('${item.key}', '${(item.truckyNev||'').replace(/'/g,"")}', ${item.steamId ? `'${item.steamId}'` : 'null'})" style="flex:1;padding:6px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Elfogadás</button>
+                <button onclick="elutasitTruckyJelentkezest('${item.key}', '${(item.truckyNev||'').replace(/'/g,"")}')" style="flex:1;padding:6px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">❌ Elutasítás</button>
+              </div>
             </div>`;
         }
         return `
