@@ -1028,6 +1028,20 @@
           Csatlakozás a Discord szerverhez
         </a>
       </div>
+
+      <!-- ÉLŐ: KÖVETKEZŐ ESEMÉNYEK (Trucky konvoj jelentkezések) -->
+      <div id="esemenyek-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+        <h3 style="color:#fff;font-size:18px;margin-bottom:14px;">📅 Legutóbbi esemény-jelentkezések</h3>
+        <div id="esemenyek-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- ÉLŐ: LEGUTÓBBI EREDMÉNYEK / KITÜNTETÉSEK -->
+      <div id="eredmenyek-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+        <h3 style="color:#fff;font-size:18px;margin-bottom:14px;">🏆 Legutóbbi eredmények</h3>
+        <div id="eredmenyek-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <button class="btn-trucky" onclick="showPage('flotta')" style="background:transparent;border:1px solid var(--border);margin-bottom:24px;">🚚 Flotta állapota & Hírfolyam →</button>
       <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab(this, 'tab-kozosseg-info')">🚛 Általános</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-kozosseg-szabalyzat')">📋 Szabályzat</button>
@@ -1149,6 +1163,16 @@
     <div id="fuvarok-overlay" style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;"></div>
     <div class="container-wide" id="fuvarok-content" style="display:none;">
       <p class="section-eyebrow">Sofőr statisztikák</p>
+
+      <!-- ÉLŐ: KI VEZET ÉPPEN MOST (Trucky Dispatcher alapján) -->
+      <div id="ki-vezet-eppen-box" style="display:none;background:var(--surface);border:1px solid rgba(74,222,128,0.3);border-radius:12px;padding:16px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;animation:pulse 1.5s infinite;"></span>
+          <span style="font-weight:700;color:#fff;font-size:14px;">🚚 Jelenleg úton</span>
+        </div>
+        <div id="ki-vezet-eppen-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+      <style>@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }</style>
 
       <!-- Játék választó fülek -->
       <div class="tab-nav" style="margin-bottom: 24px;">
@@ -1436,6 +1460,24 @@
       </div>
     </div>
   </div> <!-- /page-fuvarok -->
+
+  <!-- ══════════ PAGE: FLOTTA ÁLLAPOTA & HÍRFOLYAM ══════════ -->
+  <div class="page" id="page-flotta" style="position:relative;">
+    <div class="container-wide">
+      <p class="section-eyebrow">Trucky élő adatok</p>
+      <h2 class="section-title">🚚 Flotta állapota & Hírfolyam</h2>
+
+      <h3 style="color:#fff;font-size:18px;margin:32px 0 14px;">🚛 Flotta események</h3>
+      <div id="flotta-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
+        <div style="color:var(--muted);grid-column:1/-1;">Betöltés...</div>
+      </div>
+
+      <h3 style="color:#fff;font-size:18px;margin:40px 0 14px;">📰 Céges hírfolyam</h3>
+      <div id="hirfolyam-list" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="color:var(--muted);">Betöltés...</div>
+      </div>
+    </div>
+  </div>
 
   <!-- ══════════ PAGE: JELENTKEZŐK (csak adminoknak) ══════════ -->
   <div class="page" id="page-jelentkezok" style="position:relative;">
@@ -4638,6 +4680,130 @@
       }, (hiba) => console.warn('🔔 Elrejtett-értesítések figyelési hiba:', hiba.message));
     }
 
+    // ══════════ PUBLIKUS ÉLŐ WIDGETEK (mindenki látja, nem csak admin) ══════════
+    function formazIdo(iso) {
+      if (!iso) return '';
+      try {
+        const d = new Date(iso);
+        const most = Date.now();
+        const percEltelt = (most - d.getTime()) / 60000;
+        if (percEltelt < 60) return `${Math.round(percEltelt)} perce`;
+        if (percEltelt < 24 * 60) return `${Math.round(percEltelt / 60)} órája`;
+        return d.toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+      } catch (e) { return ''; }
+    }
+
+    // ── KI VEZET ÉPPEN MOST (Fuvarok oldal) ──
+    onValue(ref(db, 'dispatcherAllapot'), (snapshot) => {
+      const box = document.getElementById('ki-vezet-eppen-box');
+      const listEl = document.getElementById('ki-vezet-eppen-list');
+      if (!box || !listEl) return;
+      const adat = snapshot.val() || {};
+      // Csak az elmúlt 3 órán belüli dispatcher-eseményeket mutatjuk (utána "elavultnak" tekintjük)
+      const haromOraEzelott = Date.now() - 3 * 60 * 60 * 1000;
+      const lista = Object.values(adat)
+        .filter(e => e.idopont && new Date(e.idopont).getTime() > haromOraEzelott)
+        .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''))
+        .slice(0, 8);
+      if (lista.length === 0) { box.style.display = 'none'; return; }
+      box.style.display = 'block';
+      listEl.innerHTML = lista.map(e => `
+        <div style="font-size:13px;color:var(--text);">
+          🚚 <strong>${(e.truckyNev || 'Sofőr').replace(/</g,'&lt;')}</strong>
+          ${e.honnan && e.hova ? ` — ${e.honnan.replace(/</g,'&lt;')} → ${e.hova.replace(/</g,'&lt;')}` : ''}
+          <span style="color:var(--muted);font-size:11px;"> · ${formazIdo(e.idopont)}</span>
+        </div>
+      `).join('');
+    });
+
+    // ── KÖVETKEZŐ ESEMÉNYEK (Közösség oldal) ──
+    onValue(ref(db, 'esemenyIdopontok'), (snapshot) => {
+      const box = document.getElementById('esemenyek-box');
+      const listEl = document.getElementById('esemenyek-list');
+      if (!box || !listEl) return;
+      const adat = snapshot.val() || {};
+      const lista = Object.values(adat)
+        .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''))
+        .slice(0, 10);
+      if (lista.length === 0) { box.style.display = 'none'; return; }
+      box.style.display = 'block';
+      listEl.innerHTML = lista.map(e => `
+        <div style="font-size:13px;color:var(--text);padding:8px 0;border-bottom:1px solid var(--border);">
+          ${e.tipus === 'jelentkezett' ? '✅' : '❌'} <strong>${(e.truckyNev || 'Valaki').replace(/</g,'&lt;')}</strong>
+          ${e.tipus === 'jelentkezett' ? 'jelentkezett' : 'lemondta a jelentkezését'}
+          ${e.esemenyNev ? ` — ${e.esemenyNev.replace(/</g,'&lt;')}` : ''}
+          <span style="color:var(--muted);font-size:11px;"> · ${formazIdo(e.idopont)}</span>
+        </div>
+      `).join('');
+    });
+
+    // ── LEGUTÓBBI EREDMÉNYEK (Közösség oldal) ──
+    onValue(ref(db, 'eredmenyek'), (snapshot) => {
+      const box = document.getElementById('eredmenyek-box');
+      const listEl = document.getElementById('eredmenyek-list');
+      if (!box || !listEl) return;
+      const adat = snapshot.val() || {};
+      const lista = Object.values(adat)
+        .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''))
+        .slice(0, 10);
+      if (lista.length === 0) { box.style.display = 'none'; return; }
+      box.style.display = 'block';
+      listEl.innerHTML = lista.map(e => `
+        <div style="font-size:13px;color:var(--text);padding:8px 0;border-bottom:1px solid var(--border);">
+          🏆 <strong>${(e.truckyNev || 'Valaki').replace(/</g,'&lt;')}</strong> megszerezte: <em>${(e.eredmenyNev || 'Ismeretlen eredmény').replace(/</g,'&lt;')}</em>
+          <span style="color:var(--muted);font-size:11px;"> · ${formazIdo(e.idopont)}</span>
+        </div>
+      `).join('');
+    });
+
+    // ── FLOTTA ÁLLAPOTA (Flotta oldal) ──
+    onValue(ref(db, 'flotta'), (snapshot) => {
+      const listEl = document.getElementById('flotta-list');
+      if (!listEl) return;
+      const adat = snapshot.val() || {};
+      const lista = Object.values(adat)
+        .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''))
+        .slice(0, 30);
+      if (lista.length === 0) {
+        listEl.innerHTML = '<div style="color:var(--muted);grid-column:1/-1;">Még nincs flotta-esemény.</div>';
+        return;
+      }
+      const cimkek = {
+        vehicle_created: '🆕 Új jármű', vehicle_updated: '🔧 Jármű frissítve',
+        vehicle_maintenance_required: '⚠️ Karbantartás szükséges', vehicle_repaired: '✅ Javítás elvégezve',
+        garage_created: '🏢 Új garázs', garage_updated: '🏢 Garázs frissítve'
+      };
+      listEl.innerHTML = lista.map(e => `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;">
+          <div style="font-size:12px;color:var(--orange);font-weight:700;margin-bottom:4px;">${cimkek[e.tipus] || e.tipus}</div>
+          <div style="font-size:14px;color:#fff;font-weight:700;">${(e.nev || 'Ismeretlen').replace(/</g,'&lt;')}</div>
+          ${e.leiras ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;">${e.leiras.replace(/</g,'&lt;')}</div>` : ''}
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;">${formazIdo(e.idopont)}</div>
+        </div>
+      `).join('');
+    });
+
+    // ── HÍRFOLYAM (Flotta oldal) ──
+    onValue(ref(db, 'hirfolyam'), (snapshot) => {
+      const listEl = document.getElementById('hirfolyam-list');
+      if (!listEl) return;
+      const adat = snapshot.val() || {};
+      const lista = Object.values(adat)
+        .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''))
+        .slice(0, 15);
+      if (lista.length === 0) {
+        listEl.innerHTML = '<div style="color:var(--muted);">Még nincs hírfolyam-bejegyzés.</div>';
+        return;
+      }
+      listEl.innerHTML = lista.map(e => `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+          ${e.cim ? `<div style="font-size:15px;color:#fff;font-weight:700;margin-bottom:6px;">${e.cim.replace(/</g,'&lt;')}</div>` : ''}
+          ${e.szoveg ? `<div style="font-size:13px;color:var(--text);margin-bottom:6px;">${e.szoveg.replace(/</g,'&lt;')}</div>` : ''}
+          <div style="font-size:11px;color:var(--muted);">👤 ${(e.szerzo || 'Ismeretlen').replace(/</g,'&lt;')} · ${formazIdo(e.idopont)}</div>
+        </div>
+      `).join('');
+    });
+
     // Admin-azonosító a Firebase-ben tárolt elrejtett-értesítésekhez: ha van Firebase
     // bejelentkezés, annak a UID-ja; ha csak Discord-kódos admin panelen keresztül van
     // bejelentkezve valaki (nincs saját email+jelszavas fiókja), a Discord neve alapján.
@@ -5141,7 +5307,8 @@
       try {
         const res = await fetch(`${DB_URL}/regisztraciok.json`);
         const data = await res.json() || {};
-        const lista = Object.values(data)
+        const lista = Object.entries(data)
+          .map(([uid, rec]) => ({ uid, ...rec }))
           .sort((a, b) => (b.letrehozva || '').localeCompare(a.letrehozva || ''));
 
         osszesenEl.textContent = `Összesen ${lista.length} jelentkező.`;
@@ -5151,7 +5318,9 @@
           return;
         }
 
-        listEl.innerHTML = lista.map(rec => `
+        listEl.innerHTML = lista.map(rec => {
+          const reszletesId = `jelentkezo-reszletes-${rec.uid}`;
+          return `
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
               <div style="font-weight:700;color:#fff;font-size:15px;">${(rec.nev || 'Névtelen').replace(/</g,'&lt;')}</div>
@@ -5159,9 +5328,22 @@
             </div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:2px;">📧 ${(rec.email || '-').replace(/</g,'&lt;')}</div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:2px;">💬 Discord: ${(rec.discordNev || '-').replace(/</g,'&lt;')} · 🚛 Trucky: ${(rec.truckyNev || '-').replace(/</g,'&lt;')}</div>
-            <div style="font-size:12px;color:var(--muted);">📅 ${formazDatum(rec.letrehozva)}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">📅 ${formazDatum(rec.letrehozva)}</div>
+
+            <button onclick="document.getElementById('${reszletesId}').style.display = document.getElementById('${reszletesId}').style.display === 'block' ? 'none' : 'block';" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">⋯ Részletek</button>
+
+            <div id="${reszletesId}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.8;">
+              <div>🎂 Életkor: <strong>${rec.eletkor || '-'}</strong></div>
+              <div>🎮 Eredeti ETS2: <strong>${rec.ets2Eredeti === 'igen' ? 'Igen' : 'Nem'}</strong> · Mióta játszik: <strong>${(rec.otaJatszol || '-').replace(/</g,'&lt;')}</strong></div>
+              <div>🏢 Volt már másik cégnél: <strong>${rec.masVtc === 'igen' ? ('Igen — ' + (rec.masVtcMelyik || '?')) : 'Nem'}</strong></div>
+              <div>🔁 Volt már korábban itt tag: <strong>${rec.voltMarTagja === 'igen' ? 'Igen' : 'Nem'}</strong></div>
+              ${rec.marIsmertSofor ? '<div style="color:#4ade80;">✅ Már ismert sofőr</div>' : ''}
+              ${rec.steam ? `<div>🎮 Steam: <a href="${rec.steam.replace(/"/g,'')}" target="_blank" style="color:var(--orange);">${rec.steam.replace(/</g,'&lt;')}</a></div>` : ''}
+              ${rec.egyeb ? `<div style="margin-top:6px;">➕ Amit magáról írt: <em>"${rec.egyeb.replace(/</g,'&lt;')}"</em></div>` : '<div style="color:var(--muted);margin-top:6px;">(nem írt magáról semmit)</div>'}
+            </div>
           </div>
-        `).join('');
+        `;
+        }).join('');
       } catch (e) {
         listEl.innerHTML = '<div style="grid-column:1/-1;color:#f87171;font-size:14px;text-align:center;">Hiba a betöltéskor.</div>';
       }
