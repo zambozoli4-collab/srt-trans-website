@@ -5111,7 +5111,7 @@
         } else if (eredmeny.ok_de_kezi) {
           alert(`⚠️ "${truckyNev}" jelentkezését nem tudjuk innen elfogadni (${eredmeny.ok_reason || 'nincs SteamID'}) — kérlek, fogadd el kézzel Truckyban.`);
         } else {
-          alert(`❌ Nem sikerült: ${eredmeny.error || eredmeny.body || 'ismeretlen hiba'}. Fogadd el kézzel Truckyban.`);
+          alert(`❌ Nem sikerült: ${eredmeny.hibaUzenet || eredmeny.error || 'ismeretlen hiba'}. Fogadd el kézzel Truckyban.`);
         }
       } catch (e) {
         alert('❌ Kapcsolati hiba: ' + e.message);
