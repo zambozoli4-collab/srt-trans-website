@@ -744,6 +744,8 @@
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Csapat</button>
       </nav>
       <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
+      <button id="jelentkezok-quick-btn" onclick="megnyitJelentkezok()" title="Jelentkezők" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">📋</button>
+      <button id="truckytagok-quick-btn" onclick="megnyitTruckyTagok()" title="Trucky Tagok" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">🚛</button>
       <div style="position:relative;display:none;" id="bell-wrap">
         <button id="bell-btn" onclick="bellKattintas()" style="background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;position:relative;">
           🔔
@@ -4340,7 +4342,10 @@
 
       <!-- OLVASHATÓ NÉZET: Trucky rendszerben elfogadott tagok (név, Trucky rang, dátum) -->
       <div id="auth-form-truckytagok" style="display:none;max-height:340px;overflow-y:auto;">
-        <div id="auth-truckytagok-osszesen" style="font-size:11px;color:var(--muted);margin-bottom:10px;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;">
+          <div id="auth-truckytagok-osszesen" style="font-size:11px;color:var(--muted);"></div>
+          <button onclick="truckyTagokSzinkron()" id="trucky-szinkron-btn" style="padding:5px 10px;background:rgba(249,115,22,0.15);color:var(--orange);border:1px solid rgba(249,115,22,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">🔄 Frissítés Truckyból</button>
+        </div>
         <div id="auth-truckytagok-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
 
@@ -4560,7 +4565,23 @@
           }
         }
       }
+
+      const jelentkezokBtn = document.getElementById('jelentkezok-quick-btn');
+      const truckyTagokBtn = document.getElementById('truckytagok-quick-btn');
+      if (jelentkezokBtn) jelentkezokBtn.style.display = isAdminUser() ? 'flex' : 'none';
+      if (truckyTagokBtn) truckyTagokBtn.style.display = isAdminUser() ? 'flex' : 'none';
     }
+
+    // Fejléc-gyorsgombok: egyenesen a megfelelő fülre nyitják a modalt,
+    // nem kell hozzá előbb a saját névre/emailre kattintani.
+    window.megnyitJelentkezok = function() {
+      openAuthModal();
+      switchAuthTab('jelentkezok');
+    };
+    window.megnyitTruckyTagok = function() {
+      openAuthModal();
+      switchAuthTab('truckytagok');
+    };
 
     // ══════════ 🔔 ÉRTESÍTÉSI HARANG (admin) ══════════
     let bellIdozitoElindult = false;
@@ -5083,6 +5104,31 @@
         listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">Hiba a betöltéskor.</div>';
       }
     }
+
+    window.truckyTagokSzinkron = async function() {
+      if (!isAdminUser()) { alert('❌ Csak admin indíthat szinkronizálást.'); return; }
+      const btn = document.getElementById('trucky-szinkron-btn');
+      const eredetiSzoveg = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '⏳ Szinkronizálás...';
+      try {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/trucky-tagok-szinkron', {
+          method: 'POST',
+          headers: { 'X-Upload-Secret': 'srt-trans-upload-2024' }
+        });
+        const result = await res.json().catch(() => ({}));
+        if (res.ok && result.ok) {
+          await toltiTruckyTagokat();
+          alert(`✅ Szinkronizálva! ${result.darab || 0} Trucky tag betöltve.`);
+        } else {
+          alert(`❌ Hiba: ${result.error || 'ismeretlen hiba'}`);
+        }
+      } catch (e) {
+        alert('❌ Kapcsolati hiba: ' + e.message);
+      }
+      btn.disabled = false;
+      btn.textContent = eredetiSzoveg;
+    };
 
     function statuszBadge(statusz) {
       if (statusz === 'jovahagyva') return '<span style="color:#4ade80;font-size:11px;font-weight:700;border:1px solid rgba(74,222,128,0.3);background:rgba(74,222,128,0.12);padding:2px 8px;border-radius:20px;">✅ Jóváhagyva</span>';
