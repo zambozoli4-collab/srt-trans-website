@@ -4864,14 +4864,18 @@
           })
         });
 
-        // ── Botnak jelezzük az új jelentkezést: ez végzi az automatikus Trucky↔Discord
-        // bindelést IS (nem csak az admin-értesítést) — ezért mindig meghívjuk, admin
-        // regisztrációnál is. A bot saját maga eldönti, hogy kell-e DM-et küldenie. ──
+        // ── Botnak jelezzük az új jelentkezést: DM-et küld az adminoknak Discordon.
+        // A regisztráció ettől függetlenül sikeres, de a hibát most már kiírjuk a
+        // konzolra, hogy hibakeresésnél lássuk, eljutott-e a kérés a botig. ──
         fetch('https://srt-trans-trucky-bot-production.up.railway.app/uj-jelentkezes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nev, email, discordNev, truckyNev, eletkor, marIsmertSofor: marTagja })
-        }).catch(() => {}); // csendes hiba — a regisztráció ettől függetlenül sikeres
+        }).then(r => r.json()).then(r => {
+          console.log('[JELENTKEZÉS ÉRTESÍTÉS] Bot válasza:', r);
+        }).catch(e => {
+          console.warn('[JELENTKEZÉS ÉRTESÍTÉS] Nem sikerült elérni a botot:', e.message);
+        });
 
         closeAuthModal();
         alert(adminNev
