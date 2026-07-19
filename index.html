@@ -744,6 +744,15 @@
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Csapat</button>
       </nav>
       <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
+      <div style="position:relative;display:none;" id="bell-wrap">
+        <button id="bell-btn" onclick="bellKattintas()" style="background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;position:relative;">
+          🔔
+          <span id="bell-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:20px;display:flex;align-items:center;justify-content:center;padding:0 3px;">0</span>
+        </button>
+        <div id="bell-dropdown" style="display:none;position:absolute;top:46px;right:0;width:320px;max-height:400px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:200;padding:10px;">
+          <div id="bell-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+      </div>
       <button class="btn-trucky" id="auth-header-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="openAuthModal()">🔐 Belépés</button>
       <!-- Hamburger gomb mobilra -->
       <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menü">
@@ -1010,7 +1019,7 @@
       <div class="discord-card">
         <h2 data-edit="discord_title">Discord szerver</h2>
         <p data-edit="discord_desc">Kérdésed van? Szeretnél konvojozni? Lépj be a Discord szerverünkre és csatlakozz a csapathoz!</p>
-        <a class="btn-discord" id="discord-link" href="https://discord.gg/fNqJD3mM3p" target="_blank" data-edit="discord_link">
+        <a class="btn-discord" id="discord-link" href="https://discord.gg/kwgG7uspC6" target="_blank" data-edit="discord_link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
           </svg>
@@ -4487,7 +4496,104 @@
       const tagokTab = document.getElementById('auth-tab-tagok');
       if (adminTab) adminTab.style.display = isFullAdminUser() ? 'block' : 'none';
       if (tagokTab) tagokTab.style.display = isAdminUser() ? 'block' : 'none';
+
+      const bellWrap = document.getElementById('bell-wrap');
+      if (bellWrap) {
+        bellWrap.style.display = isAdminUser() ? 'block' : 'none';
+        if (isAdminUser()) {
+          frissitiErtesitesek();
+          if (!bellIdozitoElindult) {
+            bellIdozitoElindult = true;
+            setInterval(frissitiErtesitesek, 45000); // 45 másodpercenkénti frissítés
+          }
+        }
+      }
     }
+
+    // ══════════ 🔔 ÉRTESÍTÉSI HARANG (admin) ══════════
+    let bellIdozitoElindult = false;
+    let bellNyitva = false;
+
+    window.bellKattintas = function() {
+      bellNyitva = !bellNyitva;
+      const dropdown = document.getElementById('bell-dropdown');
+      dropdown.style.display = bellNyitva ? 'block' : 'none';
+      if (bellNyitva) {
+        // Megnyitáskor a Trucky-eseményeket "olvasottnak" jelöljük — a badge számláló ez alapján csökken
+        sessionStorage.setItem('srt_trucky_esemenyek_utolso_olvasas', String(Date.now()));
+        frissitiErtesitesek();
+      }
+    };
+
+    async function frissitiErtesitesek() {
+      if (!isAdminUser()) return;
+      const badge = document.getElementById('bell-badge');
+      const listEl = document.getElementById('bell-list');
+
+      try {
+        const [regRes, truckyRes] = await Promise.all([
+          fetch(`${DB_URL}/regisztraciok.json`).then(r => r.json()).catch(() => ({})),
+          fetch(`${DB_URL}/truckyEsemenyek.json`).then(r => r.json()).catch(() => ({}))
+        ]);
+
+        const fuggobenLista = Object.entries(regRes || {})
+          .filter(([, rec]) => rec && rec.statusz === 'fuggoben')
+          .map(([uid, rec]) => ({ tipus: 'jelentkezes', uid, ido: rec.letrehozva || '', ...rec }));
+
+        const utolsoOlvasas = parseInt(sessionStorage.getItem('srt_trucky_esemenyek_utolso_olvasas') || '0', 10);
+        const truckyLista = Object.entries(truckyRes || {})
+          .map(([key, rec]) => ({ tipus: 'trucky', key, ido: rec.idopont || '', ...rec }))
+          .sort((a, b) => (b.ido || '').localeCompare(a.ido || ''))
+          .slice(0, 15); // csak a legutóbbi 15 Trucky-eseményt mutatjuk
+
+        const olvasatlanTruckyDb = truckyLista.filter(e => new Date(e.ido).getTime() > utolsoOlvasas).length;
+        const osszesenBadge = fuggobenLista.length + olvasatlanTruckyDb;
+
+        if (osszesenBadge > 0) {
+          badge.style.display = 'flex';
+          badge.textContent = osszesenBadge > 99 ? '99+' : String(osszesenBadge);
+        } else {
+          badge.style.display = 'none';
+        }
+
+        const egyuttLista = [...fuggobenLista, ...truckyLista].sort((a, b) => (b.ido || '').localeCompare(a.ido || ''));
+
+        if (egyuttLista.length === 0) {
+          listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px 0;">Nincs friss értesítés.</div>';
+          return;
+        }
+
+        listEl.innerHTML = egyuttLista.map(item => {
+          if (item.tipus === 'jelentkezes') {
+            return `
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;">
+                <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;">📥 Új jelentkezés: ${(item.nev || 'Névtelen').replace(/</g,'&lt;')}</div>
+                <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Discord: ${(item.discordNev || '-').replace(/</g,'&lt;')} · Trucky: ${(item.truckyNev || '-').replace(/</g,'&lt;')}</div>
+                <div style="display:flex;gap:6px;">
+                  <button onclick="jovahagyRegisztraciot('${item.uid}')" style="flex:1;padding:5px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Elfogad</button>
+                  <button onclick="elutasitRegisztraciot('${item.uid}')" style="flex:1;padding:5px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">❌ Elutasít</button>
+                </div>
+              </div>`;
+          }
+          return `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;">
+              <div style="font-size:12px;color:#fff;">🚛 <strong>${(item.discordNev || item.truckyNev || 'Valaki').replace(/</g,'&lt;')}</strong> regisztrált Truckyba</div>
+              <div style="font-size:11px;color:var(--muted);">Trucky név: ${(item.truckyNev || '-').replace(/</g,'&lt;')}</div>
+            </div>`;
+        }).join('');
+      } catch (e) {
+        listEl.innerHTML = '<div style="color:#f87171;font-size:12px;text-align:center;">Hiba az értesítések betöltésekor.</div>';
+      }
+    }
+
+    // Kattintás a harangon kívülre: dropdown bezárása
+    document.addEventListener('click', (e) => {
+      const wrap = document.getElementById('bell-wrap');
+      if (bellNyitva && wrap && !wrap.contains(e.target)) {
+        bellNyitva = false;
+        document.getElementById('bell-dropdown').style.display = 'none';
+      }
+    });
 
     function magyarHiba(kod) {
       const map = {
@@ -4618,15 +4724,14 @@
           })
         });
 
-        // ── Admin-csapat értesítése Discordon (csak valódi, elbírálásra váró kérelemnél) ──
-        if (!adminNev) {
-          fetch('https://srt-trans-trucky-bot-production.up.railway.app/uj-jelentkezes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nev, email, discordNev, truckyNev, eletkor, marIsmertSofor: marTagja })
-          }).catch(() => {}); // csendes hiba — a regisztráció ettől függetlenül sikeres
-
-        }
+        // ── Botnak jelezzük az új jelentkezést: ez végzi az automatikus Trucky↔Discord
+        // bindelést IS (nem csak az admin-értesítést) — ezért mindig meghívjuk, admin
+        // regisztrációnál is. A bot saját maga eldönti, hogy kell-e DM-et küldenie. ──
+        fetch('https://srt-trans-trucky-bot-production.up.railway.app/uj-jelentkezes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nev, email, discordNev, truckyNev, eletkor, marIsmertSofor: marTagja })
+        }).catch(() => {}); // csendes hiba — a regisztráció ettől függetlenül sikeres
 
         closeAuthModal();
         alert(adminNev
@@ -4708,6 +4813,7 @@
       });
       toltiAdminKerelmeket();
       toltiOsszesTagot();
+      frissitiErtesitesek();
       if (currentUser && currentUser.uid === uid) frissitiSajatAllapotot();
     };
 
@@ -4720,6 +4826,7 @@
       });
       toltiAdminKerelmeket();
       toltiOsszesTagot();
+      frissitiErtesitesek();
       if (currentUser && currentUser.uid === uid) frissitiSajatAllapotot();
     };
 
