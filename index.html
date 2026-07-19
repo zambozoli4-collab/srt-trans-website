@@ -4420,15 +4420,28 @@
       return ISMERT_ADMIN_DISCORD_NEVEK.includes(lower);
     }
 
+    // Csak a fő admin (Cobra) Discord név-variánsai — a "Kérelmek" panelhez és a teljes
+    // jogú admin-funkciókhoz kell megkülönböztetni Erik/Boby-tól.
+    const ISMERT_FOADMIN_DISCORD_NEVEK = ['cobra', 'cobra086'];
+    function ismertFoadminDiscordNev(discordNev) {
+      const lower = (discordNev || '').trim().toLowerCase();
+      return ISMERT_FOADMIN_DISCORD_NEVEK.includes(lower);
+    }
+
     let currentUser = null;
     let currentStatusz = null; // null | 'fuggoben' | 'jovahagyva' | 'elutasitva'
     let currentVanRangja = false; // van-e élő SRT Discord rangja (a bot ellenőrzi)
     let gateEllenorzesKesz = false; // igaz, amint az első teljes jogosultság-ellenőrzés lefutott
+    // Igaz, ha a bejelentkezett Firebase-fiók regisztrációs rekordjában mentett Discord név
+    // admin/helyettes névnek felel meg — vagyis SAJÁT email+jelszavával belépve is admin,
+    // nem kell hozzá a külön Discord-kódos admin panelbe is bejelentkeznie.
+    let currentAdminByRecord = false;
+    let currentFoadminByRecord = false;
 
     function isAdminUser() {
       const discordAdmin = !!(window.isAnySiteAdmin && window.isAnySiteAdmin());
       const emailAdmin = !!(currentUser && ADMIN_EMAILS.includes(currentUser.email));
-      return discordAdmin || emailAdmin;
+      return discordAdmin || emailAdmin || currentAdminByRecord;
     }
 
     // Teljes jogú admin (Cobra) — ő látja/kezelheti a "Kérelmek" (regisztráció-jóváhagyás)
@@ -4437,7 +4450,7 @@
     function isFullAdminUser() {
       const discordFullAdmin = !!(window.isFullAdmin && window.isFullAdmin());
       const emailAdmin = !!(currentUser && ADMIN_EMAILS.includes(currentUser.email));
-      return discordFullAdmin || emailAdmin;
+      return discordFullAdmin || emailAdmin || currentFoadminByRecord;
     }
 
     // ── MODAL NYITÁS / ZÁRÁS ──
@@ -5034,7 +5047,7 @@
     // ── A BEJELENTKEZETT FELHASZNÁLÓ SAJÁT JÓVÁHAGYÁSI ÁLLAPOTÁNAK LEKÉRÉSE ──
     async function frissitiSajatAllapotot() {
       const statusMsg = document.getElementById('auth-status-message');
-      if (!currentUser) { currentStatusz = null; currentVanRangja = false; applyContentGate(); return; }
+      if (!currentUser) { currentStatusz = null; currentVanRangja = false; currentAdminByRecord = false; currentFoadminByRecord = false; applyContentGate(); return; }
       if (isAdminUser()) {
         currentStatusz = 'jovahagyva';
         currentVanRangja = true;
@@ -5043,6 +5056,8 @@
         return;
       }
       let discordNevMentett = null, truckyNevMentett = null;
+      currentAdminByRecord = false;
+      currentFoadminByRecord = false;
       try {
         const res = await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}.json`);
         const data = await res.json();
@@ -5050,6 +5065,15 @@
         var marIsmertSofor = data ? !!data.marIsmertSofor : false;
         discordNevMentett = data ? data.discordNev : null;
         truckyNevMentett = data ? data.truckyNev : null;
+
+        // ── Ha a mentett Discord név admin/helyettes névnek felel meg (Cobra/Erik/Boby),
+        // ettől a pillanattól kezdve isAdminUser()/isFullAdminUser() is admin-ként ismeri
+        // fel ezt a böngésző-munkamenetet — így a 🔔 harang, a "Tagok" és (Cobránál) a
+        // "Kérelmek" fül is megjelenik, PUSZTÁN a saját email+jelszavas belépés alapján. ──
+        if (data && ismertAdminDiscordNev(data.discordNev)) {
+          currentAdminByRecord = true;
+          if (ismertFoadminDiscordNev(data.discordNev)) currentFoadminByRecord = true;
+        }
 
         // ── ÖNJAVÍTÁS: ha admin/helyettes Discord névvel regisztrált valaki, de a
         // rekordja mégsem lett automatikusan jóváhagyva (pl. régebbi regisztráció),
