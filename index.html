@@ -1802,7 +1802,7 @@
         document.getElementById('kep-upload-panel').style.display = 'flex';
         document.getElementById('video-upload-panel').style.display = 'block';
         const osszesTorlesBtn = document.getElementById('osszes-torles-btn');
-        if (osszesTorlesBtn) osszesTorlesBtn.style.display = data.role === 'admin' ? 'inline-block' : 'none';
+        if (osszesTorlesBtn) osszesTorlesBtn.style.display = 'inline-block';
         renderMedia();
       } catch(e) {
         document.getElementById('media-code-msg').textContent = '❌ Kapcsolati hiba';
@@ -1845,7 +1845,7 @@
       document.getElementById('kep-upload-panel').style.display = 'flex';
       document.getElementById('video-upload-panel').style.display = 'block';
       const osszesTorlesBtn = document.getElementById('osszes-torles-btn');
-      if (osszesTorlesBtn) osszesTorlesBtn.style.display = mediaAdminRole === 'admin' ? 'inline-block' : 'none';
+      if (osszesTorlesBtn) osszesTorlesBtn.style.display = 'inline-block';
       // Újrarajzolás hogy a törlés gombok megjelenjenek
       renderMedia();
     })();
@@ -1920,8 +1920,8 @@
     }
 
     async function deleteMedia(tipus, idx) {
-      const fullMediaAdmin = mediaAdminRole === 'admin' || sessionStorage.getItem('srt_media_role') === 'admin';
-      if (!fullMediaAdmin) { alert('❌ Csak a főadmin (Cobra) törölhet médiát.'); return; }
+      const vanMediaJog = mediaAdminMode || !!sessionStorage.getItem('srt_media_auth');
+      if (!vanMediaJog) { alert('❌ Csak média admin/helyettes törölhet médiát.'); return; }
       if (!confirm(`Biztosan törlöd a ${tipus === 'kep' ? 'képet' : 'videót'}?`)) return;
       if (!allData._media) return;
 
@@ -2001,7 +2001,7 @@
       } else {
         window._kepekForLightbox = kepek;
         kepekGrid.innerHTML = kepek.map((k, i) => {
-          const isAdmin = mediaAdminRole === 'admin' || sessionStorage.getItem('srt_media_role') === 'admin';
+          const isAdmin = mediaAdminMode || !!sessionStorage.getItem('srt_media_auth');
           return `
           <div style="position: relative; overflow: visible;">
             <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; z-index: 10;">${i + 1}.</div>
@@ -2024,7 +2024,7 @@
         videokGrid.innerHTML = videok.map((v, i) => `
           <div style="position: relative;">
             <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; z-index: 1;">${i + 1}.</div>
-            ${(mediaAdminRole === 'admin' || sessionStorage.getItem('srt_media_role') === 'admin') && i >= 1 ? `<button onclick="event.stopPropagation();deleteMedia('video', ${i - 1})" style="position: absolute; top: 8px; right: 8px; background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; z-index: 1;">🗑️</button>` : ''}
+            ${(mediaAdminMode || sessionStorage.getItem('srt_media_auth')) && i >= 1 ? `<button onclick="event.stopPropagation();deleteMedia('video', ${i - 1})" style="position: absolute; top: 8px; right: 8px; background: rgba(239,68,68,0.85); border: none; color: #fff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; z-index: 1;">🗑️</button>` : ''}
             <div class="video-thumb" onclick="openVideoModal(window._videokForModal, ${i})">
               <img src="https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg" alt="${v.cim}" loading="lazy" />
               <div class="video-thumb-play">▶</div>
@@ -4157,8 +4157,8 @@
 
     // ══════════ ÖSSZES KÉP TÖRLÉSE ══════════
     async function osszesTorles() {
-      const fullMediaAdmin = mediaAdminRole === 'admin' || sessionStorage.getItem('srt_media_role') === 'admin';
-      if (!fullMediaAdmin) { alert('❌ Csak a főadmin (Cobra) törölheti az összes képet.'); return; }
+      const vanMediaJog = mediaAdminMode || !!sessionStorage.getItem('srt_media_auth');
+      if (!vanMediaJog) { alert('❌ Csak média admin/helyettes törölheti az összes képet.'); return; }
       if (!confirm('Biztosan törlöd AZ ÖSSZES képet? Ez nem visszavonható!')) return;
       if (!confirm('Megerősítés: valóban törlöd az összes feltöltött képet?')) return;
       try {
