@@ -1164,11 +1164,11 @@
     <div class="container-wide" id="fuvarok-content" style="display:none;">
       <p class="section-eyebrow">Sofőr statisztikák</p>
 
-      <!-- ÉLŐ: KI VEZET ÉPPEN MOST (Trucky Dispatcher alapján) -->
+      <!-- ÉLŐ: LEGUTÓBBI FUVAROK (minden leadott fuvarból, nem csak Dispatcheres) -->
       <div id="ki-vezet-eppen-box" style="display:none;background:var(--surface);border:1px solid rgba(74,222,128,0.3);border-radius:12px;padding:16px;margin-bottom:24px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
           <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;animation:pulse 1.5s infinite;"></span>
-          <span style="font-weight:700;color:#fff;font-size:14px;">🚚 Jelenleg úton</span>
+          <span style="font-weight:700;color:#fff;font-size:14px;">🚚 Legutóbbi fuvarok</span>
         </div>
         <div id="ki-vezet-eppen-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
@@ -4693,28 +4693,29 @@
       } catch (e) { return ''; }
     }
 
-    // ── KI VEZET ÉPPEN MOST (Fuvarok oldal) ──
-    onValue(ref(db, 'dispatcherAllapot'), (snapshot) => {
+    // ── LEGUTÓBBI FUVAROK (Fuvarok oldal) — minden leadott fuvarból, megbízhatóan ──
+    onValue(ref(db, 'legutobbiFuvarok'), (snapshot) => {
       const box = document.getElementById('ki-vezet-eppen-box');
       const listEl = document.getElementById('ki-vezet-eppen-list');
       if (!box || !listEl) return;
       const adat = snapshot.val() || {};
-      // Csak az elmúlt 3 órán belüli dispatcher-eseményeket mutatjuk (utána "elavultnak" tekintjük)
-      const haromOraEzelott = Date.now() - 3 * 60 * 60 * 1000;
+      // Az elmúlt 24 órán belüli fuvarokat mutatjuk
+      const napjaEzelott = Date.now() - 24 * 60 * 60 * 1000;
       const lista = Object.values(adat)
-        .filter(e => e.idopont && new Date(e.idopont).getTime() > haromOraEzelott)
+        .filter(e => e.idopont && new Date(e.idopont).getTime() > napjaEzelott)
         .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''))
-        .slice(0, 8);
+        .slice(0, 10);
       if (lista.length === 0) { box.style.display = 'none'; return; }
       box.style.display = 'block';
       listEl.innerHTML = lista.map(e => `
         <div style="font-size:13px;color:var(--text);">
           🚚 <strong>${(e.truckyNev || 'Sofőr').replace(/</g,'&lt;')}</strong>
           ${e.honnan && e.hova ? ` — ${e.honnan.replace(/</g,'&lt;')} → ${e.hova.replace(/</g,'&lt;')}` : ''}
-          <span style="color:var(--muted);font-size:11px;"> · ${formazIdo(e.idopont)}</span>
+          ${e.km ? ` <span style="color:var(--orange);">(${Math.round(e.km)} km)</span>` : ''}
+          <span style="color:var(--muted);font-size:11px;"> · ${e.jatek || 'ETS2'} · ${formazIdo(e.idopont)}</span>
         </div>
-      `).join('');
-    });
+      `.trim()).join('');
+    }, (hiba) => console.warn('Legutóbbi fuvarok figyelési hiba:', hiba.message));
 
     // ── KÖVETKEZŐ ESEMÉNYEK (Közösség oldal) ──
     onValue(ref(db, 'esemenyIdopontok'), (snapshot) => {
