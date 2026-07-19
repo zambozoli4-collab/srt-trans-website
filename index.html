@@ -4722,7 +4722,7 @@
       const box = document.getElementById('aktiv-fuvar-box');
       const listEl = document.getElementById('aktiv-fuvar-list');
       if (box && listEl) {
-        const tizenketOraEzelott = Date.now() - 12 * 60 * 60 * 1000;
+        const tizenketOraEzelott = Date.now() - 3 * 60 * 60 * 1000;
         const lista = Object.values(aktivFuvarokAdat)
           .filter(e => e.idopont && new Date(e.idopont).getTime() > tizenketOraEzelott)
           .filter(e => (e.jatek || 'ETS2') === aktualisJatek)
