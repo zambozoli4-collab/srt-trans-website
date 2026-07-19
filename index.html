@@ -1166,21 +1166,21 @@
 
       <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px;">
         <!-- ÉLŐ: ÉPPEN FUVARBAN (Trucky "Munka elkezdve" alapján) -->
-        <div id="aktiv-fuvar-box" style="display:none;background:var(--surface);border:1px solid rgba(239,68,68,0.35);border-radius:12px;padding:16px;width:fit-content;max-width:100%;">
+        <div id="aktiv-fuvar-box" style="display:none;background:var(--surface);border:1px solid rgba(239,68,68,0.35);border-radius:12px;padding:16px;flex:1 1 320px;max-width:100%;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
             <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;animation:pulse 1.5s infinite;"></span>
             <span style="font-weight:700;color:#fff;font-size:14px;">🔴 Éppen fuvarban</span>
           </div>
-          <div id="aktiv-fuvar-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+          <div id="aktiv-fuvar-list" style="display:grid;grid-template-columns:repeat(6, minmax(150px, 1fr));gap:8px;"></div>
         </div>
 
         <!-- ÉLŐ: LEGUTÓBBI FUVAROK (minden leadott fuvarból, nem csak Dispatcheres) -->
-        <div id="ki-vezet-eppen-box" style="display:none;background:var(--surface);border:1px solid rgba(74,222,128,0.3);border-radius:12px;padding:16px;width:fit-content;max-width:100%;">
+        <div id="ki-vezet-eppen-box" style="display:none;background:var(--surface);border:1px solid rgba(74,222,128,0.3);border-radius:12px;padding:16px;flex:1 1 320px;max-width:100%;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
             <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;animation:pulse 1.5s infinite;"></span>
             <span style="font-weight:700;color:#fff;font-size:14px;">🚚 Legutóbbi fuvarok</span>
           </div>
-          <div id="ki-vezet-eppen-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+          <div id="ki-vezet-eppen-list" style="display:grid;grid-template-columns:repeat(6, minmax(150px, 1fr));gap:8px;"></div>
         </div>
       </div>
       <style>@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }</style>
@@ -4760,7 +4760,7 @@
             <div style="font-size:13px;color:var(--text);">
               🚚 <strong>${(e.truckyNev || 'Sofőr').replace(/</g,'&lt;')}</strong>
               ${e.honnan && e.hova ? ` — ${e.honnan.replace(/</g,'&lt;')} → ${e.hova.replace(/</g,'&lt;')}` : ''}
-              ${e.km ? ` <span style="color:var(--orange);">(${Math.round(e.km)} km)</span>` : ''}
+              ${e.aru ? ` <span style="color:var(--orange);">(${e.aru.replace(/</g,'&lt;')}${e.tonna ? ', ' + e.tonna + ' t' : ''}${e.km ? ', ' + Math.round(e.km) + ' km' : ''})</span>` : (e.km ? ` <span style="color:var(--orange);">(${Math.round(e.km)} km)</span>` : '')}
               <span style="color:var(--muted);font-size:11px;"> · ${e.jatek || 'ETS2'} · ${formazIdo(e.idopont)}</span>
             </div>
           `).join('');
