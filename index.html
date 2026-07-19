@@ -5016,11 +5016,17 @@
 
     window.torolRegisztraciot = async function(uid, nev) {
       if (!isAdminUser()) { alert('❌ Csak admin törölhet regisztrációt.'); return; }
-      if (!confirm(`Biztosan törlöd "${nev || 'ez a tag'}" weboldali regisztrációját? Ez a weboldali hozzáférését, a bejelentkezési fiókját (email cím felszabadul) ÉS a Discord szerverről is kirúgja. Ez nem visszavonható!`)) return;
+      if (!confirm(`Biztosan törlöd "${nev || 'ez a tag'}" weboldali regisztrációját és bejelentkezési fiókját (email cím felszabadul)? Ez nem visszavonható!`)) return;
 
       const rec = osszesTagAdat.find(r => r.uid === uid);
       const discordNev = rec ? rec.discordNev : null;
       const email = rec ? rec.email : null;
+
+      // ── Külön rákérdezünk, hogy a Discord szerverről is rúgjuk-e ki (pl. ha csak
+      // elgépelt email miatt törlünk valakit, nem biztos, hogy a Discord kirúgás is kell). ──
+      const kirugjukDiscordrol = discordNev
+        ? confirm(`Kirúgjuk "${discordNev}" Discord felhasználót is a szerverről? Ha csak elgépelt adat miatt törlöd, válaszd a "Mégse"-t.`)
+        : false;
 
       await fetch(`${DB_URL}/regisztraciok/${uid}.json`, { method: 'DELETE' });
 
@@ -5042,8 +5048,8 @@
         }
       }
 
-      // ── Kirúgás a Discord szerverről is ──
-      if (discordNev) {
+      // ── Kirúgás a Discord szerverről, DE csak ha ezt kifejezetten kérted ──
+      if (discordNev && kirugjukDiscordrol) {
         try {
           const kickRes = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/kick-member', {
             method: 'POST',
