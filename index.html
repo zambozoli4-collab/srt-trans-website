@@ -4744,7 +4744,7 @@
             <div style="font-size:13px;color:var(--text);">
               🚛 <strong>${(e.truckyNev || 'Sofőr').replace(/</g,'&lt;')}</strong>
               ${e.honnan && e.hova ? ` — ${e.honnan.replace(/</g,'&lt;')} → ${e.hova.replace(/</g,'&lt;')}` : ''}
-              ${e.aru ? ` <span style="color:var(--orange);">(${e.aru.replace(/</g,'&lt;')}${e.tonna ? ', ' + e.tonna + ' t' : ''})</span>` : ''}
+              ${e.aru ? ` <span style="color:var(--orange);">(${e.aru.replace(/</g,'&lt;')}${e.tonna ? ', ' + e.tonna + ' t' : ''}${e.km ? ', ' + Math.round(e.km) + ' km' : ''})</span>` : (e.km ? ` <span style="color:var(--orange);">(${Math.round(e.km)} km)</span>` : '')}
               <span style="color:var(--muted);font-size:11px;"> · indult ${formazIdo(e.idopont)}</span>
             </div>
           `).join('');
@@ -4998,24 +4998,27 @@
       cegRanglistaAdat = snapshot.val();
       const contentEl = document.getElementById('ceg-ranglista-content');
       if (!contentEl) return;
-      if (!cegRanglistaAdat || !cegRanglistaAdat.top10 || cegRanglistaAdat.top10.length === 0) {
+      if (!cegRanglistaAdat) {
         contentEl.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;">Még nincs adat a cég-ranglistáról.</div>';
         return;
       }
       const helyezesSzoveg = cegRanglistaAdat.sajatHelyezes
-        ? `<div style="text-align:center;margin-bottom:12px;padding:10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);border-radius:8px;">
-             <div style="font-size:11px;color:var(--muted);">Cégünk helyezése</div>
-             <div style="font-size:22px;font-weight:800;color:var(--orange);">#${cegRanglistaAdat.sajatHelyezes}</div>
+        ? `<div style="text-align:center;padding:10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);border-radius:8px;">
+             <div style="font-size:11px;color:var(--muted);">Cégünk helyezése (havi ranglista)</div>
+             <div style="font-size:26px;font-weight:800;color:var(--orange);">#${cegRanglistaAdat.sajatHelyezes}</div>
            </div>`
-        : `<div style="text-align:center;margin-bottom:12px;font-size:12px;color:var(--muted);">Cégünk nincs a top listában.</div>`;
-      const listaHtml = cegRanglistaAdat.top10.map(c => `
-        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);${c.sajat ? 'background:rgba(249,115,22,0.08);' : ''}">
-          <div style="min-width:20px;font-size:12px;font-weight:700;color:${c.helyezes<=3?'#fbbf24':'var(--muted)'};">${c.helyezes}.</div>
-          <div style="flex:1;font-size:12px;color:${c.sajat ? 'var(--orange)' : 'var(--text)'};font-weight:${c.sajat ? '700' : '400'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(c.nev||'').replace(/</g,'&lt;')}</div>
-          ${c.ertek ? `<div style="font-size:11px;color:var(--muted);white-space:nowrap;">${formazIdo ? '' : ''}${Math.round(c.ertek).toLocaleString('hu-HU')} km</div>` : ''}
-        </div>
-      `).join('');
-      contentEl.innerHTML = helyezesSzoveg + '<div>' + listaHtml + '</div>';
+        : `<div style="text-align:center;padding:10px;font-size:12px;color:var(--muted);">A helyezés még nem elérhető — hamarosan pontosítjuk.</div>`;
+
+      // Havi statisztika kimutatás, ha van rá adat (jobs, km stb.)
+      let statSzoveg = '';
+      const total = cegRanglistaAdat.nyersValasz?.total;
+      if (total) {
+        statSzoveg = `<div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">
+          ${total.total_jobs != null ? `${total.total_jobs} fuvar ebben a hónapban` : ''}
+        </div>`;
+      }
+
+      contentEl.innerHTML = helyezesSzoveg + statSzoveg;
     }, (hiba) => console.warn('Cég ranglista figyelési hiba:', hiba.message));
 
     // Kattintás a harangon kívülre: dropdown bezárása
