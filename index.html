@@ -4998,27 +4998,34 @@
       cegRanglistaAdat = snapshot.val();
       const contentEl = document.getElementById('ceg-ranglista-content');
       if (!contentEl) return;
-      if (!cegRanglistaAdat) {
+      if (!cegRanglistaAdat || !cegRanglistaAdat.helyezesek) {
         contentEl.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;">Még nincs adat a cég-ranglistáról.</div>';
         return;
       }
-      const helyezesSzoveg = cegRanglistaAdat.sajatHelyezes
-        ? `<div style="text-align:center;padding:10px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);border-radius:8px;">
-             <div style="font-size:11px;color:var(--muted);">Cégünk helyezése (havi ranglista)</div>
-             <div style="font-size:26px;font-weight:800;color:var(--orange);">#${cegRanglistaAdat.sajatHelyezes}</div>
+      const h = cegRanglistaAdat.helyezesek;
+      const honapNevek = ['', 'Jan', 'Feb', 'Már', 'Ápr', 'Máj', 'Jún', 'Júl', 'Aug', 'Szep', 'Okt', 'Nov', 'Dec'];
+      const honapSzoveg = cegRanglistaAdat.honap ? `${honapNevek[cegRanglistaAdat.honap]} ${cegRanglistaAdat.ev}` : '';
+
+      const sor = (cimke, ertek) => ertek
+        ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+             <div style="font-size:12px;color:var(--muted);">${cimke}</div>
+             <div style="font-size:15px;font-weight:800;color:var(--orange);">#${ertek}</div>
            </div>`
-        : `<div style="text-align:center;padding:10px;font-size:12px;color:var(--muted);">A helyezés még nem elérhető — hamarosan pontosítjuk.</div>`;
+        : `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+             <div style="font-size:12px;color:var(--muted);">${cimke}</div>
+             <div style="font-size:12px;color:var(--muted);">–</div>
+           </div>`;
 
-      // Havi statisztika kimutatás, ha van rá adat (jobs, km stb.)
-      let statSzoveg = '';
-      const total = cegRanglistaAdat.nyersValasz?.total;
-      if (total) {
-        statSzoveg = `<div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">
-          ${total.total_jobs != null ? `${total.total_jobs} fuvar ebben a hónapban` : ''}
-        </div>`;
-      }
-
-      contentEl.innerHTML = helyezesSzoveg + statSzoveg;
+      contentEl.innerHTML = `
+        <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:10px;">Havi ranglista helyezéseink ${honapSzoveg ? '(' + honapSzoveg + ')' : ''}</div>
+        <div style="font-weight:700;color:#fff;font-size:12px;margin-bottom:4px;">🚛 ETS2</div>
+        ${sor('Valós (Real Miles)', h.ets2Valos)}
+        ${sor('Race Miles', h.ets2Race)}
+        <div style="font-weight:700;color:#fff;font-size:12px;margin:10px 0 4px;">🎮 ATS</div>
+        ${sor('Valós (Real Miles)', h.atsValos)}
+        ${sor('Race Miles', h.atsRace)}
+        ${cegRanglistaAdat.osszesFuvarEHonapban != null ? `<div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">Összesen ${cegRanglistaAdat.osszesFuvarEHonapban} fuvar ebben a hónapban</div>` : ''}
+      `;
     }, (hiba) => console.warn('Cég ranglista figyelési hiba:', hiba.message));
 
     // Kattintás a harangon kívülre: dropdown bezárása
