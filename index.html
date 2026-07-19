@@ -1164,6 +1164,15 @@
     <div class="container-wide" id="fuvarok-content" style="display:none;">
       <p class="section-eyebrow">Sofőr statisztikák</p>
 
+      <!-- ÉLŐ: ÉPPEN FUVARBAN (Trucky "Munka elkezdve" alapján) -->
+      <div id="aktiv-fuvar-box" style="display:none;background:var(--surface);border:1px solid rgba(239,68,68,0.35);border-radius:12px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;animation:pulse 1.5s infinite;"></span>
+          <span style="font-weight:700;color:#fff;font-size:14px;">🔴 Éppen fuvarban</span>
+        </div>
+        <div id="aktiv-fuvar-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
       <!-- ÉLŐ: LEGUTÓBBI FUVAROK (minden leadott fuvarból, nem csak Dispatcheres) -->
       <div id="ki-vezet-eppen-box" style="display:none;background:var(--surface);border:1px solid rgba(74,222,128,0.3);border-radius:12px;padding:16px;margin-bottom:24px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
@@ -4692,6 +4701,30 @@
         return d.toLocaleDateString('hu-HU', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
       } catch (e) { return ''; }
     }
+
+    // ── ÉPPEN FUVARBAN (Fuvarok oldal) — "Munka elkezdve" Trucky esemény alapján ──
+    onValue(ref(db, 'aktivFuvarok'), (snapshot) => {
+      const box = document.getElementById('aktiv-fuvar-box');
+      const listEl = document.getElementById('aktiv-fuvar-list');
+      if (!box || !listEl) return;
+      const adat = snapshot.val() || {};
+      // Biztonsági szűrés: 12 óránál régebbi "aktív" bejegyzést már nem mutatunk
+      // (ha esetleg valamiért nem érkezett meg a befejezés-jelzés).
+      const tizenketOraEzelott = Date.now() - 12 * 60 * 60 * 1000;
+      const lista = Object.values(adat)
+        .filter(e => e.idopont && new Date(e.idopont).getTime() > tizenketOraEzelott)
+        .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''));
+      if (lista.length === 0) { box.style.display = 'none'; return; }
+      box.style.display = 'block';
+      listEl.innerHTML = lista.map(e => `
+        <div style="font-size:13px;color:var(--text);">
+          🚛 <strong>${(e.truckyNev || 'Sofőr').replace(/</g,'&lt;')}</strong>
+          ${e.honnan && e.hova ? ` — ${e.honnan.replace(/</g,'&lt;')} → ${e.hova.replace(/</g,'&lt;')}` : ''}
+          ${e.aru ? ` <span style="color:var(--orange);">(${e.aru.replace(/</g,'&lt;')}${e.tonna ? ', ' + e.tonna + ' t' : ''})</span>` : ''}
+          <span style="color:var(--muted);font-size:11px;"> · indult ${formazIdo(e.idopont)}</span>
+        </div>
+      `).join('');
+    }, (hiba) => console.warn('Aktív fuvarok figyelési hiba:', hiba.message));
 
     // ── LEGUTÓBBI FUVAROK (Fuvarok oldal) — minden leadott fuvarból, megbízhatóan ──
     onValue(ref(db, 'legutobbiFuvarok'), (snapshot) => {
