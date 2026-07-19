@@ -1029,6 +1029,24 @@
         </a>
       </div>
 
+      <!-- ÉLŐ: CÉG-ÁTTEKINTŐ (valós Trucky adatok) -->
+      <div id="ceg-attekinto-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
+          <img id="ceg-attekinto-avatar" src="" style="width:56px;height:56px;border-radius:12px;object-fit:cover;display:none;" />
+          <div>
+            <h3 id="ceg-attekinto-nev" style="color:#fff;font-size:20px;margin-bottom:4px;">SRT TRANS KFT.</h3>
+            <p id="ceg-attekinto-szlogen" style="color:var(--muted);font-size:13px;"></p>
+          </div>
+        </div>
+        <div id="ceg-attekinto-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;"></div>
+      </div>
+
+      <!-- ÉLŐ: TELJESÍTMÉNY-MUTATÓK -->
+      <div id="teljesitmeny-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+        <h3 style="color:#fff;font-size:18px;margin-bottom:14px;">📊 Teljesítmény-mutatók</h3>
+        <div id="teljesitmeny-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;"></div>
+      </div>
+
       <!-- ÉLŐ: KÖVETKEZŐ ESEMÉNYEK (Trucky konvoj jelentkezések) -->
       <div id="esemenyek-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
         <h3 style="color:#fff;font-size:18px;margin-bottom:14px;">📅 Legutóbbi esemény-jelentkezések</h3>
@@ -1478,7 +1496,32 @@
       <p class="section-eyebrow">Trucky élő adatok</p>
       <h2 class="section-title">🚚 Flotta állapota & Hírfolyam</h2>
 
-      <h3 style="color:#fff;font-size:18px;margin:32px 0 14px;">🚛 Flotta események</h3>
+      <!-- KARBANTARTÁSI FIGYELMEZTETÉS -->
+      <div id="karbantartas-figyelmezteto" style="display:none;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);border-radius:12px;padding:16px;margin:24px 0;"></div>
+
+      <h3 style="color:#fff;font-size:18px;margin:32px 0 14px;">🚛 Járműveink</h3>
+      <div id="jarmuvek-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
+        <div style="color:var(--muted);grid-column:1/-1;">Betöltés...</div>
+      </div>
+
+      <h3 style="color:#fff;font-size:18px;margin:40px 0 14px;">🏢 Garázsaink</h3>
+      <div id="garazsok-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+        <div style="color:var(--muted);grid-column:1/-1;">Betöltés...</div>
+      </div>
+
+      <h3 style="color:#fff;font-size:18px;margin:40px 0 14px;">📈 Piaci trendek — legjobban fizető áruk</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div>
+          <div style="color:var(--orange);font-weight:700;font-size:13px;margin-bottom:8px;">🚛 ETS2</div>
+          <div id="piac-ets2-list" style="display:flex;flex-direction:column;gap:6px;"><div style="color:var(--muted);font-size:12px;">Betöltés...</div></div>
+        </div>
+        <div>
+          <div style="color:var(--orange);font-weight:700;font-size:13px;margin-bottom:8px;">🎮 ATS</div>
+          <div id="piac-ats-list" style="display:flex;flex-direction:column;gap:6px;"><div style="color:var(--muted);font-size:12px;">Betöltés...</div></div>
+        </div>
+      </div>
+
+      <h3 style="color:#fff;font-size:18px;margin:40px 0 14px;">🚛 Flotta események</h3>
       <div id="flotta-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
         <div style="color:var(--muted);grid-column:1/-1;">Betöltés...</div>
       </div>
@@ -4708,6 +4751,125 @@
       } catch (e) { return ''; }
     }
 
+    function szamFormaz(n) {
+      if (n == null) return '–';
+      return Math.round(n).toLocaleString('hu-HU');
+    }
+
+    // ── CÉG-ÁTTEKINTŐ (Közösség oldal) ──
+    onValue(ref(db, 'cegAttekinto'), (snapshot) => {
+      const box = document.getElementById('ceg-attekinto-box');
+      if (!box) return;
+      const a = snapshot.val();
+      if (!a) { box.style.display = 'none'; return; }
+      box.style.display = 'block';
+      if (a.nev) document.getElementById('ceg-attekinto-nev').textContent = a.nev;
+      if (a.szlogen) document.getElementById('ceg-attekinto-szlogen').textContent = a.szlogen;
+      const avatarEl = document.getElementById('ceg-attekinto-avatar');
+      if (a.avatarUrl) { avatarEl.src = a.avatarUrl; avatarEl.style.display = 'block'; }
+      const adat = [
+        ['Tagok', a.tagokSzama], ['Összes fuvar', a.osszesFuvar], ['Futó fuvarok', a.futoFuvarok],
+        ['Garázsok', a.garazsokSzama], ['Járművek', a.jarmuvekSzama],
+      ];
+      document.getElementById('ceg-attekinto-grid').innerHTML = adat.map(([cimke, ertek]) => `
+        <div style="background:var(--surface);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:20px;font-weight:800;color:var(--orange);">${szamFormaz(ertek)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${cimke}</div>
+        </div>
+      `).join('');
+    }, (hiba) => console.warn('Cég-áttekintő figyelési hiba:', hiba.message));
+
+    // ── TELJESÍTMÉNY-MUTATÓK (Közösség oldal) ──
+    onValue(ref(db, 'teljesitmenyMutatok'), (snapshot) => {
+      const box = document.getElementById('teljesitmeny-box');
+      if (!box) return;
+      const t = snapshot.val();
+      if (!t) { box.style.display = 'none'; return; }
+      box.style.display = 'block';
+      const mp = (sec) => sec ? `${Math.round(sec / 60)} perc` : '–';
+      const adat = [
+        ['Leszállított fuvarok', szamFormaz(t.leszallitottFuvarok)],
+        ['Sérülésmentes fuvarok', szamFormaz(t.serulesmentesFuvarok)],
+        ['Átl. vezetési idő', mp(t.atlagVezetesiIdo)],
+        ['Átl. távolság', t.atlagTavolsag ? `${szamFormaz(t.atlagTavolsag)} km` : '–'],
+        ['Késett fuvarok', szamFormaz(t.keslekedettFuvarok)],
+      ];
+      document.getElementById('teljesitmeny-grid').innerHTML = adat.map(([cimke, ertek]) => `
+        <div style="background:var(--surface);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:16px;font-weight:800;color:#fff;">${ertek}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${cimke}</div>
+        </div>
+      `).join('');
+    }, (hiba) => console.warn('Teljesítmény figyelési hiba:', hiba.message));
+
+    // ── FLOTTA VALÓS ADATOK (Flotta oldal): karbantartás, járművek, garázsok ──
+    onValue(ref(db, 'flottaValos'), (snapshot) => {
+      const f = snapshot.val();
+
+      const figyElem = document.getElementById('karbantartas-figyelmezteto');
+      if (figyElem) {
+        if (f && (f.karbantartasSzukseges > 0 || f.karbantartasAlatt > 0)) {
+          figyElem.style.display = 'block';
+          figyElem.innerHTML = `⚠️ <strong>${f.karbantartasSzukseges || 0} jármű</strong> karbantartásra szorul, <strong>${f.karbantartasAlatt || 0} jármű</strong> jelenleg karbantartás alatt áll.`;
+        } else {
+          figyElem.style.display = 'none';
+        }
+      }
+
+      const jarmuvekEl = document.getElementById('jarmuvek-list');
+      if (jarmuvekEl) {
+        const jarmuvek = (f && f.jarmuvek) || [];
+        if (jarmuvek.length === 0) {
+          jarmuvekEl.innerHTML = '<div style="color:var(--muted);grid-column:1/-1;">Nincs elérhető jármű-adat.</div>';
+        } else {
+          jarmuvekEl.innerHTML = jarmuvek.map(v => `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;">
+              <div style="font-size:14px;font-weight:700;color:#fff;">🚛 ${(v.modell || v.tipus || 'Ismeretlen').toString().replace(/</g,'&lt;')}</div>
+              ${v.sofor ? `<div style="font-size:12px;color:var(--orange);margin-top:4px;">👤 ${v.sofor.replace(/</g,'&lt;')}</div>` : ''}
+              ${v.garazs ? `<div style="font-size:12px;color:var(--muted);margin-top:2px;">🏢 ${v.garazs.replace(/</g,'&lt;')}</div>` : ''}
+              ${v.km != null ? `<div style="font-size:12px;color:var(--muted);">${szamFormaz(v.km)} km</div>` : ''}
+            </div>
+          `).join('');
+        }
+      }
+
+      const garazsokEl = document.getElementById('garazsok-list');
+      if (garazsokEl) {
+        const garazsok = (f && f.garazsok) || [];
+        if (garazsok.length === 0) {
+          garazsokEl.innerHTML = '<div style="color:var(--muted);grid-column:1/-1;">Nincs elérhető garázs-adat.</div>';
+        } else {
+          garazsokEl.innerHTML = garazsok.map(g => `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;">
+              <div style="font-size:14px;font-weight:700;color:#fff;">🏢 ${(g.varos || 'Ismeretlen').replace(/</g,'&lt;')}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px;">${g.maxJarmu != null ? g.maxJarmu + ' jármű hely' : ''}${g.maxUtanfuto != null ? ' · ' + g.maxUtanfuto + ' utánfutó hely' : ''}</div>
+            </div>
+          `).join('');
+        }
+      }
+    }, (hiba) => console.warn('Flotta figyelési hiba:', hiba.message));
+
+    // ── PIACI TRENDEK (Flotta oldal) ──
+    onValue(ref(db, 'piaciTrendek'), (snapshot) => {
+      const p = snapshot.val();
+      const renderPiacLista = (elId, lista) => {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        if (!lista || lista.length === 0) {
+          el.innerHTML = '<div style="color:var(--muted);font-size:12px;">Nincs elérhető adat.</div>';
+          return;
+        }
+        el.innerHTML = lista.map((c, i) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--surface);border-radius:8px;">
+            <div style="font-size:12px;color:var(--text);">${i + 1}. ${(c.nevMagyarul || c.nev || '').replace(/</g,'&lt;')}</div>
+            <div style="font-size:12px;color:var(--orange);font-weight:700;">${c.bevetelTonnaKm != null ? Math.round(c.bevetelTonnaKm * 100) / 100 : '–'} /t/km</div>
+          </div>
+        `).join('');
+      };
+      renderPiacLista('piac-ets2-list', p?.ets2);
+      renderPiacLista('piac-ats-list', p?.ats);
+    }, (hiba) => console.warn('Piaci trendek figyelési hiba:', hiba.message));
+
     // ── ÉPPEN FUVARBAN + LEGUTÓBBI FUVAROK (Fuvarok oldal) — az aktuálisan
     // kiválasztott játék-fülnek (ETS2/ATS) megfelelően szűrve jelennek meg ──
     let aktivFuvarokAdat = {};
@@ -5208,6 +5370,31 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify('jovahagyva')
       });
+
+      // ── Automatikus Trucky-felvétel: ha van felismerhető SteamID64, a bot megpróbálja
+      // egyből felvenni a jelentkezőt a Trucky cégbe is (nem kell külön kézzel elfogadni). ──
+      try {
+        const recRes = await fetch(`${DB_URL}/regisztraciok/${uid}.json`);
+        const rec = await recRes.json();
+        if (rec) {
+          const felvetelRes = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/trucky-tag-felvetel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+            body: JSON.stringify({ nev: rec.nev, email: rec.email, steamLink: rec.steam, discordNev: rec.discordNev })
+          });
+          const felvetelEredmeny = await felvetelRes.json().catch(() => ({}));
+          if (felvetelEredmeny.ok) {
+            console.log('[TRUCKY FELVÉTEL] Sikeres automatikus felvétel:', felvetelEredmeny);
+          } else if (felvetelEredmeny.ok_de_kezi) {
+            console.log('[TRUCKY FELVÉTEL] Nincs felismerhető SteamID — kézzel kell felvenni Truckyban.');
+          } else {
+            console.warn('[TRUCKY FELVÉTEL] Nem sikerült:', felvetelEredmeny);
+          }
+        }
+      } catch (e) {
+        console.warn('[TRUCKY FELVÉTEL] Hiba:', e.message);
+      }
+
       toltiAdminKerelmeket();
       toltiOsszesTagot();
       frissitiErtesitesek();
