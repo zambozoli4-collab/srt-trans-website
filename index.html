@@ -1021,7 +1021,7 @@
       <div class="discord-card">
         <h2 data-edit="discord_title">Discord szerver</h2>
         <p data-edit="discord_desc">Kérdésed van? Szeretnél konvojozni? Lépj be a Discord szerverünkre és csatlakozz a csapathoz!</p>
-        <a class="btn-discord" id="discord-link" href="https://discord.gg/fNqJD3mM3p" target="_blank" data-edit="discord_link">
+        <a class="btn-discord" id="discord-link" href="https://discord.gg/kwgG7uspC6" target="_blank" data-edit="discord_link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
           </svg>
@@ -4427,6 +4427,11 @@
       onAuthStateChanged,
       signOut
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA2u78m_krnePaoFnH0RCTbre8V2k1wxEY",
@@ -4440,6 +4445,7 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getDatabase(app);
     const DB_URL = firebaseConfig.databaseURL;
 
     // Ha admin e-mail címhez is szeretnéd kötni a hozzáférést (a Discord admin-login MELLETT),
@@ -4562,11 +4568,7 @@
       if (bellWrap) {
         bellWrap.style.display = isAdminUser() ? 'block' : 'none';
         if (isAdminUser()) {
-          frissitiErtesitesek();
-          if (!bellIdozitoElindult) {
-            bellIdozitoElindult = true;
-            setInterval(frissitiErtesitesek, 45000); // 45 másodpercenkénti frissítés
-          }
+          bellFigyelokIndítasa(); // valós idejű Firebase figyelés indítása (csak egyszer fut le ténylegesen)
         }
       }
 
@@ -4598,9 +4600,36 @@
       }
     }
 
-    // ══════════ 🔔 ÉRTESÍTÉSI HARANG (admin) ══════════
-    let bellIdozitoElindult = false;
-    let bellNyitva = false;
+    // ══════════ 🔔 ÉRTESÍTÉSI HARANG (admin) — VALÓS IDEJŰ FIGYELÉS ══════════
+    // A régi verzió 45 másodpercenként lekérdezte a Firebase-t (polling) — ezért
+    // tűnhetett úgy, mintha "nem jönne semmi". Most a Firebase Realtime Database
+    // saját élő figyelését (onValue) használjuk, ami a szerver-oldali változást
+    // (új jelentkezés, Trucky-esemény) SZINTE AZONNAL (általában <1 másodperc
+    // alatt) lepusholja minden nyitva lévő böngészőnek, lekérdezgetés nélkül.
+    let bellFigyelokElindultak = false;
+    let bellUtolsoRegisztraciok = {};
+    let bellUtolsoTrucky = {};
+    let bellUtolsoElrejtett = {};
+
+    function bellFigyelokIndítasa() {
+      if (bellFigyelokElindultak) return;
+      bellFigyelokElindultak = true;
+
+      onValue(ref(db, 'regisztraciok'), (snapshot) => {
+        bellUtolsoRegisztraciok = snapshot.val() || {};
+        renderBell();
+      }, (hiba) => console.warn('🔔 Regisztrációk figyelési hiba:', hiba.message));
+
+      onValue(ref(db, 'truckyEsemenyek'), (snapshot) => {
+        bellUtolsoTrucky = snapshot.val() || {};
+        renderBell();
+      }, (hiba) => console.warn('🔔 Trucky-események figyelési hiba:', hiba.message));
+
+      onValue(ref(db, `elrejtettErtesitesek/${adminAzonosito()}`), (snapshot) => {
+        bellUtolsoElrejtett = snapshot.val() || {};
+        renderBell();
+      }, (hiba) => console.warn('🔔 Elrejtett-értesítések figyelési hiba:', hiba.message));
+    }
 
     // Admin-azonosító a Firebase-ben tárolt elrejtett-értesítésekhez: ha van Firebase
     // bejelentkezés, annak a UID-ja; ha csak Discord-kódos admin panelen keresztül van
@@ -4620,7 +4649,7 @@
       bellNyitva = !bellNyitva;
       const dropdown = document.getElementById('bell-dropdown');
       dropdown.style.display = bellNyitva ? 'block' : 'none';
-      if (bellNyitva) frissitiErtesitesek();
+      if (bellNyitva) renderBell();
     };
 
     window.elrejtTruckyEsemeny = async function(key) {
@@ -4630,74 +4659,72 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(true)
         });
+        // A fenti onValue figyelő magától újrarajzol, amint a Firebase visszaigazolja —
+        // de egy azonnali helyi frissítést is teszünk, hogy ne legyen érezhető késés.
+        bellUtolsoElrejtett[key] = true;
+        renderBell();
       } catch (e) {
         console.warn('Elrejtés mentési hiba:', e.message);
       }
-      frissitiErtesitesek();
     };
 
-    async function frissitiErtesitesek() {
+    function renderBell() {
       if (!isAdminUser()) return;
       const badge = document.getElementById('bell-badge');
       const listEl = document.getElementById('bell-list');
+      if (!badge || !listEl) return;
 
-      try {
-        const [regRes, truckyRes, elrejtettRes] = await Promise.all([
-          fetch(`${DB_URL}/regisztraciok.json`).then(r => r.json()).catch(() => ({})),
-          fetch(`${DB_URL}/truckyEsemenyek.json`).then(r => r.json()).catch(() => ({})),
-          fetch(`${DB_URL}/elrejtettErtesitesek/${adminAzonosito()}.json`).then(r => r.json()).catch(() => ({}))
-        ]);
-        const elrejtettKulcsok = new Set(Object.keys(elrejtettRes || {}));
+      const elrejtettKulcsok = new Set(Object.keys(bellUtolsoElrejtett || {}));
 
-        const fuggobenLista = Object.entries(regRes || {})
-          .filter(([, rec]) => rec && rec.statusz === 'fuggoben')
-          .map(([uid, rec]) => ({ tipus: 'jelentkezes', uid, ido: rec.letrehozva || '', ...rec }));
+      const fuggobenLista = Object.entries(bellUtolsoRegisztraciok || {})
+        .filter(([, rec]) => rec && rec.statusz === 'fuggoben')
+        .map(([uid, rec]) => ({ tipus: 'jelentkezes', uid, ido: rec.letrehozva || '', ...rec }));
 
-        const truckyLista = Object.entries(truckyRes || {})
-          .map(([key, rec]) => ({ tipus: 'trucky', key, ido: rec.idopont || '', ...rec }))
-          .filter(e => !elrejtettKulcsok.has(e.key)) // ── amit ✕-szel elrejtettél (bármelyik eszközön), az kimarad ──
-          .sort((a, b) => (b.ido || '').localeCompare(a.ido || ''))
-          .slice(0, 15); // csak a legutóbbi 15 (el nem rejtett) Trucky-eseményt mutatjuk
+      const truckyLista = Object.entries(bellUtolsoTrucky || {})
+        .map(([key, rec]) => ({ tipus: 'trucky', key, ido: rec.idopont || '', ...rec }))
+        .filter(e => !elrejtettKulcsok.has(e.key))
+        .sort((a, b) => (b.ido || '').localeCompare(a.ido || ''))
+        .slice(0, 15);
 
-        const osszesenBadge = fuggobenLista.length + truckyLista.length;
+      const osszesenBadge = fuggobenLista.length + truckyLista.length;
 
-        if (osszesenBadge > 0) {
-          badge.style.display = 'flex';
-          badge.textContent = osszesenBadge > 99 ? '99+' : String(osszesenBadge);
-        } else {
-          badge.style.display = 'none';
-        }
-
-        const egyuttLista = [...fuggobenLista, ...truckyLista].sort((a, b) => (b.ido || '').localeCompare(a.ido || ''));
-
-        if (egyuttLista.length === 0) {
-          listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px 0;">Nincs friss értesítés.</div>';
-          return;
-        }
-
-        listEl.innerHTML = egyuttLista.map(item => {
-          if (item.tipus === 'jelentkezes') {
-            return `
-              <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;">
-                <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;">📥 Új jelentkezés: ${(item.nev || 'Névtelen').replace(/</g,'&lt;')}</div>
-                <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Discord: ${(item.discordNev || '-').replace(/</g,'&lt;')} · Trucky: ${(item.truckyNev || '-').replace(/</g,'&lt;')}</div>
-                <div style="display:flex;gap:6px;">
-                  <button onclick="jovahagyRegisztraciot('${item.uid}')" style="flex:1;padding:5px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Elfogad</button>
-                  <button onclick="elutasitRegisztraciot('${item.uid}')" style="flex:1;padding:5px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">❌ Elutasít</button>
-                </div>
-              </div>`;
-          }
-          return `
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;position:relative;">
-              <button onclick="elrejtTruckyEsemeny('${item.key}')" title="Elrejtés" style="position:absolute;top:6px;right:6px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;">✕</button>
-              <div style="font-size:12px;color:#fff;padding-right:18px;">🚛 <strong>${(item.discordNev || item.truckyNev || 'Valaki').replace(/</g,'&lt;')}</strong> regisztrált Truckyba</div>
-              <div style="font-size:11px;color:var(--muted);">Trucky név: ${(item.truckyNev || '-').replace(/</g,'&lt;')}</div>
-            </div>`;
-        }).join('');
-      } catch (e) {
-        listEl.innerHTML = '<div style="color:#f87171;font-size:12px;text-align:center;">Hiba az értesítések betöltésekor.</div>';
+      if (osszesenBadge > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = osszesenBadge > 99 ? '99+' : String(osszesenBadge);
+      } else {
+        badge.style.display = 'none';
       }
+
+      const egyuttLista = [...fuggobenLista, ...truckyLista].sort((a, b) => (b.ido || '').localeCompare(a.ido || ''));
+
+      if (egyuttLista.length === 0) {
+        listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px 0;">Nincs friss értesítés.</div>';
+        return;
+      }
+
+      listEl.innerHTML = egyuttLista.map(item => {
+        if (item.tipus === 'jelentkezes') {
+          return `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;">
+              <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;">📥 Új jelentkezés: ${(item.nev || 'Névtelen').replace(/</g,'&lt;')}</div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Discord: ${(item.discordNev || '-').replace(/</g,'&lt;')} · Trucky: ${(item.truckyNev || '-').replace(/</g,'&lt;')}</div>
+              <div style="display:flex;gap:6px;">
+                <button onclick="jovahagyRegisztraciot('${item.uid}')" style="flex:1;padding:5px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Elfogad</button>
+                <button onclick="elutasitRegisztraciot('${item.uid}')" style="flex:1;padding:5px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">❌ Elutasít</button>
+              </div>
+            </div>`;
+        }
+        return `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;position:relative;">
+            <button onclick="elrejtTruckyEsemeny('${item.key}')" title="Elrejtés" style="position:absolute;top:6px;right:6px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;">✕</button>
+            <div style="font-size:12px;color:#fff;padding-right:18px;">🚛 <strong>${(item.discordNev || item.truckyNev || 'Valaki').replace(/</g,'&lt;')}</strong> regisztrált Truckyba</div>
+            <div style="font-size:11px;color:var(--muted);">Trucky név: ${(item.truckyNev || '-').replace(/</g,'&lt;')}</div>
+          </div>`;
+      }).join('');
     }
+
+    // Régi néven is elérhető marad (más függvények erre hivatkoznak, pl. jóváhagyás után)
+    function frissitiErtesitesek() { renderBell(); }
 
     // Kattintás a harangon kívülre: dropdown bezárása
     document.addEventListener('click', (e) => {
