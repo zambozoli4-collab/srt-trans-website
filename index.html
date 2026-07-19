@@ -2342,8 +2342,8 @@
       else { loadJsonBin(false).then(() => { avatarBetolt(); bgBetolt(); }); }
       if (name === 'fuvarok') { renderDrivers(); renderStatisztika(); }
       if (name === 'kepek') renderMedia();
-      if (name === 'jelentkezok') toltiJelentkezoket();
-      if (name === 'truckytagok') toltiTruckyTagokat();
+      if (name === 'jelentkezok' && window.toltiJelentkezoket) window.toltiJelentkezoket();
+      if (name === 'truckytagok' && window.toltiTruckyTagokat) window.toltiTruckyTagokat();
     }
 
     // Háttér inicializálása oldalbetöltéskor
@@ -5116,6 +5116,10 @@
         listEl.innerHTML = '<div style="grid-column:1/-1;color:#f87171;font-size:14px;text-align:center;">Hiba a betöltéskor.</div>';
       }
     }
+
+    // Elérhetővé tesszük a fő (nem-module) szkript számára is — a showPage() onnan hívja ezeket.
+    window.toltiJelentkezoket = toltiJelentkezoket;
+    window.toltiTruckyTagokat = toltiTruckyTagokat;
 
     window.truckyTagokSzinkron = async function() {
       if (!isAdminUser()) { alert('❌ Csak admin indíthat szinkronizálást.'); return; }
