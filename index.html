@@ -4223,12 +4223,14 @@
       <button onclick="closeAuthModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
 
       <!-- Fül váltó -->
-      <div style="display:flex;gap:6px;margin-bottom:20px;">
-        <button id="auth-tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--orange-dim);color:var(--orange);font-weight:700;cursor:pointer;font-size:13px;">Bejelentkezés</button>
-        <button id="auth-tab-regisztracio" onclick="switchAuthTab('regisztracio')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">Regisztráció</button>
-        <button id="auth-tab-admin" onclick="switchAuthTab('admin')" style="display:none;flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">👑 Kérelmek</button>
-        <button id="auth-tab-tagok" onclick="switchAuthTab('tagok')" style="display:none;flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">👥 Tagok</button>
-        <button id="auth-tab-adminlogin" onclick="switchAuthTab('adminlogin')" style="display:none;flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">🔑 Admin Belépés</button>
+      <div id="auth-tabs-bar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">
+        <button id="auth-tab-login" onclick="switchAuthTab('login')" style="flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--orange-dim);color:var(--orange);font-weight:700;cursor:pointer;font-size:13px;">Bejelentkezés</button>
+        <button id="auth-tab-regisztracio" onclick="switchAuthTab('regisztracio')" style="flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">Regisztráció</button>
+        <button id="auth-tab-admin" onclick="switchAuthTab('admin')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">👑 Kérelmek</button>
+        <button id="auth-tab-tagok" onclick="switchAuthTab('tagok')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">👥 Tagok</button>
+        <button id="auth-tab-jelentkezok" onclick="switchAuthTab('jelentkezok')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">📋 Jelentkezők</button>
+        <button id="auth-tab-truckytagok" onclick="switchAuthTab('truckytagok')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">🚛 Trucky Tagok</button>
+        <button id="auth-tab-adminlogin" onclick="switchAuthTab('adminlogin')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">🔑 Admin Belépés</button>
       </div>
 
       <!-- BEJELENTKEZÉS ŰRLAP -->
@@ -4328,6 +4330,18 @@
         </div>
 
         <div id="auth-tagok-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+      <!-- OLVASHATÓ NÉZET: Jelentkezők (név, rang, dátum) -->
+      <div id="auth-form-jelentkezok" style="display:none;max-height:340px;overflow-y:auto;">
+        <div id="auth-jelentkezok-osszesen" style="font-size:11px;color:var(--muted);margin-bottom:10px;"></div>
+        <div id="auth-jelentkezok-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- OLVASHATÓ NÉZET: Trucky rendszerben elfogadott tagok (név, Trucky rang, dátum) -->
+      <div id="auth-form-truckytagok" style="display:none;max-height:340px;overflow-y:auto;">
+        <div id="auth-truckytagok-osszesen" style="font-size:11px;color:var(--muted);margin-bottom:10px;"></div>
+        <div id="auth-truckytagok-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
 
       <!-- ADMIN BELÉPÉS: Cobra Discord-kódos bejelentkezése -->
@@ -4469,19 +4483,25 @@
       const regTab = document.getElementById('auth-tab-regisztracio');
       const adminTab = document.getElementById('auth-tab-admin');
       const tagokTab = document.getElementById('auth-tab-tagok');
+      const jelentkezokTab = document.getElementById('auth-tab-jelentkezok');
+      const truckyTagokTab = document.getElementById('auth-tab-truckytagok');
       const adminLoginTab = document.getElementById('auth-tab-adminlogin');
       const loginForm = document.getElementById('auth-form-login');
       const regForm = document.getElementById('auth-form-regisztracio');
       const adminForm = document.getElementById('auth-form-admin');
       const tagokForm = document.getElementById('auth-form-tagok');
+      const jelentkezokForm = document.getElementById('auth-form-jelentkezok');
+      const truckyTagokForm = document.getElementById('auth-form-truckytagok');
       const adminLoginForm = document.getElementById('auth-form-adminlogin');
       document.getElementById('auth-error').textContent = '';
 
-      [loginTab, regTab, adminTab, tagokTab, adminLoginTab].forEach(t => { if (t) { t.style.background = 'transparent'; t.style.color = 'var(--muted)'; } });
+      [loginTab, regTab, adminTab, tagokTab, jelentkezokTab, truckyTagokTab, adminLoginTab].forEach(t => { if (t) { t.style.background = 'transparent'; t.style.color = 'var(--muted)'; } });
       loginForm.style.display = 'none';
       regForm.style.display = 'none';
       adminForm.style.display = 'none';
       tagokForm.style.display = 'none';
+      jelentkezokForm.style.display = 'none';
+      truckyTagokForm.style.display = 'none';
       adminLoginForm.style.display = 'none';
 
       if (tab === 'login') {
@@ -4498,6 +4518,14 @@
         tagokForm.style.display = 'block';
         tagokTab.style.background = 'var(--orange-dim)'; tagokTab.style.color = 'var(--orange)';
         toltiOsszesTagot();
+      } else if (tab === 'jelentkezok') {
+        jelentkezokForm.style.display = 'block';
+        jelentkezokTab.style.background = 'var(--orange-dim)'; jelentkezokTab.style.color = 'var(--orange)';
+        toltiJelentkezoket();
+      } else if (tab === 'truckytagok') {
+        truckyTagokForm.style.display = 'block';
+        truckyTagokTab.style.background = 'var(--orange-dim)'; truckyTagokTab.style.color = 'var(--orange)';
+        toltiTruckyTagokat();
       } else if (tab === 'adminlogin') {
         adminLoginForm.style.display = 'block';
         adminLoginTab.style.background = 'var(--orange-dim)'; adminLoginTab.style.color = 'var(--orange)';
@@ -4507,8 +4535,19 @@
     function refreshAdminTabVisibility() {
       const adminTab = document.getElementById('auth-tab-admin');
       const tagokTab = document.getElementById('auth-tab-tagok');
+      const jelentkezokTab = document.getElementById('auth-tab-jelentkezok');
+      const truckyTagokTab = document.getElementById('auth-tab-truckytagok');
       if (adminTab) adminTab.style.display = isFullAdminUser() ? 'block' : 'none';
       if (tagokTab) tagokTab.style.display = isAdminUser() ? 'block' : 'none';
+      if (jelentkezokTab) jelentkezokTab.style.display = isAdminUser() ? 'block' : 'none';
+      if (truckyTagokTab) truckyTagokTab.style.display = isAdminUser() ? 'block' : 'none';
+
+      // Admin fiókkal bejelentkezve is látszódjon a fülsáv (eddig teljesen eltűnt
+      // bejelentkezés után, így nem lehetett a Kérelmek/Tagok stb. fülekre váltani).
+      const tabsBar = document.getElementById('auth-tabs-bar');
+      if (tabsBar && currentUser) {
+        tabsBar.style.display = isAdminUser() ? 'flex' : 'none';
+      }
 
       const bellWrap = document.getElementById('bell-wrap');
       if (bellWrap) {
@@ -4950,6 +4989,96 @@
           .sort((a, b) => (b.letrehozva || '').localeCompare(a.letrehozva || ''));
         osszesenEl.textContent = `Összesen ${osszesTagAdat.length} regisztrált tag.`;
         renderTagokList(osszesTagAdat);
+      } catch (e) {
+        listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">Hiba a betöltéskor.</div>';
+      }
+    }
+
+    function siteRangBadge(discordNev) {
+      if (ismertFoadminDiscordNev(discordNev)) {
+        return '<span style="color:#f97316;font-size:11px;font-weight:700;border:1px solid rgba(249,115,22,0.3);background:rgba(249,115,22,0.12);padding:2px 8px;border-radius:20px;">👑 Admin</span>';
+      }
+      if (ismertAdminDiscordNev(discordNev)) {
+        return '<span style="color:#60a5fa;font-size:11px;font-weight:700;border:1px solid rgba(96,165,250,0.3);background:rgba(96,165,250,0.12);padding:2px 8px;border-radius:20px;">🛡️ Helyettes</span>';
+      }
+      return '<span style="color:var(--muted);font-size:11px;font-weight:700;border:1px solid var(--border);background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:20px;">👤 Tag</span>';
+    }
+
+    function formazDatum(isoDatum) {
+      if (!isoDatum) return '-';
+      try {
+        return new Date(isoDatum).toLocaleString('hu-HU', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+      } catch (e) { return isoDatum; }
+    }
+
+    // ── OLVASHATÓ NÉZET: Jelentkezők — név, weboldali rang (Admin/Helyettes/Tag),
+    // jóváhagyási státusz, és mikor regisztráltak, dátum szerint csökkenő sorrendben ──
+    async function toltiJelentkezoket() {
+      const listEl = document.getElementById('auth-jelentkezok-list');
+      const osszesenEl = document.getElementById('auth-jelentkezok-osszesen');
+      if (!isAdminUser()) {
+        listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">❌ Ehhez admin jogosultság szükséges.</div>';
+        return;
+      }
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;">Betöltés...</div>';
+      try {
+        const res = await fetch(`${DB_URL}/regisztraciok.json`);
+        const data = await res.json() || {};
+        const lista = Object.values(data)
+          .sort((a, b) => (b.letrehozva || '').localeCompare(a.letrehozva || ''));
+
+        osszesenEl.textContent = `Összesen ${lista.length} jelentkező.`;
+
+        if (lista.length === 0) {
+          listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">Még nincs jelentkező.</div>';
+          return;
+        }
+
+        listEl.innerHTML = lista.map(rec => `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+              <div style="font-weight:700;color:#fff;font-size:13px;">${(rec.nev || 'Névtelen').replace(/</g,'&lt;')}</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;">${siteRangBadge(rec.discordNev)}${statuszBadge(rec.statusz)}</div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);">💬 ${(rec.discordNev || '-').replace(/</g,'&lt;')} · 📅 ${formazDatum(rec.letrehozva)}</div>
+          </div>
+        `).join('');
+      } catch (e) {
+        listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">Hiba a betöltéskor.</div>';
+      }
+    }
+
+    // ── OLVASHATÓ NÉZET: Trucky rendszerben elfogadott tagok — név, Trucky rang,
+    // és mikor lettek felvéve, dátum szerint csökkenő sorrendben (a bot tölti fel,
+    // amikor valakit ténylegesen elfogadtok Truckyban — lásd /trucky-webhook) ──
+    async function toltiTruckyTagokat() {
+      const listEl = document.getElementById('auth-truckytagok-list');
+      const osszesenEl = document.getElementById('auth-truckytagok-osszesen');
+      if (!isAdminUser()) {
+        listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">❌ Ehhez admin jogosultság szükséges.</div>';
+        return;
+      }
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;">Betöltés...</div>';
+      try {
+        const res = await fetch(`${DB_URL}/truckyEsemenyek.json`);
+        const data = await res.json() || {};
+        const lista = Object.values(data)
+          .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''));
+
+        osszesenEl.textContent = `Összesen ${lista.length} Truckyban elfogadott tag.`;
+
+        if (lista.length === 0) {
+          listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">Még senkit nem fogadtatok el Truckyban a weboldalon regisztráltak közül.</div>';
+          return;
+        }
+
+        listEl.innerHTML = lista.map(rec => `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;">
+            <div style="font-weight:700;color:#fff;font-size:13px;margin-bottom:2px;">🚛 ${(rec.discordNev || rec.truckyNev || 'Ismeretlen').replace(/</g,'&lt;')}</div>
+            <div style="font-size:11px;color:var(--muted);">Trucky név: <strong>${(rec.truckyNev || '-').replace(/</g,'&lt;')}</strong> · Rang: <strong>${(rec.rang || 'ismeretlen').replace(/</g,'&lt;')}</strong></div>
+            <div style="font-size:11px;color:var(--muted);">📅 Felvéve: ${formazDatum(rec.idopont)}</div>
+          </div>
+        `).join('');
       } catch (e) {
         listEl.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center;">Hiba a betöltéskor.</div>';
       }
