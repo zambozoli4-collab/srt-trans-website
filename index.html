@@ -755,6 +755,7 @@
           <div id="bell-list" style="display:flex;flex-direction:column;gap:8px;"></div>
         </div>
       </div>
+      <button id="uzenet-quick-btn" onclick="megnyitUzenetKuldo()" title="Üzenet küldése" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">💬</button>
       <button class="btn-trucky" id="auth-header-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="openAuthModal()">🔐 Belépés</button>
       <!-- Hamburger gomb mobilra -->
       <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menü">
@@ -4496,6 +4497,28 @@
     </div>
   </div>
 
+  <!-- ══ ADMIN ÜZENETKÜLDŐ ABLAK ══ -->
+  <div id="uzenet-modal" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:20px;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;min-width:320px;max-width:480px;width:100%;max-height:88vh;overflow-y:auto;position:relative;">
+      <button onclick="bezarUzenetKuldo()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+      <h3 style="color:#fff;font-size:18px;margin-bottom:18px;">💬 Üzenet küldése tagnak</h3>
+
+      <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">Címzett</label>
+      <input type="text" id="uzenet-cimzett-kereses" oninput="szurUzenetCimzettLista()" placeholder="🔍 Keresés név vagy email alapján..." style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:13px;box-sizing:border-box;" />
+      <div id="uzenet-cimzett-lista" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:14px;"></div>
+      <div id="uzenet-kivalasztott-cimzett" style="display:none;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);border-radius:8px;padding:10px;margin-bottom:14px;font-size:13px;color:var(--text);"></div>
+
+      <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">Tárgy</label>
+      <input type="text" id="uzenet-targy" placeholder="Pl. Fontos információ" style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:13px;box-sizing:border-box;" />
+
+      <label style="font-size:12px;color:var(--muted);margin-bottom:4px;display:block;">Üzenet szövege</label>
+      <textarea id="uzenet-szoveg" placeholder="Írd ide az üzeneted..." style="width:100%;min-height:120px;padding:10px;margin-bottom:16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea>
+
+      <button onclick="elkuldUzenetet()" id="uzenet-kuldes-btn" style="width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">📧 Küldés emailben</button>
+      <div id="uzenet-statusz" style="margin-top:10px;font-size:12px;text-align:center;"></div>
+    </div>
+  </div>
+
   <!-- LIGHTBOX -->
   <div id="lightbox" onclick="if(event.target===this)closeLightbox()">
     <button id="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -4674,8 +4697,10 @@
 
       const jelentkezokBtn = document.getElementById('jelentkezok-quick-btn');
       const truckyTagokBtn = document.getElementById('truckytagok-quick-btn');
+      const uzenetBtn = document.getElementById('uzenet-quick-btn');
       if (jelentkezokBtn) jelentkezokBtn.style.display = isAdminUser() ? 'flex' : 'none';
       if (truckyTagokBtn) truckyTagokBtn.style.display = isAdminUser() ? 'flex' : 'none';
+      if (uzenetBtn) uzenetBtn.style.display = isAdminUser() ? 'flex' : 'none';
 
       frissitiAdminOldalZarat();
     }
@@ -5111,6 +5136,107 @@
       } catch (e) {
         alert('❌ Kapcsolati hiba: ' + e.message);
       }
+    };
+
+    // ══════════ 💬 ADMIN ÜZENETKÜLDŐ (email a regisztrált tagoknak) ══════════
+    let uzenetOsszesCimzett = [];
+    let uzenetKivalasztott = null;
+
+    window.megnyitUzenetKuldo = async function() {
+      if (!isAdminUser()) { alert('❌ Csak admin küldhet üzenetet.'); return; }
+      document.getElementById('uzenet-modal').style.display = 'flex';
+      document.getElementById('uzenet-statusz').textContent = '';
+      document.getElementById('uzenet-cimzett-kereses').value = '';
+      uzenetKivalasztott = null;
+      document.getElementById('uzenet-kivalasztott-cimzett').style.display = 'none';
+
+      const listEl = document.getElementById('uzenet-cimzett-lista');
+      listEl.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px;">Betöltés...</div>';
+      try {
+        const res = await fetch(`${DB_URL}/regisztraciok.json`);
+        const data = await res.json() || {};
+        uzenetOsszesCimzett = Object.values(data).filter(rec => rec && rec.email);
+        renderUzenetCimzettLista(uzenetOsszesCimzett);
+      } catch (e) {
+        listEl.innerHTML = '<div style="padding:10px;color:#f87171;font-size:12px;">Hiba a betöltéskor.</div>';
+      }
+    };
+
+    window.bezarUzenetKuldo = function() {
+      document.getElementById('uzenet-modal').style.display = 'none';
+    };
+
+    function renderUzenetCimzettLista(lista) {
+      const listEl = document.getElementById('uzenet-cimzett-lista');
+      if (lista.length === 0) {
+        listEl.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px;">Nincs találat.</div>';
+        return;
+      }
+      listEl.innerHTML = lista.map(rec => `
+        <div onclick="valasztCimzettet('${(rec.email||'').replace(/'/g,"")}')" style="padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--border);font-size:12px;" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='transparent'">
+          <div style="color:#fff;font-weight:600;">${(rec.nev || 'Névtelen').replace(/</g,'&lt;')}</div>
+          <div style="color:var(--muted);">${(rec.email || '').replace(/</g,'&lt;')}</div>
+        </div>
+      `).join('');
+    }
+
+    window.szurUzenetCimzettLista = function() {
+      const q = (document.getElementById('uzenet-cimzett-kereses').value || '').trim().toLowerCase();
+      const szurt = !q ? uzenetOsszesCimzett : uzenetOsszesCimzett.filter(rec =>
+        (rec.nev || '').toLowerCase().includes(q) || (rec.email || '').toLowerCase().includes(q)
+      );
+      renderUzenetCimzettLista(szurt);
+    };
+
+    window.valasztCimzettet = function(email) {
+      uzenetKivalasztott = uzenetOsszesCimzett.find(r => r.email === email);
+      if (!uzenetKivalasztott) return;
+      const el = document.getElementById('uzenet-kivalasztott-cimzett');
+      el.style.display = 'block';
+      el.innerHTML = `📧 Címzett: <strong>${uzenetKivalasztott.nev || 'Névtelen'}</strong> (${uzenetKivalasztott.email})`;
+      document.getElementById('uzenet-cimzett-lista').innerHTML = '';
+      document.getElementById('uzenet-cimzett-kereses').value = '';
+    };
+
+    window.elkuldUzenetet = async function() {
+      if (!uzenetKivalasztott) { alert('❌ Válassz ki egy címzettet!'); return; }
+      const targy = document.getElementById('uzenet-targy').value.trim();
+      const uzenet = document.getElementById('uzenet-szoveg').value.trim();
+      if (!uzenet) { alert('❌ Írj be egy üzenetet!'); return; }
+
+      const btn = document.getElementById('uzenet-kuldes-btn');
+      const statuszEl = document.getElementById('uzenet-statusz');
+      btn.disabled = true;
+      btn.textContent = '⏳ Küldés...';
+      statuszEl.textContent = '';
+
+      try {
+        const kuldoAdminNev = currentUser?.displayName || currentUser?.email || 'Admin';
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/uzenet-kuldes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+          body: JSON.stringify({
+            cimzettEmail: uzenetKivalasztott.email,
+            cimzettNev: uzenetKivalasztott.nev,
+            kuldoAdminNev,
+            targy,
+            uzenetSzoveg: uzenet
+          })
+        });
+        const eredmeny = await res.json().catch(() => ({}));
+        if (eredmeny.ok) {
+          statuszEl.innerHTML = '<span style="color:#4ade80;">✅ Üzenet elküldve!</span>';
+          document.getElementById('uzenet-szoveg').value = '';
+          document.getElementById('uzenet-targy').value = '';
+          setTimeout(() => { bezarUzenetKuldo(); }, 1200);
+        } else {
+          statuszEl.innerHTML = `<span style="color:#f87171;">❌ ${eredmeny.error || 'Nem sikerült elküldeni'}</span>`;
+        }
+      } catch (e) {
+        statuszEl.innerHTML = `<span style="color:#f87171;">❌ Kapcsolati hiba: ${e.message}</span>`;
+      }
+      btn.disabled = false;
+      btn.textContent = '📧 Küldés emailben';
     };
 
     function renderBell() {
