@@ -5192,10 +5192,25 @@
       uzenetKivalasztott = uzenetOsszesCimzett.find(r => r.email === email);
       if (!uzenetKivalasztott) return;
       const el = document.getElementById('uzenet-kivalasztott-cimzett');
-      el.style.display = 'block';
-      el.innerHTML = `📧 Címzett: <strong>${uzenetKivalasztott.nev || 'Névtelen'}</strong> (${uzenetKivalasztott.email})`;
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'space-between';
+      el.style.gap = '8px';
+      el.innerHTML = `
+        <span>📧 Címzett: <strong>${uzenetKivalasztott.nev || 'Névtelen'}</strong> (${uzenetKivalasztott.email})</span>
+        <button onclick="torolCimzettKivalasztast()" title="Másik címzett választása" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;">✕</button>
+      `;
       document.getElementById('uzenet-cimzett-lista').innerHTML = '';
       document.getElementById('uzenet-cimzett-kereses').value = '';
+    };
+
+    window.torolCimzettKivalasztast = function() {
+      uzenetKivalasztott = null;
+      const el = document.getElementById('uzenet-kivalasztott-cimzett');
+      el.style.display = 'none';
+      el.innerHTML = '';
+      renderUzenetCimzettLista(uzenetOsszesCimzett);
+      document.getElementById('uzenet-cimzett-kereses').focus();
     };
 
     window.elkuldUzenetet = async function() {
