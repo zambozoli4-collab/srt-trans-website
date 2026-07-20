@@ -2936,17 +2936,17 @@
       const top = sorted.slice(0, top3Count), rest = sorted.slice(top3Count);
       const medals = ['🥇','🥈','🥉'], colors = ['#fbbf24','#94a3b8','#f97316'];
       let html = top.map((e,i) => `
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:6px;">
-          <div style="min-width:22px;text-align:center;font-size:13px;font-weight:700;color:${colors[i]||'var(--muted)'};">${i+1}.</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:6px;">
+          <div style="min-width:22px;text-align:center;font-size:13px;font-weight:700;color:${colors[i]||'var(--muted)'};flex-shrink:0;">${i+1}.</div>
           <div style="font-size:22px;flex-shrink:0;">${medals[i]||''}</div>
-          <div style="flex:1;font-size:14px;font-weight:700;color:${colors[i]||'var(--text)'};">${e.nev}</div>
-          <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;">${formatNum(e.ertek)} ${egyseg}</div>
+          <div style="flex:1;min-width:0;font-size:14px;font-weight:700;color:${colors[i]||'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.nev}</div>
+          <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0;">${formatNum(e.ertek)} ${egyseg}</div>
         </div>`).join('');
       if (rest.length) html += rest.map((e,i) => `
-        <div style="display:flex;align-items:center;gap:12px;padding:8px 16px;border-radius:10px;margin-bottom:4px;">
-          <div style="min-width:22px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);">${top3Count+i+1}.</div>
-          <div style="flex:1;font-size:13px;color:var(--text);">${e.nev}</div>
-          <div style="font-size:13px;color:var(--muted);white-space:nowrap;">${formatNum(e.ertek)} ${egyseg}</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 16px;border-radius:10px;margin-bottom:4px;">
+          <div style="min-width:22px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);flex-shrink:0;">${top3Count+i+1}.</div>
+          <div style="flex:1;min-width:0;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.nev}</div>
+          <div style="font-size:13px;color:var(--muted);white-space:nowrap;flex-shrink:0;">${formatNum(e.ertek)} ${egyseg}</div>
         </div>`).join('');
       return html;
     }
