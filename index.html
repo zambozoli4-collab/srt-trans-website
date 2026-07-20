@@ -4737,6 +4737,13 @@
     let bellUtolsoTrucky = {};
     let bellUtolsoJelentkezesek = {};
     let bellUtolsoElrejtett = {};
+    let cegRangokAdat = [];
+
+    onValue(ref(db, 'cegRangok'), (snapshot) => {
+      const adat = snapshot.val();
+      cegRangokAdat = (adat && adat.rangok) || [];
+      renderBell();
+    }, (hiba) => console.warn('Cég rangok figyelési hiba:', hiba.message));
 
     function bellFigyelokIndítasa() {
       if (bellFigyelokElindultak) return;
@@ -5093,21 +5100,26 @@
       }
     };
 
-    window.elfogadTruckyJelentkezest = async function(key, truckyNev, steamId) {
+    window.elfogadTruckyJelentkezest = async function(key, truckyNev, steamId, roleId) {
       if (!isAdminUser()) { alert('❌ Csak admin fogadhat el jelentkezést.'); return; }
       if (!confirm(`Biztosan elfogadod "${truckyNev}" Trucky jelentkezését, és felveszed a céghez?`)) return;
       try {
         const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/trucky-jelentkezes-elfogadas', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
-          body: JSON.stringify({ truckyNev, steamId })
+          body: JSON.stringify({ truckyNev, steamId, roleId })
         });
         const eredmeny = await res.json().catch(() => ({}));
         if (eredmeny.ok) {
           const meghivasSzoveg = eredmeny.weboldalMeghivas?.kuldve
             ? '\n\n📩 Discord DM-ben megkértük, hogy regisztráljon a weboldalunkra is.'
             : '\n\n⚠️ Nem találtuk meg Discordon, így nem tudtuk megkérni, hogy regisztráljon a weboldalra — ezt érdemes kézzel jelezni neki.';
-          alert(`✅ "${truckyNev}" sikeresen felvéve a Trucky céghez!${meghivasSzoveg}`);
+          const rangSzoveg = roleId
+            ? (eredmeny.rangBeallitas?.ok
+                ? '\n\n🏆 A kiválasztott rang sikeresen beállítva.'
+                : '\n\n⚠️ A rangot NEM sikerült automatikusan beállítani — kérlek, állítsd be kézzel Truckyban.')
+            : '';
+          alert(`✅ "${truckyNev}" sikeresen felvéve a Trucky céghez!${meghivasSzoveg}${rangSzoveg}`);
         } else if (eredmeny.ok_de_kezi) {
           alert(`⚠️ "${truckyNev}" jelentkezését nem tudjuk innen elfogadni (${eredmeny.ok_reason || 'nincs SteamID'}) — kérlek, fogadd el kézzel Truckyban.`);
         } else {
@@ -5307,13 +5319,22 @@
             </div>`;
         }
         if (item.tipus === 'trucky_jelentkezes') {
+          const rangSelectId = `rang-select-${item.key}`;
+          const rangOptions = (cegRangokAdat || []).map(r => `<option value="${r.id}">${(r.nev||'').replace(/</g,'&lt;')}</option>`).join('');
           return `
             <div style="background:var(--surface);border:1px solid rgba(249,115,22,0.4);border-radius:8px;padding:10px;position:relative;">
               <button onclick="elrejtTruckyEsemeny('jelentkezes_${item.key}')" title="Elrejtés" style="position:absolute;top:6px;right:6px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;">✕</button>
               <div style="font-size:12px;color:#fff;padding-right:18px;">📝 <strong>${(item.truckyNev || 'Valaki').replace(/</g,'&lt;')}</strong> jelentkezett Truckyban (még nincs elbírálva)</div>
               ${item.bemutatkozas ? `<div style="font-size:12px;color:var(--text);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-style:italic;">💬 "${item.bemutatkozas.replace(/</g,'&lt;')}"</div>` : '<div style="font-size:11px;color:var(--muted);margin-top:4px;">(nincs bemutatkozó szöveg)</div>'}
+              ${rangOptions ? `
+              <div style="margin-top:8px;">
+                <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px;">Rang elfogadáskor:</label>
+                <select id="${rangSelectId}" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:#fff;font-size:11px;">
+                  ${rangOptions}
+                </select>
+              </div>` : ''}
               <div style="display:flex;gap:6px;margin-top:8px;">
-                <button onclick="elfogadTruckyJelentkezest('${item.key}', '${(item.truckyNev||'').replace(/'/g,"")}', ${item.steamId ? `'${item.steamId}'` : 'null'})" style="flex:1;padding:6px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Elfogadás</button>
+                <button onclick="elfogadTruckyJelentkezest('${item.key}', '${(item.truckyNev||'').replace(/'/g,"")}', ${item.steamId ? `'${item.steamId}'` : 'null'}, document.getElementById('${rangSelectId}')?.value || null)" style="flex:1;padding:6px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Elfogadás</button>
                 <button onclick="elutasitTruckyJelentkezest('${item.key}', '${(item.truckyNev||'').replace(/'/g,"")}')" style="flex:1;padding:6px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">❌ Elutasítás</button>
               </div>
             </div>`;
