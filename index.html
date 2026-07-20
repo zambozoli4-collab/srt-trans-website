@@ -5100,26 +5100,29 @@
       }
     };
 
-    window.elfogadTruckyJelentkezest = async function(key, truckyNev, steamId, roleId) {
+    window.elfogadTruckyJelentkezest = async function(key, truckyNev, steamId, roleId, jelentkezesId) {
       if (!isAdminUser()) { alert('❌ Csak admin fogadhat el jelentkezést.'); return; }
       if (!confirm(`Biztosan elfogadod "${truckyNev}" Trucky jelentkezését, és felveszed a céghez?`)) return;
       try {
         const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/trucky-jelentkezes-elfogadas', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
-          body: JSON.stringify({ truckyNev, steamId, roleId })
+          body: JSON.stringify({ truckyNev, steamId, roleId, jelentkezesId })
         });
         const eredmeny = await res.json().catch(() => ({}));
         if (eredmeny.ok) {
           const meghivasSzoveg = eredmeny.weboldalMeghivas?.kuldve
             ? '\n\n📩 Discord DM-ben megkértük, hogy regisztráljon a weboldalunkra is.'
             : '\n\n⚠️ Nem találtuk meg Discordon, így nem tudtuk megkérni, hogy regisztráljon a weboldalra — ezt érdemes kézzel jelezni neki.';
-          const rangSzoveg = roleId
-            ? (eredmeny.rangBeallitas?.ok
+          const rangSzoveg = !roleId ? '' :
+            eredmeny.hivatalosUton ? '\n\n🏆 A rang a hivatalos elfogadási úton át be lett állítva.'
+            : (eredmeny.rangBeallitas?.ok
                 ? '\n\n🏆 A kiválasztott rang sikeresen beállítva.'
-                : '\n\n⚠️ A rangot NEM sikerült automatikusan beállítani — kérlek, állítsd be kézzel Truckyban.')
-            : '';
-          alert(`✅ "${truckyNev}" sikeresen felvéve a Trucky céghez!${meghivasSzoveg}${rangSzoveg}`);
+                : '\n\n⚠️ A rangot NEM sikerült automatikusan beállítani — kérlek, állítsd be kézzel Truckyban.');
+          const modszerSzoveg = eredmeny.hivatalosUton
+            ? '\n\n✅ A hivatalos jelentkezés-elfogadási úton ment — a "Függőben" állapotnak el kell tűnnie Truckyban.'
+            : '\n\n⚠️ Csak a tartalék "Tag hozzáadása" módszerrel sikerült — a jelentkezés Truckyban valószínűleg még "Függőben" marad, ezt kézzel kell lezárnod ott.';
+          alert(`✅ "${truckyNev}" sikeresen felvéve a Trucky céghez!${modszerSzoveg}${rangSzoveg}${meghivasSzoveg}`);
         } else if (eredmeny.ok_de_kezi) {
           alert(`⚠️ "${truckyNev}" jelentkezését nem tudjuk innen elfogadni (${eredmeny.ok_reason || 'nincs SteamID'}) — kérlek, fogadd el kézzel Truckyban.`);
         } else {
@@ -5334,7 +5337,7 @@
                 </select>
               </div>` : ''}
               <div style="display:flex;gap:6px;margin-top:8px;">
-                <button onclick="elfogadTruckyJelentkezest('${item.key}', '${(item.truckyNev||'').replace(/'/g,"")}', ${item.steamId ? `'${item.steamId}'` : 'null'}, document.getElementById('${rangSelectId}')?.value || null)" style="flex:1;padding:6px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Elfogadás</button>
+                <button onclick="elfogadTruckyJelentkezest('${item.key}', '${(item.truckyNev||'').replace(/'/g,"")}', ${item.steamId ? `'${item.steamId}'` : 'null'}, document.getElementById('${rangSelectId}')?.value || null, ${item.jelentkezesId ? `'${item.jelentkezesId}'` : 'null'})" style="flex:1;padding:6px;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">✅ Elfogadás</button>
                 <button onclick="elutasitTruckyJelentkezest('${item.key}', '${(item.truckyNev||'').replace(/'/g,"")}')" style="flex:1;padding:6px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;">❌ Elutasítás</button>
               </div>
             </div>`;
