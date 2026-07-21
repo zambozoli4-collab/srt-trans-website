@@ -3698,6 +3698,14 @@
         alert('❌ Hiba: ' + e.message);
       }
     }
+
+// Auto export
+if (typeof megnyitUzenetKuldo==='function') window.megnyitUzenetKuldo=megnyitUzenetKuldo;
+if (typeof bezarUzenetKuldo==='function') window.bezarUzenetKuldo=bezarUzenetKuldo;
+if (typeof renderUzenetCimzettLista==='function') window.renderUzenetCimzettLista=renderUzenetCimzettLista;
+if (typeof valasztCimzettet==='function') window.valasztCimzettet=valasztCimzettet;
+if (typeof kuldUzenetet==='function') window.kuldUzenetet=kuldUzenetet;
+if (typeof szuresUzenetCimzettek==='function') window.szuresUzenetCimzettek=szuresUzenetCimzettek;
 </script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
