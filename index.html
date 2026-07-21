@@ -3698,24 +3698,6 @@
         alert('❌ Hiba: ' + e.message);
       }
     }
-
-window.megnyitUzenetKuldo = window.megnyitUzenetKuldo || megnyitUzenetKuldo;
-window.bezarUzenetKuldo = window.bezarUzenetKuldo || bezarUzenetKuldo;
-window.valasztCimzettet = function(uid, nev, email){
- window.uzenetKivalasztottCimzett={uid,nev,email};
- const el=document.getElementById('uzenet-kivalasztott-cimzett');
- if(el){el.style.display='block';el.textContent='Címzett: '+(nev||email||uid);}
-};
-window.kuldUzenetet = async function(){
- const st=document.getElementById('uzenet-statusz');
- if(st) st.textContent='Az üzenetküldő nincs teljesen implementálva ebben a projektben.';
-};
-window.szuresUzenetCimzettek=function(){
- const q=(document.getElementById('uzenet-kereses')?.value||'').toLowerCase();
- if(typeof osszesTagAdat==='undefined') return;
- renderUzenetCimzettLista(osszesTagAdat.filter(r=>((r.nev||'')+' '+(r.email||'')).toLowerCase().includes(q)));
-};
-
 </script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
