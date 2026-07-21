@@ -3731,6 +3731,7 @@
     const DB_URL = firebaseConfig.databaseURL;
 
     const ADMIN_EMAILS = [
+      'zambozoli4@gmail.com'
     ];
 
     const ISMERT_ADMIN_DISCORD_NEVEK = [
@@ -3738,13 +3739,15 @@
     ];
     function ismertAdminDiscordNev(discordNev) {
       const lower = (discordNev || '').trim().toLowerCase();
-      return ISMERT_ADMIN_DISCORD_NEVEK.includes(lower);
+      if (!lower) return false;
+      return ISMERT_ADMIN_DISCORD_NEVEK.some(nev => lower === nev || lower.startsWith(nev));
     }
 
     const ISMERT_FOADMIN_DISCORD_NEVEK = ['cobra', 'cobra086'];
     function ismertFoadminDiscordNev(discordNev) {
       const lower = (discordNev || '').trim().toLowerCase();
-      return ISMERT_FOADMIN_DISCORD_NEVEK.includes(lower);
+      if (!lower) return false;
+      return ISMERT_FOADMIN_DISCORD_NEVEK.some(nev => lower === nev || lower.startsWith(nev));
     }
 
     let currentUser = null;
@@ -4769,6 +4772,7 @@
       const fuvarokContent = document.getElementById('fuvarok-content');
 
       const jogosult = currentVanRangja || isAdminUser();
+      console.log('[GATE DEBUG] currentVanRangja:', currentVanRangja, '| isAdminUser():', isAdminUser(), '| jogosult:', jogosult);
 
       if (modokLockChecking) modokLockChecking.style.display = 'none';
       if (fuvarokLockChecking) fuvarokLockChecking.style.display = 'none';
@@ -4786,10 +4790,14 @@
       }
     };
 
-    async function ellenorziSrtRangot(discordNev) {
-      if (!discordNev) return false;
+    async function ellenorziSrtRangot(discordNev, truckyNev) {
+      if (!discordNev && !truckyNev) return false;
       try {
-        const res = await fetch(`https://srt-trans-trucky-bot-production.up.railway.app/ellenorzi-srt-rang?discordNev=${encodeURIComponent(discordNev)}`);
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/van-e-srt-rangja', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordName: discordNev, truckyName: truckyNev })
+        });
         if (!res.ok) return false;
         const data = await res.json();
         return !!data.vanRangja;
@@ -4809,8 +4817,9 @@
         const res = await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}.json`);
         const rec = await res.json();
         currentStatusz = rec?.statusz || null;
-        currentAdminByRecord = !!rec?.adminByRecord;
-        currentFoadminByRecord = !!rec?.foadminByRecord;
+        currentAdminByRecord = !!rec?.adminByRecord || ismertAdminDiscordNev(rec?.discordNev);
+        currentFoadminByRecord = !!rec?.foadminByRecord || ismertFoadminDiscordNev(rec?.discordNev);
+        console.log('[GATE DEBUG] rec:', rec, '| adminByRecord:', currentAdminByRecord, '| ADMIN_EMAILS match:', ADMIN_EMAILS.includes(currentUser?.email));
 
         const statusMsgEl = document.getElementById('auth-status-message');
         if (statusMsgEl) {
@@ -4826,7 +4835,7 @@
         }
 
         if (rec?.discordNev) {
-          currentVanRangja = await ellenorziSrtRangot(rec.discordNev);
+          currentVanRangja = await ellenorziSrtRangot(rec.discordNev, rec.truckyNev);
           if (currentVanRangja && currentStatusz !== 'jovahagyva') {
             await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}/statusz.json`, {
               method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify('jovahagyva')
