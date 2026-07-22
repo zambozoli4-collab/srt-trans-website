@@ -4879,17 +4879,17 @@
       await frissitiSajatAllapotot();
     });
 
-    function megnyitUzenetKuldo() {
+    window.megnyitUzenetKuldo = function() {
       document.getElementById('uzenet-modal').style.display = 'flex';
       renderUzenetCimzettLista(osszesTagAdat.length ? osszesTagAdat : []);
       if (!osszesTagAdat.length) toltiOsszesTagot().then(() => renderUzenetCimzettLista(osszesTagAdat));
-    }
+    };
 
-    function bezarUzenetKuldo() {
+    window.bezarUzenetKuldo = function() {
       document.getElementById('uzenet-modal').style.display = 'none';
       document.getElementById('uzenet-kivalasztott-cimzett').style.display = 'none';
       document.getElementById('uzenet-statusz').textContent = '';
-    }
+    };
 
     let uzenetKivalasztottCimzett = null;
 
