@@ -3299,7 +3299,9 @@
     function aktivSzerkesztoMod() {
       const savedRole = sessionStorage.getItem('srt_admin_role');
       const savedUser = (sessionStorage.getItem('srt_admin_user') || '').toLowerCase();
-      return adminMode && savedRole === 'admin' && savedUser.includes('cobra');
+      const classicAdmin = adminMode && savedRole === 'admin' && savedUser.includes('cobra');
+      const firebaseFullAdmin = !!(window.isFirebaseFullAdmin && window.isFirebaseFullAdmin());
+      return classicAdmin || firebaseFullAdmin;
     }
 
     function szerkesztoGombokMutat() {
@@ -3787,6 +3789,10 @@
       return discordFullAdmin || emailAdmin || currentFoadminByRecord;
     }
 
+    window.isFirebaseFullAdmin = function() {
+      return !!(currentUser && isFullAdminUser());
+    };
+
     window.openAuthModal = function() {
       document.getElementById('auth-error').textContent = '';
       document.getElementById('auth-modal').style.display = 'flex';
@@ -3856,6 +3862,9 @@
       if (jelentkezokBtn) jelentkezokBtn.style.display = isAdminUser() ? 'flex' : 'none';
       if (truckyTagokBtn) truckyTagokBtn.style.display = isAdminUser() ? 'flex' : 'none';
       if (uzenetBtn) uzenetBtn.style.display = isAdminUser() ? 'flex' : 'none';
+      if (window.isFirebaseFullAdmin && window.isFirebaseFullAdmin() && window.szerkesztoGombokMutat) {
+        window.szerkesztoGombokMutat();
+      }
       frissitiAdminOldalZarat();
     }
 
