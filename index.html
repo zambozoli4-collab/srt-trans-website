@@ -891,6 +891,8 @@
   </div>
 
   <div class="page" id="page-piac" style="position:relative;">
+    <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-piac" data-for="page-piac"></div>
+    <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-piac"></div>
     <div class="container-wide">
       <p class="section-eyebrow">Trucky élő adatok</p>
       <h2 class="section-title">📊 Piac</h2>
@@ -949,6 +951,8 @@
   </div>
 
   <div class="page" id="page-tagoklista" style="position:relative;">
+    <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-tagoklista" data-for="page-tagoklista"></div>
+    <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-tagoklista"></div>
     <div class="container-wide" id="tagoklista-page-content">
       <p class="section-eyebrow">Közösség</p>
       <h2 class="section-title">👥 Regisztrált Tagok</h2>
@@ -958,6 +962,8 @@
   </div>
 
   <div class="page" id="page-jelentkezok" style="position:relative;">
+    <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-jelentkezok" data-for="page-jelentkezok"></div>
+    <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-jelentkezok"></div>
     <div class="container-wide" id="jelentkezok-page-content" style="display:none;">
       <p class="section-eyebrow">Admin</p>
       <h2 class="section-title">📋 Jelentkezők</h2>
@@ -3552,6 +3558,11 @@
       'kozosseg': { elId: 'bg-kozosseg', label: 'Közösség',  prop: 'backgroundImage' },
       'csapat':   { elId: 'bg-csapat',   label: 'Csapat',    prop: 'backgroundImage' },
       'fuvarok':  { elId: 'fuvarok-bg',  label: 'Fuvarok',   prop: 'backgroundImage' },
+      'piac':        { elId: 'bg-piac',        label: 'Piac',              prop: 'backgroundImage' },
+      'tagoklista':  { elId: 'bg-tagoklista',  label: 'Regisztrált tagok', prop: 'backgroundImage' },
+      'jelentkezok': { elId: 'bg-jelentkezok', label: 'Jelentkezők',       prop: 'backgroundImage' },
+      'uzenet':      { elId: 'uzenet-modal',   label: 'Üzenetek küldése (ablak)',          isModalOverlay: true },
+      'auth':        { elId: 'auth-modal',     label: 'Belépés / Regisztráció (ablak)',    isModalOverlay: true },
     };
     const BG_CHANNEL = '1520903413523546185';
 
@@ -3664,6 +3675,8 @@
       if (!el) return;
       if (info.isHeroBg) {
         el.style.background = `url('${url}') center/cover no-repeat`;
+      } else if (info.isModalOverlay) {
+        el.style.background = `linear-gradient(rgba(7,13,24,0.82), rgba(7,13,24,0.82)), url('${url}') center/cover no-repeat`;
       } else {
         el.style.backgroundImage = `url('${url}')`;
       }
