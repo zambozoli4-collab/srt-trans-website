@@ -190,10 +190,19 @@
     .fuvarok-layout { display: flex; gap: 24px; align-items: flex-start; }
     #jobs-view { min-width: 0; overflow: hidden; }
     #ats-jobs-view { min-width: 0; overflow: hidden; }
+    /* Tablet nézet — a desktop navigáció (8 menüpont + gombok) nem fér ki kényelmesen
+       768–1024px között, ezért itt is a hamburger-menüt használjuk, ugyanazzal a
+       működő bejelentkezés-gombbal, mint telefonon. */
+    @media (max-width: 1024px) {
+      .hamburger { display: flex; }
+      .nav { display: none; }
+      .trucky-dl-btn { display: none; }
+      .header-inner { padding: 0 20px; }
+    }
     @media (max-width: 768px) {
       .hamburger { display: flex; }
       .nav { display: none; }
-      .btn-trucky { display: none; }
+      .trucky-dl-btn { display: none; }
       .header-inner { padding: 0 16px; }
       .hero { min-height: 70vh; }
       .hero-content { padding: 32px 20px 0; }
@@ -246,7 +255,7 @@
     @media (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
       .hamburger { display: flex; }
       .nav { display: none; }
-      .btn-trucky { display: none; }
+      .trucky-dl-btn { display: none; }
       .header-inner { padding: 0 14px; height: 52px; }
       .hero { min-height: auto; padding-bottom: 20px; }
       .hero-content { padding: 14px 24px 0; }
@@ -309,7 +318,7 @@
         <button class="nav-btn" id="nav-kozosseg" onclick="showPage('kozosseg')">💬 Közösség</button>
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Vezetők</button>
       </nav>
-      <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
+      <a class="btn-trucky trucky-dl-btn" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
       <button id="tagoklista-quick-btn" onclick="showPage('tagoklista')" title="Regisztrált tagok" style="background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">👥</button>
       <button id="jelentkezok-quick-btn" onclick="showPage('jelentkezok')" title="Jelentkezők" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">📋</button>
       <button id="truckytagok-quick-btn" onclick="showPage('truckytagok')" title="Trucky Tagok" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">🚛</button>
@@ -339,7 +348,7 @@
     <button class="nav-btn" id="mob-nav-piac" onclick="showPage('piac');closeMobileNav()">📊 Piac</button>
     <button class="nav-btn" id="mob-nav-kozosseg" onclick="showPage('kozosseg');closeMobileNav()">💬 Közösség</button>
     <button class="nav-btn" id="mob-nav-csapat" onclick="showPage('csapat');closeMobileNav()">👥 Vezetők</button>
-    <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky letöltés</a>
+    <a class="btn-trucky trucky-dl-btn" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky letöltés</a>
     <button class="btn-trucky" id="auth-mobile-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="openAuthModal();closeMobileNav()">🔐 Belépés</button>
   </div>
 
