@@ -3299,9 +3299,7 @@
     function aktivSzerkesztoMod() {
       const savedRole = sessionStorage.getItem('srt_admin_role');
       const savedUser = (sessionStorage.getItem('srt_admin_user') || '').toLowerCase();
-      const classicAdmin = adminMode && savedRole === 'admin' && savedUser.includes('cobra');
-      const firebaseFullAdmin = !!(window.isFirebaseFullAdmin && window.isFirebaseFullAdmin());
-      return classicAdmin || firebaseFullAdmin;
+      return adminMode && savedRole === 'admin' && savedUser.includes('cobra');
     }
 
     function szerkesztoGombokMutat() {
@@ -3678,6 +3676,7 @@
     function bgAlkalmaz(pageKey, url) {
       const info = BG_PAGES[pageKey];
       if (!info) return;
+      if (!url || typeof url !== 'string' || !url.trim()) return;
       const el = document.getElementById(info.elId);
       if (!el) return;
       if (info.isHeroBg) {
@@ -3864,9 +3863,6 @@
       if (jelentkezokBtn) jelentkezokBtn.style.display = isAdminUser() ? 'flex' : 'none';
       if (truckyTagokBtn) truckyTagokBtn.style.display = isAdminUser() ? 'flex' : 'none';
       if (uzenetBtn) uzenetBtn.style.display = isAdminUser() ? 'flex' : 'none';
-      if (window.isFirebaseFullAdmin && window.isFirebaseFullAdmin() && window.szerkesztoGombokMutat) {
-        window.szerkesztoGombokMutat();
-      }
       frissitiAdminOldalZarat();
     }
 
