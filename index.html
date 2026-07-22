@@ -282,7 +282,7 @@
         <button class="nav-btn" id="nav-kepek" onclick="showPage('kepek')">🎬 Média</button>
         <button class="nav-btn" id="nav-piac" onclick="showPage('piac')">📊 Piac</button>
         <button class="nav-btn" id="nav-kozosseg" onclick="showPage('kozosseg')">💬 Közösség</button>
-        <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Csapat</button>
+        <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Vezetők</button>
       </nav>
       <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
       <button id="tagoklista-quick-btn" onclick="showPage('tagoklista')" title="Regisztrált tagok" style="background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">👥</button>
@@ -313,7 +313,7 @@
     <button class="nav-btn" id="mob-nav-kepek" onclick="showPage('kepek');closeMobileNav()">🎬 Média</button>
     <button class="nav-btn" id="mob-nav-piac" onclick="showPage('piac');closeMobileNav()">📊 Piac</button>
     <button class="nav-btn" id="mob-nav-kozosseg" onclick="showPage('kozosseg');closeMobileNav()">💬 Közösség</button>
-    <button class="nav-btn" id="mob-nav-csapat" onclick="showPage('csapat');closeMobileNav()">👥 Csapat</button>
+    <button class="nav-btn" id="mob-nav-csapat" onclick="showPage('csapat');closeMobileNav()">👥 Vezetők</button>
     <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky letöltés</a>
     <button class="btn-trucky" id="auth-mobile-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="openAuthModal();closeMobileNav()">🔐 Belépés</button>
   </div>
@@ -621,34 +621,34 @@
     <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-csapat"></div>
     <div class="container">
       <p class="section-eyebrow" data-edit="csapat_eyebrow">Szerver működtetői</p>
-      <h2 class="section-title" data-edit="csapat_title">A csapatunk</h2>
+      <h2 class="section-title" data-edit="csapat_title">A Főnökség</h2>
       <div class="team-grid">
-        <div class="team-card">
-          <div class="team-avatar" id="avatar-cobra" style="background: linear-gradient(135deg, #f97316, #ea580c); cursor:pointer;" onclick="avatarKattint('cobra')">🐍</div>
+        <div class="team-card" onclick="csapatKartyaKattint('cobra')" style="cursor:pointer;">
+          <div class="team-avatar" id="avatar-cobra" style="background: linear-gradient(135deg, #f97316, #ea580c); cursor:pointer;" onclick="avatarKattint(event, 'cobra')">🐍</div>
           <div class="team-rank" style="background: rgba(249,115,22,0.15); color: #f97316; border-color: rgba(249,115,22,0.35);" data-edit="csapat1_rank">Tulajdonos</div>
           <h3 data-edit="csapat1_nev">Cobra</h3>
           <p data-edit="csapat1_desc">A szerver alapítója és vezetője. Minden fontos döntés az ő kezében van.</p>
         </div>
-        <div class="team-card">
-          <div class="team-avatar" id="avatar-erik" style="background: linear-gradient(135deg, #f59e0b, #d97706); cursor:pointer;" onclick="avatarKattint('erik')">👤</div>
+        <div class="team-card" onclick="csapatKartyaKattint('erik')" style="cursor:pointer;">
+          <div class="team-avatar" id="avatar-erik" style="background: linear-gradient(135deg, #f59e0b, #d97706); cursor:pointer;" onclick="avatarKattint(event, 'erik')">👤</div>
           <div class="team-rank" style="background: rgba(245,158,11,0.15); color: #f59e0b; border-color: rgba(245,158,11,0.35);" data-edit="csapat2_rank">Tulajdonos helyettes</div>
           <h3 data-edit="csapat2_nev">Erik</h3>
           <p data-edit="csapat2_desc">A tulajdonos jobbkeze, segíti a szerver mindennapi működését.</p>
         </div>
-        <div class="team-card">
-          <div class="team-avatar" id="avatar-spiderman" style="background: linear-gradient(135deg, #f59e0b, #d97706); cursor:pointer;" onclick="avatarKattint('spiderman')">🕷️</div>
+        <div class="team-card" onclick="csapatKartyaKattint('spiderman')" style="cursor:pointer;">
+          <div class="team-avatar" id="avatar-spiderman" style="background: linear-gradient(135deg, #f59e0b, #d97706); cursor:pointer;" onclick="avatarKattint(event, 'spiderman')">🕷️</div>
           <div class="team-rank" style="background: rgba(245,158,11,0.15); color: #f59e0b; border-color: rgba(245,158,11,0.35);" data-edit="csapat3_rank">Tulajdonos helyettes</div>
           <h3 data-edit="csapat3_nev">Márk</h3>
           <p data-edit="csapat3_desc">A tulajdonos jobbkeze, segíti a szerver mindennapi működését.</p>
         </div>
-        <div class="team-card">
-          <div class="team-avatar" id="avatar-boby" style="background: linear-gradient(135deg, #f59e0b, #d97706); cursor:pointer;" onclick="avatarKattint('boby')">🐰</div>
+        <div class="team-card" onclick="csapatKartyaKattint('boby')" style="cursor:pointer;">
+          <div class="team-avatar" id="avatar-boby" style="background: linear-gradient(135deg, #f59e0b, #d97706); cursor:pointer;" onclick="avatarKattint(event, 'boby')">🐰</div>
           <div class="team-rank" style="background: rgba(245,158,11,0.15); color: #f59e0b; border-color: rgba(245,158,11,0.35);" data-edit="csapat4_rank">Tulajdonos helyettes</div>
           <h3 data-edit="csapat4_nev">Boby</h3>
           <p data-edit="csapat4_desc">A tulajdonos jobbkeze, segíti a szerver mindennapi működését.</p>
         </div>
-        <div class="team-card">
-          <div class="team-avatar" id="avatar-marcika" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); cursor:pointer;" onclick="avatarKattint('marcika')">🎮</div>
+        <div class="team-card" onclick="csapatKartyaKattint('marcika')" style="cursor:pointer;">
+          <div class="team-avatar" id="avatar-marcika" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); cursor:pointer;" onclick="avatarKattint(event, 'marcika')">🎮</div>
           <div class="team-rank" style="background: rgba(59,130,246,0.15); color: #60a5fa; border-color: rgba(59,130,246,0.35);" data-edit="csapat5_rank">Rendszergazda</div>
           <h3 data-edit="csapat5_nev">Marcika ✌️</h3>
           <p data-edit="csapat5_desc">A technikai háttér felelőse — szerverek, módok, rendszerek karbantartása.</p>
@@ -3488,8 +3488,24 @@
     const AVATAR_UPLOAD_URL = 'https://srt-trans-trucky-bot-production.up.railway.app/upload';
     const AVATAR_UPLOAD_SECRET = 'srt-trans-upload-2024';
 
-    function avatarKattint(avatarId) {
+    // Vezetők Discord felhasználói azonosítói — kattintásra ez nyitja meg a Discord profiljukat
+    const CSAPAT_DISCORD_ID = {
+      cobra: '901881364301905921',
+      erik: '',
+      spiderman: '',
+      boby: '',
+      marcika: ''
+    };
+
+    window.csapatKartyaKattint = function(avatarId) {
+      const id = CSAPAT_DISCORD_ID[avatarId];
+      if (!id) return;
+      window.open('https://discord.com/users/' + id, '_blank');
+    };
+
+    function avatarKattint(event, avatarId) {
       if (!aktivSzerkesztoMod()) return;
+      if (event) event.stopPropagation();
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
@@ -3642,7 +3658,7 @@
       'terkep':   { elId: 'bg-terkep',   label: 'Térkép',    prop: 'backgroundImage' },
       'kepek':    { elId: 'bg-kepek',    label: 'Képek',     prop: 'backgroundImage' },
       'kozosseg': { elId: 'bg-kozosseg', label: 'Közösség',  prop: 'backgroundImage' },
-      'csapat':   { elId: 'bg-csapat',   label: 'Csapat',    prop: 'backgroundImage' },
+      'csapat':   { elId: 'bg-csapat',   label: 'Vezetők',    prop: 'backgroundImage' },
       'fuvarok':  { elId: 'fuvarok-bg',  label: 'Fuvarok',   prop: 'backgroundImage' },
       'piac':        { elId: 'bg-piac',        label: 'Piac',              prop: 'backgroundImage' },
       'tagoklista':  { elId: 'bg-tagoklista',  label: 'Regisztrált tagok', prop: 'backgroundImage' },
