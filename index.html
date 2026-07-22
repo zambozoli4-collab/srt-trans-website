@@ -229,6 +229,8 @@
       #ats-jobs-view { min-width: 0; }
       .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
       .section-title { font-size: 30px; }
+      .driver-detail-header { flex-wrap: wrap; row-gap: 12px; }
+      #speedingStats, #atsSpeedingStats { text-align: left !important; width: 100%; }
     }
     @media (max-width: 480px) {
       .quick-grid { grid-template-columns: 1fr; }
@@ -744,7 +746,7 @@
         </div>
         <div style="flex: 1; min-width: 0;">
           <div id="jobs-view">
-            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; justify-content: space-between;">
+            <div class="driver-detail-header" style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; justify-content: space-between;">
               <div style="display:flex; align-items:center; gap:16px;">
                 <div id="detailAvatar" style="width: 56px; height: 52px; border-radius: 10px; background: linear-gradient(135deg, #6b0f2b, #9b1040); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;"></div>
                 <div>
@@ -856,7 +858,7 @@
           </div>
           <div style="flex: 1; min-width: 0;">
             <div id="ats-jobs-view">
-              <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; justify-content: space-between;">
+              <div class="driver-detail-header" style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; justify-content: space-between;">
                 <div style="display:flex; align-items:center; gap:16px;">
                   <div id="atsDetailAvatar" style="width: 56px; height: 52px; border-radius: 10px; background: linear-gradient(135deg, #1d4ed8, #1e40af); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;"></div>
                   <div>
