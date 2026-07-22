@@ -1073,19 +1073,57 @@
   </div>
 
   <div id="auth-modal" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px;">
-    <div id="auth-modal-card" style="background:linear-gradient(rgba(7,13,24,0.45),rgba(7,13,24,0.45)),url('https://images.unsplash.com/photo-1731925116590-c27d25490ea0?w=1200&q=80') center/cover no-repeat;border:1px solid var(--border);border-radius:20px;padding:28px;min-width:320px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;position:relative;">
-      <button onclick="closeAuthModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+    <div id="auth-modal-card" style="background:linear-gradient(rgba(7,13,24,0.55),rgba(7,13,24,0.72)),url('https://images.unsplash.com/photo-1736134869393-bb43683d5d28?w=1200&q=80') center/cover no-repeat;border:1px solid rgba(249,115,22,0.25);border-radius:20px;padding:28px;min-width:320px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;position:relative;">
+      <button onclick="closeAuthModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;z-index:2;">✕</button>
+      <div style="text-align:center;margin-bottom:22px;">
+        <div style="font-size:34px;margin-bottom:6px;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));">🚛</div>
+        <div style="display:flex;align-items:center;gap:12px;justify-content:center;">
+          <span style="height:1px;width:44px;background:linear-gradient(to right,transparent,var(--orange));"></span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;letter-spacing:0.1em;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.6);">SRT TRANS</span>
+          <span style="height:1px;width:44px;background:linear-gradient(to left,transparent,var(--orange));"></span>
+        </div>
+      </div>
       <div id="auth-tabs-bar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">
-        <button id="auth-tab-login" onclick="switchAuthTab('login')" style="flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--orange-dim);color:var(--orange);font-weight:700;cursor:pointer;font-size:13px;">Bejelentkezés</button>
-        <button id="auth-tab-regisztracio" onclick="switchAuthTab('regisztracio')" style="flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">Regisztráció</button>
-        <button id="auth-tab-admin" onclick="switchAuthTab('admin')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">👑 Kérelmek</button>
-        <button id="auth-tab-tagok" onclick="switchAuthTab('tagok')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">👥 Tagok</button>
-        <button id="auth-tab-adminlogin" onclick="switchAuthTab('adminlogin')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;">🔑 Admin Belépés</button>
+        <button id="auth-tab-login" onclick="switchAuthTab('login')" style="flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid rgba(249,115,22,0.4);background:var(--orange-dim);color:var(--orange);font-weight:700;cursor:pointer;font-size:13px;backdrop-filter:blur(6px);">Bejelentkezés</button>
+        <button id="auth-tab-regisztracio" onclick="switchAuthTab('regisztracio')" style="flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(7,13,24,0.55);color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;backdrop-filter:blur(6px);">Regisztráció</button>
+        <button id="auth-tab-admin" onclick="switchAuthTab('admin')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(7,13,24,0.55);color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;backdrop-filter:blur(6px);">👑 Kérelmek</button>
+        <button id="auth-tab-tagok" onclick="switchAuthTab('tagok')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(7,13,24,0.55);color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;backdrop-filter:blur(6px);">👥 Tagok</button>
+        <button id="auth-tab-adminlogin" onclick="switchAuthTab('adminlogin')" style="display:none;flex:1 1 45%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(7,13,24,0.55);color:var(--muted);font-weight:700;cursor:pointer;font-size:13px;backdrop-filter:blur(6px);">🔑 Admin Belépés</button>
       </div>
       <div id="auth-form-login">
-        <input type="email" id="login-email" placeholder="Email cím" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
-        <input type="password" id="login-jelszo" placeholder="Jelszó" style="width:100%;padding:12px;margin-bottom:16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
-        <button onclick="bejelentkezik()" style="width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">Bejelentkezés</button>
+        <div style="text-align:center;margin-bottom:22px;">
+          <div style="display:flex;align-items:center;gap:10px;justify-content:center;">
+            <svg width="40" height="20" viewBox="0 0 40 20" style="flex-shrink:0;">
+              <path d="M2 11 Q14 3 38 7 Q22 8 4 15 Q16 11 34 11 Q18 13 2 19" stroke="#f97316" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.85"/>
+            </svg>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;letter-spacing:0.1em;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.6);">BELÉPÉS</span>
+            <svg width="40" height="20" viewBox="0 0 40 20" style="flex-shrink:0;transform:scaleX(-1);">
+              <path d="M2 11 Q14 3 38 7 Q22 8 4 15 Q16 11 34 11 Q18 13 2 19" stroke="#f97316" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.85"/>
+            </svg>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;">
+            <span style="width:4px;height:4px;border-radius:50%;background:rgba(249,115,22,0.5);"></span>
+            <span style="color:var(--orange);font-size:13px;">★</span>
+            <span style="width:4px;height:4px;border-radius:50%;background:rgba(249,115,22,0.5);"></span>
+          </div>
+        </div>
+        <div style="position:relative;margin-bottom:12px;">
+          <div style="position:absolute;left:5px;top:5px;bottom:5px;width:32px;border-radius:6px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:14px;pointer-events:none;">👤</div>
+          <input type="email" id="login-email" placeholder="Email cím" style="width:100%;padding:13px 14px 13px 50px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(0,0,0,0.35);color:#fff;font-size:14px;box-sizing:border-box;backdrop-filter:blur(4px);" />
+        </div>
+        <div style="position:relative;margin-bottom:14px;">
+          <div style="position:absolute;left:5px;top:5px;bottom:5px;width:32px;border-radius:6px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:14px;pointer-events:none;">🔒</div>
+          <input type="password" id="login-jelszo" placeholder="Jelszó" style="width:100%;padding:13px 42px 13px 50px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(0,0,0,0.35);color:#fff;font-size:14px;box-sizing:border-box;backdrop-filter:blur(4px);" />
+          <span onclick="togglePasswordLatas()" id="login-jelszo-szem" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.7;cursor:pointer;">👁️</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:6px;">
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text);cursor:pointer;">
+            <input type="checkbox" id="login-emlekezzen" checked style="accent-color:var(--orange);width:15px;height:15px;" />
+            Emlékezzen rám
+          </label>
+          <a onclick="elfelejtettJelszo()" style="font-size:12px;color:var(--orange);cursor:pointer;text-decoration:none;">Elfelejtett jelszó?</a>
+        </div>
+        <button onclick="bejelentkezik()" style="width:100%;padding:14px;background:linear-gradient(to right,#d97706,#f59e0b);color:#fff;border:none;border-radius:10px;font-weight:800;letter-spacing:0.04em;cursor:pointer;font-size:15px;box-shadow:0 4px 14px rgba(217,119,6,0.35);">🚌 BELÉPÉS</button>
       </div>
       <div id="auth-form-regisztracio" style="display:none;">
         <div data-edit="jelentkezes_feltetelek" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:var(--muted);line-height:1.55;max-height:260px;overflow-y:auto;">
@@ -1109,16 +1147,40 @@
           Elolvastam, megértettem és elfogadom a cég szabályzatát. *
         </label>
         <p style="color:#fff;font-weight:700;font-size:14px;margin-bottom:10px;">Fiók Létrehozása</p>
-        <input type="text" id="reg-nev" placeholder="Felhasználónév *" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
-        <input type="email" id="reg-email" placeholder="Email cím *" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
-        <input type="password" id="reg-jelszo" placeholder="Jelszó (min. 6 karakter) *" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
-        <input type="password" id="reg-jelszo-megerosites" placeholder="Jelszó megerősítése *" style="width:100%;padding:12px;margin-bottom:18px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <div style="position:relative;margin-bottom:10px;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">👤</span>
+          <input type="text" id="reg-nev" placeholder="Felhasználónév *" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;backdrop-filter:blur(4px);" />
+        </div>
+        <div style="position:relative;margin-bottom:10px;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">📧</span>
+          <input type="email" id="reg-email" placeholder="Email cím *" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;backdrop-filter:blur(4px);" />
+        </div>
+        <div style="position:relative;margin-bottom:10px;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">🔒</span>
+          <input type="password" id="reg-jelszo" placeholder="Jelszó (min. 6 karakter) *" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;backdrop-filter:blur(4px);" />
+        </div>
+        <div style="position:relative;margin-bottom:18px;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">🔒</span>
+          <input type="password" id="reg-jelszo-megerosites" placeholder="Jelszó megerősítése *" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;backdrop-filter:blur(4px);" />
+        </div>
         <p style="color:#fff;font-weight:700;font-size:14px;margin-bottom:10px;">Személyes és Kapcsolati Adatok</p>
-        <input type="text" id="reg-discord" placeholder="Discord Név *" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
-        <input type="text" id="reg-trucky-nev" placeholder="Trucky Név (Trucky felhasználóneved) *" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <div style="position:relative;margin-bottom:10px;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">💬</span>
+          <input type="text" id="reg-discord" placeholder="Discord Név *" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;backdrop-filter:blur(4px);" />
+        </div>
+        <div style="position:relative;margin-bottom:10px;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">🚛</span>
+          <input type="text" id="reg-trucky-nev" placeholder="Trucky Név (Trucky felhasználóneved) *" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;backdrop-filter:blur(4px);" />
+        </div>
         <p style="font-size:11px;color:var(--muted);margin:-6px 0 10px;">A pontosan ugyanaz a Trucky felhasználónév kell, amivel a <a href="https://hub.truckyapp.com/users" target="_blank" style="color:var(--orange);">hub.truckyapp.com</a>-on regisztrálsz — így tudja a bot automatikusan összekötni a Discord és a Trucky fiókodat.</p>
-        <input type="number" id="reg-eletkor" placeholder="Életkor *" min="1" max="120" style="width:100%;padding:12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
-        <input type="text" id="reg-steam" placeholder="Steam Profil Link (opcionális)" style="width:100%;padding:12px;margin-bottom:18px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;" />
+        <div style="position:relative;margin-bottom:10px;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">🎂</span>
+          <input type="number" id="reg-eletkor" placeholder="Életkor *" min="1" max="120" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;backdrop-filter:blur(4px);" />
+        </div>
+        <div style="position:relative;margin-bottom:18px;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">🎮</span>
+          <input type="text" id="reg-steam" placeholder="Steam Profil Link (opcionális)" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;backdrop-filter:blur(4px);" />
+        </div>
         <p style="color:#fff;font-weight:700;font-size:14px;margin-bottom:10px;">Játék és Tapasztalat</p>
         <p style="font-size:13px;color:var(--text);margin-bottom:6px;">Rendelkezel eredeti Euro Truck Simulator 2 játékkal? *</p>
         <div style="display:flex;gap:16px;margin-bottom:14px;">
@@ -1139,7 +1201,7 @@
         </div>
         <p style="color:#fff;font-weight:700;font-size:14px;margin-bottom:10px;">Egyéb</p>
         <textarea id="reg-egyeb" placeholder="Van bármi egyéb, amit szeretnél megosztani magadról? (nem kötelező)" style="width:100%;min-height:60px;padding:12px;margin-bottom:18px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:14px;box-sizing:border-box;resize:vertical;"></textarea>
-        <button id="reg-submit-btn" onclick="regisztral()" style="width:100%;padding:14px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">Fiók Létrehozása</button>
+        <button id="reg-submit-btn" onclick="regisztral()" style="width:100%;padding:14px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">🚛 Fiók Létrehozása</button>
       </div>
       <div id="auth-form-admin" style="display:none;max-height:340px;overflow-y:auto;">
         <div id="auth-admin-list" style="display:flex;flex-direction:column;gap:10px;"></div>
@@ -3728,7 +3790,11 @@
       signInWithEmailAndPassword,
       updateProfile,
       onAuthStateChanged,
-      signOut
+      signOut,
+      sendPasswordResetEmail,
+      setPersistence,
+      browserLocalPersistence,
+      browserSessionPersistence
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import {
       getDatabase,
@@ -3815,7 +3881,7 @@
       const tagokForm = document.getElementById('auth-form-tagok');
       const adminLoginForm = document.getElementById('auth-form-adminlogin');
       document.getElementById('auth-error').textContent = '';
-      [loginTab, regTab, adminTab, tagokTab, adminLoginTab].forEach(t => { if (t) { t.style.background = 'transparent'; t.style.color = 'var(--muted)'; } });
+      [loginTab, regTab, adminTab, tagokTab, adminLoginTab].forEach(t => { if (t) { t.style.background = 'rgba(7,13,24,0.55)'; t.style.color = 'var(--muted)'; } });
       loginForm.style.display = 'none';
       regForm.style.display = 'none';
       adminForm.style.display = 'none';
@@ -4414,11 +4480,45 @@
       errEl.textContent = '';
       const email = document.getElementById('login-email').value.trim();
       const jelszo = document.getElementById('login-jelszo').value;
-      if (!email || !jelszo) { errEl.textContent = '❌ Add meg az email címed és jelszavad!'; return; }
+      const emlekezzen = document.getElementById('login-emlekezzen')?.checked !== false;
+      if (!email || !jelszo) { errEl.style.color = '#f87171'; errEl.textContent = '❌ Add meg az email címed és jelszavad!'; return; }
       try {
+        await setPersistence(auth, emlekezzen ? browserLocalPersistence : browserSessionPersistence);
         await signInWithEmailAndPassword(auth, email, jelszo);
         window.closeAuthModal();
       } catch (e) {
+        errEl.style.color = '#f87171';
+        errEl.textContent = '❌ ' + magyarHiba(e.code);
+      }
+    };
+
+    window.togglePasswordLatas = function() {
+      const input = document.getElementById('login-jelszo');
+      const szem = document.getElementById('login-jelszo-szem');
+      if (input.type === 'password') {
+        input.type = 'text';
+        szem.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        szem.textContent = '👁️';
+      }
+    };
+
+    window.elfelejtettJelszo = async function() {
+      const errEl = document.getElementById('auth-error');
+      errEl.textContent = '';
+      const email = (document.getElementById('login-email').value || '').trim();
+      if (!email) {
+        errEl.style.color = '#f87171';
+        errEl.textContent = '❌ Először írd be az email címed a mezőbe, utána kattints az "Elfelejtett jelszó?"-ra!';
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        errEl.style.color = '#4ade80';
+        errEl.textContent = `✅ Jelszó-visszaállító email elküldve erre: ${email} — nézd meg a postaládád (és a spam mappát is)!`;
+      } catch (e) {
+        errEl.style.color = '#f87171';
         errEl.textContent = '❌ ' + magyarHiba(e.code);
       }
     };
