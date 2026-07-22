@@ -272,6 +272,7 @@
         <button class="nav-btn" id="nav-modok" onclick="showPage('modok')">📦 Módok</button>
         <button class="nav-btn" id="nav-terkep" onclick="showPage('terkep')">🗺 Térkép</button>
         <button class="nav-btn" id="nav-kepek" onclick="showPage('kepek')">🎬 Média</button>
+        <button class="nav-btn" id="nav-piac" onclick="showPage('piac')">📊 Piac</button>
         <button class="nav-btn" id="nav-kozosseg" onclick="showPage('kozosseg')">💬 Közösség</button>
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Csapat</button>
       </nav>
@@ -302,6 +303,7 @@
     <button class="nav-btn" id="mob-nav-modok" onclick="showPage('modok');closeMobileNav()">📦 Módok</button>
     <button class="nav-btn" id="mob-nav-terkep" onclick="showPage('terkep');closeMobileNav()">🗺 Térkép</button>
     <button class="nav-btn" id="mob-nav-kepek" onclick="showPage('kepek');closeMobileNav()">🎬 Média</button>
+    <button class="nav-btn" id="mob-nav-piac" onclick="showPage('piac');closeMobileNav()">📊 Piac</button>
     <button class="nav-btn" id="mob-nav-kozosseg" onclick="showPage('kozosseg');closeMobileNav()">💬 Közösség</button>
     <button class="nav-btn" id="mob-nav-csapat" onclick="showPage('csapat');closeMobileNav()">👥 Csapat</button>
     <a class="btn-trucky" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky letöltés</a>
@@ -536,29 +538,6 @@
           Csatlakozás a Discord szerverhez
         </a>
       </div>
-      <div id="ceg-attekinto-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
-          <img id="ceg-attekinto-avatar" src="" style="width:56px;height:56px;border-radius:12px;object-fit:cover;display:none;" />
-          <div>
-            <h3 id="ceg-attekinto-nev" style="color:#fff;font-size:20px;margin-bottom:4px;">SRT TRANS KFT.</h3>
-            <p id="ceg-attekinto-szlogen" style="color:var(--muted);font-size:13px;"></p>
-          </div>
-        </div>
-        <div id="ceg-attekinto-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;"></div>
-      </div>
-      <div id="teljesitmeny-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
-        <h3 style="color:#fff;font-size:18px;margin-bottom:14px;">📊 Teljesítmény-mutatók</h3>
-        <div id="teljesitmeny-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;"></div>
-      </div>
-      <div id="esemenyek-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
-        <h3 style="color:#fff;font-size:18px;margin-bottom:14px;">📅 Legutóbbi esemény-jelentkezések</h3>
-        <div id="esemenyek-list" style="display:flex;flex-direction:column;gap:8px;"></div>
-      </div>
-      <div id="eredmenyek-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
-        <h3 style="color:#fff;font-size:18px;margin-bottom:14px;">🏆 Legutóbbi eredmények</h3>
-        <div id="eredmenyek-list" style="display:flex;flex-direction:column;gap:8px;"></div>
-      </div>
-      <button class="btn-trucky" onclick="showPage('flotta')" style="background:transparent;border:1px solid var(--border);margin-bottom:24px;">🚚 Flotta állapota & Hírfolyam →</button>
       <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab(this, 'tab-kozosseg-info')">🚛 Általános</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-kozosseg-szabalyzat')">📋 Szabályzat</button>
@@ -911,10 +890,33 @@
     </div>
   </div>
 
-  <div class="page" id="page-flotta" style="position:relative;">
+  <div class="page" id="page-piac" style="position:relative;">
     <div class="container-wide">
       <p class="section-eyebrow">Trucky élő adatok</p>
-      <h2 class="section-title">🚚 Flotta állapota & Hírfolyam</h2>
+      <h2 class="section-title">📊 Piac</h2>
+      <div id="ceg-attekinto-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
+          <img id="ceg-attekinto-avatar" src="" style="width:56px;height:56px;border-radius:12px;object-fit:cover;display:none;" />
+          <div>
+            <h3 id="ceg-attekinto-nev" style="color:#fff;font-size:20px;margin-bottom:4px;">SRT TRANS KFT.</h3>
+            <p id="ceg-attekinto-szlogen" style="color:var(--muted);font-size:13px;"></p>
+          </div>
+        </div>
+        <div id="ceg-attekinto-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;"></div>
+      </div>
+      <div id="teljesitmeny-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+        <h3 style="color:#fff;font-size:18px;margin-bottom:14px;">📊 Teljesítmény-mutatók</h3>
+        <div id="teljesitmeny-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;"></div>
+      </div>
+      <div id="esemenyek-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+        <h3 style="color:#fff;font-size:18px;margin-bottom:14px;">📅 Legutóbbi esemény-jelentkezések</h3>
+        <div id="esemenyek-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+      <div id="eredmenyek-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+        <h3 style="color:#fff;font-size:18px;margin-bottom:14px;">🏆 Legutóbbi eredmények</h3>
+        <div id="eredmenyek-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+      <h2 class="section-title" style="font-size:28px;margin-top:8px;">🚚 Flotta állapota & Hírfolyam</h2>
       <div id="karbantartas-figyelmezteto" style="display:none;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);border-radius:12px;padding:16px;margin:24px 0;"></div>
       <h3 style="color:#fff;font-size:18px;margin:32px 0 14px;">🚛 Járműveink</h3>
       <div id="jarmuvek-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
