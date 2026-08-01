@@ -4413,6 +4413,7 @@
         .map(([kulcs, e]) => ({ kulcs, tipus: 'jelentkezes', ...e }));
 
       const adminEsemenyLista = Object.entries(bellUtolsoAdminEsemenyek || {})
+        .filter(([kulcs]) => !bellUtolsoElrejtett || !bellUtolsoElrejtett[kulcs])
         .map(([kulcs, e]) => ({ kulcs, ...e }));
 
       const osszesenBadge = fuvarLista.length + truckyLista.length + jelentkezesLista.length + adminEsemenyLista.length;
@@ -4456,10 +4457,11 @@
             cim = `<strong>${(item.nev || item.discordNev || 'Valaki').replace(/</g,'&lt;')}</strong> saját maga törölte a fiókját`;
           }
           return `
-            <div style="background:${szinBg};border:1px solid ${szinBorder};border-radius:10px;padding:10px 12px;font-size:13px;">
+            <div style="background:${szinBg};border:1px solid ${szinBorder};border-radius:10px;padding:10px 12px;font-size:13px;position:relative;">
               ${ikon} ${cim}
               ${item.indok ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;">Indok: ${item.indok.replace(/</g,'&lt;')}</div>` : ''}
               <div style="font-size:11px;color:var(--muted);margin-top:4px;">${formazIdo(item.idopont)}</div>
+              <button onclick="elrejtTruckyEsemeny('${item.kulcs}')" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;">✕</button>
             </div>`;
         }
         return `
