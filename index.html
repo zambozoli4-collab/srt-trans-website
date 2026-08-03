@@ -5160,10 +5160,10 @@
       btn.disabled = true;
       btn.textContent = '⏳ Küldés...';
       try {
-        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/kuld-uzenetet', {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/uzenet-kuldes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
-          body: JSON.stringify({ cimzettEmail: uzenetKivalasztottCimzett.email, cimzettNev: uzenetKivalasztottCimzett.nev, targy, szoveg, kuldo: currentUser?.displayName || currentUser?.email })
+          body: JSON.stringify({ cimzettEmail: uzenetKivalasztottCimzett.email, cimzettNev: uzenetKivalasztottCimzett.nev, targy, uzenetSzoveg: szoveg, kuldoAdminNev: currentUser?.displayName || currentUser?.email })
         });
         if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error || 'Bot hiba'); }
         statuszEl.textContent = '✅ Üzenet elküldve!';
