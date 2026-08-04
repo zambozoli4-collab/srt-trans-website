@@ -4835,6 +4835,10 @@
       return '<span style="font-size:10px;background:rgba(245,158,11,0.15);color:#f59e0b;padding:2px 8px;border-radius:999px;font-weight:700;">⏳ Függőben</span>';
     }
 
+    function escAttr(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
     function renderTagokList(lista) {
       const list = document.getElementById('auth-tagok-list');
       if (!lista.length) {
@@ -4893,15 +4897,29 @@
               <div style="font-weight:700;color:#fff;font-size:15px;">${(r.nev||'').replace(/</g,'&lt;')}</div>
               ${statuszBadge(r.statusz)}
             </div>
-            <div style="font-size:12px;color:var(--muted);line-height:1.7;">
+            <div id="jelentkezo-view-${r.uid}" style="font-size:12px;color:var(--muted);line-height:1.7;">
               📧 ${(r.email||'').replace(/</g,'&lt;')}<br>
-              💬 Discord: ${(r.discordNev||'').replace(/</g,'&lt;')}<br>
-              🚛 Trucky: ${(r.truckyNev||'').replace(/</g,'&lt;')}<br>
+              💬 Discord: <span id="jelentkezo-discord-txt-${r.uid}">${(r.discordNev||'').replace(/</g,'&lt;')}</span><br>
+              🚛 Trucky: <span id="jelentkezo-trucky-txt-${r.uid}">${(r.truckyNev||'').replace(/</g,'&lt;')}</span><br>
               🎂 ${r.eletkor||'?'} év · 🎮 ${r.otaJatszol||'?'}<br>
               ${r.marIsmertSofor ? '📨 Forrás: Trucky felkérésből érkezett (előzőleg már ismert volt a cégnél)' : '🔍 Forrás: magától rátalált a weboldalra'}<br>
               📅 ${formazDatum(r.letrehozva)}
             </div>
+            <div id="jelentkezo-edit-${r.uid}" style="display:none;margin-top:8px;flex-direction:column;gap:6px;">
+              <label style="font-size:11px;color:var(--muted);">Discord név (pontosan, ahogy Discordon szerepel)</label>
+              <input id="jelentkezo-edit-discord-${r.uid}" value="${escAttr(r.discordNev)}" style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;">
+              <label style="font-size:11px;color:var(--muted);margin-top:4px;">Trucky felhasználónév</label>
+              <input id="jelentkezo-edit-trucky-${r.uid}" value="${escAttr(r.truckyNev)}" style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;">
+              <div style="display:flex;gap:8px;margin-top:6px;">
+                <button onclick="mentiJelentkezoNeveket('${r.uid}')" style="flex:1;padding:8px;background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">💾 Mentés</button>
+                <button onclick="megsemJelentkezoSzerkesztes('${r.uid}')" style="flex:1;padding:8px;background:rgba(148,163,184,0.15);color:#cbd5e1;border:1px solid rgba(148,163,184,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">Mégse</button>
+              </div>
+              <div id="jelentkezo-edit-statusz-${r.uid}" style="font-size:11px;margin-top:2px;"></div>
+            </div>
             ${r.egyeb ? `<div style="font-size:12px;color:var(--text);margin-top:8px;padding:8px;background:var(--surface);border-radius:8px;">${r.egyeb.replace(/</g,'&lt;')}</div>` : ''}
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button id="jelentkezo-szerkeszt-btn-${r.uid}" onclick="szerkesztJelentkezoNeveket('${r.uid}')" style="flex:1;padding:8px;background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">✏️ Nevek szerkesztése</button>
+            </div>
             ${r.statusz === 'fuggoben' ? `
             <div style="display:flex;gap:8px;margin-top:10px;">
               <button onclick="jovahagyRegisztraciot('${r.uid}')" style="flex:1;padding:8px;background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">✅ Jóváhagyás</button>
@@ -4911,6 +4929,45 @@
         `).join('');
       } catch (e) {
         listEl.innerHTML = '<div style="color:#f87171;">Hiba a betöltés során.</div>';
+      }
+    };
+
+    window.szerkesztJelentkezoNeveket = function(uid) {
+      const editDiv = document.getElementById(`jelentkezo-edit-${uid}`);
+      if (editDiv) editDiv.style.display = 'flex';
+    };
+
+    window.megsemJelentkezoSzerkesztes = function(uid) {
+      const editDiv = document.getElementById(`jelentkezo-edit-${uid}`);
+      if (editDiv) editDiv.style.display = 'none';
+    };
+
+    window.mentiJelentkezoNeveket = async function(uid) {
+      const discordInput = document.getElementById(`jelentkezo-edit-discord-${uid}`);
+      const truckyInput = document.getElementById(`jelentkezo-edit-trucky-${uid}`);
+      const statuszEl = document.getElementById(`jelentkezo-edit-statusz-${uid}`);
+      const ujDiscordNev = (discordInput?.value || '').trim();
+      const ujTruckyNev = (truckyInput?.value || '').trim();
+      if (!ujDiscordNev) {
+        if (statuszEl) { statuszEl.textContent = '❌ A Discord név nem lehet üres.'; statuszEl.style.color = '#f87171'; }
+        return;
+      }
+      if (statuszEl) { statuszEl.textContent = '⏳ Mentés...'; statuszEl.style.color = 'var(--muted)'; }
+      try {
+        const res = await fetch(`${DB_URL}/regisztraciok/${uid}.json`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordNev: ujDiscordNev, truckyNev: ujTruckyNev })
+        });
+        if (!res.ok) throw new Error('Mentés sikertelen');
+        const discordTxt = document.getElementById(`jelentkezo-discord-txt-${uid}`);
+        const truckyTxt = document.getElementById(`jelentkezo-trucky-txt-${uid}`);
+        if (discordTxt) discordTxt.textContent = ujDiscordNev;
+        if (truckyTxt) truckyTxt.textContent = ujTruckyNev;
+        if (statuszEl) { statuszEl.textContent = '✅ Mentve!'; statuszEl.style.color = '#4ade80'; }
+        setTimeout(() => window.megsemJelentkezoSzerkesztes(uid), 900);
+      } catch (e) {
+        if (statuszEl) { statuszEl.textContent = '❌ Hiba: ' + e.message; statuszEl.style.color = '#f87171'; }
       }
     };
 
