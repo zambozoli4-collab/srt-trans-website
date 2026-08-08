@@ -321,7 +321,7 @@
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Vezetők</button>
       </nav>
       <a class="btn-trucky trucky-dl-btn" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
-      <button id="tagoklista-quick-btn" onclick="showPage('tagoklista')" title="Regisztrált tagok" style="background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">👥</button>
+      <button id="tagoklista-quick-btn" onclick="showPage('tagoklista')" title="Regisztrált tagok" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">👥</button>
       <button id="jelentkezok-quick-btn" onclick="showPage('jelentkezok')" title="Jelentkezők" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">📋</button>
       <button id="truckytagok-quick-btn" onclick="showPage('truckytagok')" title="Trucky Tagok" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">🚛</button>
       <div style="position:relative;display:none;" id="bell-wrap">
@@ -1010,11 +1010,17 @@
   <div class="page" id="page-tagoklista" style="position:relative;">
     <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-tagoklista" data-for="page-tagoklista"></div>
     <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-tagoklista"></div>
-    <div class="container-wide" id="tagoklista-page-content">
+    <div class="container-wide" id="tagoklista-page-content" style="display:none;">
       <p class="section-eyebrow">Közösség</p>
       <h2 class="section-title">👥 Regisztrált Tagok</h2>
       <p id="tagoklista-page-osszesen" style="color:var(--muted);margin-bottom:24px;"></p>
       <div id="tagoklista-page-list" style="display:flex;flex-direction:column;gap:6px;max-width:520px;"></div>
+    </div>
+    <div id="tagoklista-page-lock" class="container-wide" style="text-align:center;padding:100px 24px;">
+      <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+      <h2 class="section-title" style="font-size:28px;">Ez az oldal csak adminoknak érhető el</h2>
+      <p style="color:var(--muted);max-width:440px;margin:0 auto 24px;">Jelentkezz be a saját fiókoddal — ha admin/helyettes vagy, a rendszer automatikusan felismer.</p>
+      <button class="btn-trucky" style="font-size:14px;padding:12px 28px;" onclick="openAuthModal()">🔐 Belépés</button>
     </div>
   </div>
 
@@ -4006,9 +4012,11 @@
       }
       const jelentkezokBtn = document.getElementById('jelentkezok-quick-btn');
       const truckyTagokBtn = document.getElementById('truckytagok-quick-btn');
+      const tagoklistaBtn = document.getElementById('tagoklista-quick-btn');
       const uzenetBtn = document.getElementById('uzenet-quick-btn');
       if (jelentkezokBtn) jelentkezokBtn.style.display = isAdminUser() ? 'flex' : 'none';
       if (truckyTagokBtn) truckyTagokBtn.style.display = isAdminUser() ? 'flex' : 'none';
+      if (tagoklistaBtn) tagoklistaBtn.style.display = isAdminUser() ? 'flex' : 'none';
       if (uzenetBtn) uzenetBtn.style.display = isAdminUser() ? 'flex' : 'none';
       frissitiAdminOldalZarat();
     }
@@ -4019,6 +4027,8 @@
       const jLock = document.getElementById('jelentkezok-page-lock');
       const tPage = document.getElementById('truckytagok-page-content');
       const tLock = document.getElementById('truckytagok-page-lock');
+      const rPage = document.getElementById('tagoklista-page-content');
+      const rLock = document.getElementById('tagoklista-page-lock');
       if (jPage && jLock) {
         jPage.style.display = jogosult ? 'block' : 'none';
         jLock.style.display = jogosult ? 'none' : 'block';
@@ -4028,6 +4038,11 @@
         tPage.style.display = jogosult ? 'block' : 'none';
         tLock.style.display = jogosult ? 'none' : 'block';
         if (jogosult) toltiTruckyTagokat();
+      }
+      if (rPage && rLock) {
+        rPage.style.display = jogosult ? 'block' : 'none';
+        rLock.style.display = jogosult ? 'none' : 'block';
+        if (jogosult) toltiTagokListajat();
       }
     }
 
