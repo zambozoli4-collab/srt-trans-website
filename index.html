@@ -5062,16 +5062,16 @@
       if (modokLockChecking) modokLockChecking.style.display = 'none';
       if (fuvarokLockChecking) fuvarokLockChecking.style.display = 'none';
 
+      // A Fuvarok tartalom mostantól SRT rang nélkül is látható mindenkinek.
+      if (fuvarokContent) fuvarokContent.style.display = 'block';
+      if (fuvarokLockDenied) fuvarokLockDenied.style.display = 'none';
+
       if (jogosult) {
         if (modokContent) modokContent.style.display = 'block';
         if (modokLockDenied) modokLockDenied.style.display = 'none';
-        if (fuvarokContent) fuvarokContent.style.display = 'block';
-        if (fuvarokLockDenied) fuvarokLockDenied.style.display = 'none';
       } else {
         if (modokContent) modokContent.style.display = 'none';
         if (modokLockDenied) modokLockDenied.style.display = 'block';
-        if (fuvarokContent) fuvarokContent.style.display = 'none';
-        if (fuvarokLockDenied) fuvarokLockDenied.style.display = 'block';
       }
     };
 
