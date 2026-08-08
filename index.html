@@ -515,7 +515,7 @@
     <div class="container">
       <p class="section-eyebrow">Galéria</p>
       <h2 class="section-title">Képek & Videók</h2>
-      <div id="admin-panel-media" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <div id="admin-panel-media" style="margin-bottom: 16px; display: none; align-items: center; gap: 10px; flex-wrap: wrap;">
         <div id="admin-login-form-media" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <input id="admin-username-media" type="text" placeholder="Discord felhasználónév" onkeydown="if(event.key==='Enter')requestMediaCode()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 180px;" />
           <button onclick="requestMediaCode()" style="padding: 8px 16px; border-radius: 8px; background: #5865f2; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">📨 Kód kérése</button>
@@ -728,7 +728,7 @@
       </div>
       <div id="game-panel-ets">
         <h2 class="section-title">Euro Truck Simulator 2 Fuvarok</h2>
-        <div id="admin-panel" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <div id="admin-panel" style="margin-bottom: 16px; display: none; align-items: center; gap: 10px; flex-wrap: wrap;">
           <div id="admin-login-form" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <input id="admin-username" type="text" placeholder="Discord felhasználónév" onkeydown="if(event.key==='Enter')requestDiscordCode()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 200px;" />
             <button onclick="requestDiscordCode()" style="padding: 8px 16px; border-radius: 8px; background: #5865f2; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">📨 Kód kérése</button>
@@ -840,7 +840,7 @@
     </div>
       <div id="game-panel-ats" style="display:none;">
         <h2 class="section-title">American Truck Simulator Fuvarok</h2>
-        <div id="ats-admin-panel" style="margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <div id="ats-admin-panel" style="margin-bottom: 16px; display: none; align-items: center; gap: 10px; flex-wrap: wrap;">
           <div id="ats-admin-login-form" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <input id="ats-admin-username" type="text" placeholder="Discord felhasználónév" onkeydown="if(event.key==='Enter')atsRequestCode()" style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: #fff; font-size: 13px; outline: none; width: 200px;" />
             <button onclick="atsRequestCode()" style="padding: 8px 16px; border-radius: 8px; background: #5865f2; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">📨 Kód kérése</button>
@@ -4010,6 +4010,15 @@
           bellFigyelokIndítasa();
         }
       }
+      // A Discord-kódos admin-belépő widgetek (Média + Fuvarok ETS2/ATS) csak
+      // már bejelentkezett adminoknak látszanak, hogy a Discord nevet és a
+      // "Kód kérése" lehetőséget ne lássa bárki.
+      const mediaAdminPanel = document.getElementById('admin-panel-media');
+      const etsAdminPanel = document.getElementById('admin-panel');
+      const atsAdminPanel = document.getElementById('ats-admin-panel');
+      if (mediaAdminPanel) mediaAdminPanel.style.display = isAdminUser() ? 'flex' : 'none';
+      if (etsAdminPanel) etsAdminPanel.style.display = isAdminUser() ? 'flex' : 'none';
+      if (atsAdminPanel) atsAdminPanel.style.display = isAdminUser() ? 'flex' : 'none';
       const jelentkezokBtn = document.getElementById('jelentkezok-quick-btn');
       const truckyTagokBtn = document.getElementById('truckytagok-quick-btn');
       const tagoklistaBtn = document.getElementById('tagoklista-quick-btn');
