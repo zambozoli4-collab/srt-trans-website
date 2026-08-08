@@ -940,8 +940,8 @@
       </div>
       <div id="fuvarok-lock-denied" style="display:none;">
         <div style="font-size:48px;margin-bottom:16px;">🔒</div>
-        <h2 class="section-title" style="font-size:28px;">Ez a tartalom az SRT ranghoz kötött</h2>
-        <p style="color:var(--muted);max-width:480px;margin:0 auto 24px;" id="fuvarok-lock-text">Jelentkezz be / regisztrálj, majd vezess Truckyban, amíg meg nem szerzed az SRT Discord rangot — utána azonnal elérhetővé válik a Fuvarok tartalom.</p>
+        <h2 class="section-title" style="font-size:28px;">Ez a tartalom bejelentkezéshez kötött</h2>
+        <p style="color:var(--muted);max-width:480px;margin:0 auto 24px;" id="fuvarok-lock-text">Ehhez a tartalomhoz be kell jelentkezned. Ha még nincs fiókod, regisztrálj — utána azonnal elérhetővé válik a Fuvarok tartalom.</p>
         <button class="btn-trucky" onclick="openAuthModal()" style="padding:12px 28px;font-size:14px;">🔐 Regisztráció / Bejelentkezés</button>
       </div>
     </div>
@@ -5072,14 +5072,21 @@
       const fuvarokContent = document.getElementById('fuvarok-content');
 
       const jogosult = currentVanRangja || isAdminUser();
-      console.log('[GATE DEBUG] currentVanRangja:', currentVanRangja, '| isAdminUser():', isAdminUser(), '| jogosult:', jogosult);
+      const bejelentkezve = !!currentUser;
+      console.log('[GATE DEBUG] currentVanRangja:', currentVanRangja, '| isAdminUser():', isAdminUser(), '| jogosult:', jogosult, '| bejelentkezve:', bejelentkezve);
 
       if (modokLockChecking) modokLockChecking.style.display = 'none';
       if (fuvarokLockChecking) fuvarokLockChecking.style.display = 'none';
 
-      // A Fuvarok tartalom mostantól SRT rang nélkül is látható mindenkinek.
-      if (fuvarokContent) fuvarokContent.style.display = 'block';
-      if (fuvarokLockDenied) fuvarokLockDenied.style.display = 'none';
+      // A Fuvarok tartalom megtekintéséhez bejelentkezés/regisztráció szükséges,
+      // de SRT rang nem kell hozzá.
+      if (bejelentkezve) {
+        if (fuvarokContent) fuvarokContent.style.display = 'block';
+        if (fuvarokLockDenied) fuvarokLockDenied.style.display = 'none';
+      } else {
+        if (fuvarokContent) fuvarokContent.style.display = 'none';
+        if (fuvarokLockDenied) fuvarokLockDenied.style.display = 'block';
+      }
 
       if (jogosult) {
         if (modokContent) modokContent.style.display = 'block';
