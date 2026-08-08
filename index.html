@@ -4981,7 +4981,7 @@
         const adat = await res.json() || {};
         const lista = Object.values(adat)
           .filter(r => r && r.statusz === 'jovahagyva')
-          .sort((a,b) => (a.letrehozva||'').localeCompare(b.letrehozva||''));
+          .sort((a,b) => (a.nev||'').localeCompare(b.nev||'', 'hu', { sensitivity: 'base' }));
         osszesenEl.textContent = `Összesen ${lista.length} tag`;
         if (!lista.length) {
           listEl.innerHTML = '<div style="color:var(--muted);">Még nincs regisztrált tag.</div>';
@@ -5007,7 +5007,9 @@
       try {
         const res = await fetch(`${FIREBASE_URL}/srtdata/data.json`);
         const data = await res.json() || {};
-        const lista = Object.entries(data).filter(([id]) => !id.startsWith('_'));
+        const lista = Object.entries(data)
+          .filter(([id]) => !id.startsWith('_'))
+          .sort(([,ua],[,ub]) => (ua.truckyName||'').localeCompare(ub.truckyName||'', 'hu', { sensitivity: 'base' }));
         osszesenEl.textContent = `Összesen ${lista.length} Trucky tag`;
         if (!lista.length) {
           listEl.innerHTML = '<div style="color:var(--muted);">Nincs adat.</div>';
