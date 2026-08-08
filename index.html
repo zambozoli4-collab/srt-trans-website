@@ -427,7 +427,7 @@
             <span class="mod-card-tag tag-extra">Extra</span>
             <h3>DLC csomag</h3>
             <p>Ajánlott DLC-k listája az optimális szerveres élményhez.</p>
-            <a class="btn-dl blue" href="https://drive.google.com/drive/folders/1mwiTzu2u7a3R_PW38narTJyyokd8yQCE?usp=sharing" target="_blank">⬇ Letöltés</a>
+            <a class="btn-dl blue" href="https://drive.google.com/drive/folders/1netGUDizc7tfyD6ShxIZJX5IJYrvVASh?usp=drive_link" target="_blank">⬇ Letöltés</a>
           </div>
         </div>
       </div>
@@ -5031,11 +5031,11 @@
       const btn = document.getElementById('trucky-szinkron-btn-page');
       if (btn) { btn.disabled = true; btn.textContent = '⏳ Frissítés...'; }
       try {
-        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/trucky-szinkron', {
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/trucky-tagok-szinkron', {
           method: 'POST',
           headers: { 'X-Upload-Secret': 'srt-trans-upload-2024' }
         });
-        if (!res.ok) throw new Error('Bot hiba');
+        if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error || `Bot hiba (${res.status})`); }
         await window.toltiTruckyTagokat();
       } catch (e) {
         alert('❌ Hiba: ' + e.message);
