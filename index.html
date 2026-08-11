@@ -3904,6 +3904,19 @@
     const db = getDatabase(app);
     const DB_URL = firebaseConfig.databaseURL;
 
+    // A 'regisztraciok' útvonal védett a Firebase szabályokban (bejelentkezés
+    // szükséges hozzá), ezért minden ide irányuló nyers REST hívásnak magával
+    // kell vinnie a bejelentkezett felhasználó azonosító tokenjét.
+    async function regAuthQS() {
+      try {
+        if (!currentUser) return '';
+        const token = await currentUser.getIdToken();
+        return `?auth=${token}`;
+      } catch (e) {
+        return '';
+      }
+    }
+
     const ADMIN_EMAILS = [
       'zambozoli4@gmail.com'
     ];
@@ -4580,7 +4593,8 @@
           letrehozva: new Date().toISOString(),
         };
 
-        await fetch(`${DB_URL}/regisztraciok/${cred.user.uid}.json`, {
+        const regSignupToken = await cred.user.getIdToken().catch(() => '');
+        await fetch(`${DB_URL}/regisztraciok/${cred.user.uid}.json${regSignupToken ? '?auth=' + regSignupToken : ''}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(regisztracio)
@@ -4656,7 +4670,7 @@
       const list = document.getElementById('auth-admin-list');
       list.innerHTML = '<div style="color:var(--muted);font-size:13px;">Betöltés...</div>';
       try {
-        const res = await fetch(`${DB_URL}/regisztraciok.json`);
+        const res = await fetch(`${DB_URL}/regisztraciok.json${await regAuthQS()}`);
         const adat = await res.json() || {};
         const fuggoben = Object.entries(adat).filter(([uid, r]) => r && r.statusz === 'fuggoben');
         if (!fuggoben.length) {
@@ -4685,7 +4699,7 @@
 
     window.jovahagyRegisztraciot = async function(uid) {
       try {
-        await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json`, {
+        await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json${await regAuthQS()}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify('jovahagyva')
         });
         toltiAdminKerelmeket();
@@ -4696,7 +4710,7 @@
     window.elutasitRegisztraciot = async function(uid) {
       if (!confirm('Biztosan elutasítod ezt a jelentkezést?')) return;
       try {
-        await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json`, {
+        await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json${await regAuthQS()}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify('elutasitva')
         });
         toltiAdminKerelmeket();
@@ -4707,7 +4721,7 @@
     window.visszavonRegisztraciot = async function(uid) {
       if (!confirm('Biztosan visszavonod a jóváhagyást?')) return;
       try {
-        await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json`, {
+        await fetch(`${DB_URL}/regisztraciok/${uid}/statusz.json${await regAuthQS()}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify('fuggoben')
         });
         toltiOsszesTagot();
@@ -4747,9 +4761,9 @@
       const truckybolEltavolitvaIs = confirm(`Eltávolítjuk ${nev} felhasználót a Trucky cégből is?`);
       if (!confirm(`Végleg törlöd ${nev} regisztrációját a rendszerből?`)) return;
       try {
-        const res = await fetch(`${DB_URL}/regisztraciok/${uid}.json`);
+        const res = await fetch(`${DB_URL}/regisztraciok/${uid}.json${await regAuthQS()}`);
         const rec = await res.json();
-        await fetch(`${DB_URL}/regisztraciok/${uid}.json`, { method: 'DELETE' });
+        await fetch(`${DB_URL}/regisztraciok/${uid}.json${await regAuthQS()}`, { method: 'DELETE' });
         if (discordKirugvaIs && rec?.discordNev) {
           try {
             await fetch('https://srt-trans-trucky-bot-production.up.railway.app/kick-member', {
@@ -4784,9 +4798,9 @@
       if (!confirm('Biztosan törlöd a saját fiókodat? Ez visszavonhatatlan!')) return;
       if (!confirm('Megerősítés: a törlés automatikusan eltávolít a Trucky cégből és a Discord szerverről is. Folytatod?')) return;
       try {
-        const res = await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}.json`);
+        const res = await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}.json${await regAuthQS()}`);
         const rec = await res.json();
-        await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}.json`, { method: 'DELETE' });
+        await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}.json${await regAuthQS()}`, { method: 'DELETE' });
         if (rec?.steam) {
           try {
             await fetch('https://srt-trans-trucky-bot-production.up.railway.app/trucky-tag-eltavolitas', {
@@ -4842,7 +4856,7 @@
       const osszesenEl = document.getElementById('auth-tagok-osszesen');
       list.innerHTML = '<div style="color:var(--muted);font-size:13px;">Betöltés...</div>';
       try {
-        const res = await fetch(`${DB_URL}/regisztraciok.json`);
+        const res = await fetch(`${DB_URL}/regisztraciok.json${await regAuthQS()}`);
         const adat = await res.json() || {};
         osszesTagAdat = Object.entries(adat).map(([uid, r]) => ({ uid, ...r }));
         osszesTagAdat.sort((a,b) => (b.letrehozva||'').localeCompare(a.letrehozva||''));
@@ -4906,7 +4920,7 @@
       if (!listEl) return;
       listEl.innerHTML = '<div style="color:var(--muted);">Betöltés...</div>';
       try {
-        const res = await fetch(`${DB_URL}/regisztraciok.json`);
+        const res = await fetch(`${DB_URL}/regisztraciok.json${await regAuthQS()}`);
         const adat = await res.json() || {};
         const lista = Object.entries(adat).map(([uid, r]) => ({ uid, ...r }))
           .sort((a,b) => (b.letrehozva||'').localeCompare(a.letrehozva||''));
@@ -4978,7 +4992,7 @@
       }
       if (statuszEl) { statuszEl.textContent = '⏳ Mentés...'; statuszEl.style.color = 'var(--muted)'; }
       try {
-        const res = await fetch(`${DB_URL}/regisztraciok/${uid}.json`, {
+        const res = await fetch(`${DB_URL}/regisztraciok/${uid}.json${await regAuthQS()}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ discordNev: ujDiscordNev, truckyNev: ujTruckyNev })
@@ -5001,7 +5015,7 @@
       if (!listEl) return;
       listEl.innerHTML = '<div style="color:var(--muted);">Betöltés...</div>';
       try {
-        const res = await fetch(`${DB_URL}/regisztraciok.json`);
+        const res = await fetch(`${DB_URL}/regisztraciok.json${await regAuthQS()}`);
         const adat = await res.json() || {};
         const lista = Object.values(adat)
           .filter(r => r && r.statusz === 'jovahagyva')
@@ -5130,7 +5144,7 @@
         return;
       }
       try {
-        const res = await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}.json`);
+        const res = await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}.json${await regAuthQS()}`);
         const rec = await res.json();
         currentStatusz = rec?.statusz || null;
         currentAdminByRecord = !!rec?.adminByRecord || ismertAdminDiscordNev(rec?.discordNev);
@@ -5153,7 +5167,7 @@
         if (rec?.discordNev) {
           currentVanRangja = await ellenorziSrtRangot(rec.discordNev, rec.truckyNev);
           if (currentVanRangja && currentStatusz !== 'jovahagyva') {
-            await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}/statusz.json`, {
+            await fetch(`${DB_URL}/regisztraciok/${currentUser.uid}/statusz.json${await regAuthQS()}`, {
               method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify('jovahagyva')
             });
             currentStatusz = 'jovahagyva';
