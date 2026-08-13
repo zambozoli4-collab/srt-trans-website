@@ -249,6 +249,8 @@
       .driver-sidebar-item { padding: 6px 4px !important; justify-content: center !important; }
       .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
       #jobs-view { font-size: 11px; }
+      #driversList, #atsDriversList { max-height: calc(100vh - 400px) !important; min-height: 250px !important; }
+      #jobsList, #atsJobsList { max-height: calc(100vh - 700px) !important; min-height: 250px !important; }
     }
     /* Telefon fekvő (landscape) nézet — csak érintőképernyős eszközökön (pointer:coarse),
        hogy a desktop böngésző ablak átméretezése soha ne triggerelje ezt a szabályt. Sok
@@ -747,7 +749,7 @@
       <div class="fuvarok-layout" style="display: flex; gap: 24px; align-items: flex-start;">
         <div id="drivers-sidebar" style="min-width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; flex-shrink: 0;">
           <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase;">🚗 Sofőrök</div>
-          <div id="driversList" style="padding: 8px 0; max-height: calc(100vh - 400px); min-height: 250px; overflow-y: auto;">
+          <div id="driversList" style="padding: 8px 0; max-height: calc(100vh - 160px); min-height: 740px; overflow-y: auto;">
             <div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>
           </div>
         </div>
@@ -784,7 +786,7 @@
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BEVÉTEL</div>
                 <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BÜNTETÉS</div>
               </div>
-              <div id="jobsList" style="max-height: calc(100vh - 700px); min-height: 250px; overflow-y: auto;"></div>
+              <div id="jobsList" style="max-height: calc(100vh - 470px); min-height: 480px; overflow-y: auto;"></div>
               </div>
               </div>
             </div>
@@ -859,7 +861,7 @@
         <div class="fuvarok-layout" style="display: flex; gap: 24px; align-items: flex-start;">
           <div id="ats-drivers-sidebar" style="min-width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; flex-shrink: 0;">
             <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase;">🎮 Sofőrök</div>
-            <div id="atsDriversList" style="padding: 8px 0; max-height: calc(100vh - 400px); min-height: 250px; overflow-y: auto;">
+            <div id="atsDriversList" style="padding: 8px 0; max-height: calc(100vh - 160px); min-height: 740px; overflow-y: auto;">
               <div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>
             </div>
           </div>
@@ -896,7 +898,7 @@
                   <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BEVÉTEL</div>
                   <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BÜNTETÉS</div>
                 </div>
-                <div id="atsJobsList" style="max-height: calc(100vh - 700px); min-height: 250px; overflow-y: auto;"></div>
+                <div id="atsJobsList" style="max-height: calc(100vh - 470px); min-height: 480px; overflow-y: auto;"></div>
                 </div>
                 </div>
               </div>
