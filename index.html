@@ -4602,6 +4602,19 @@
           body: JSON.stringify(regisztracio)
         });
 
+        // Szólunk a botnak is, hogy DM-ben és emailben értesítse az adminokat
+        // az új jelentkezésről — ha ez a hívás bármiért elhasal, a regisztráció
+        // maga ettől még sikeres marad, csak az admin-értesítés maradhat el.
+        try {
+          await fetch('https://srt-trans-trucky-bot-production.up.railway.app/uj-jelentkezes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(regisztracio)
+          });
+        } catch (notifyErr) {
+          console.warn('Admin-értesítés küldése sikertelen:', notifyErr);
+        }
+
         document.getElementById('auth-error').textContent = '';
         window.switchAuthTab('login');
         alert(ismertAdmin
