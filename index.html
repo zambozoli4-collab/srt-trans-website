@@ -2374,6 +2374,8 @@
     }
 
     const AUTO_REFRESH_MS = 30000;
+    const MEDIA_REFRESH_MS = 60 * 60 * 1000; // Média oldal: csak óránként frissüljön
+    let lastMediaAutoRefresh = 0;
 
     function getActivePage() {
       const active = document.querySelector('.page.active');
@@ -2403,6 +2405,11 @@
     async function autoRefreshTick() {
       const page = getActivePage();
       if (page !== 'fuvarok' && page !== 'kepek') return;
+      if (page === 'kepek') {
+        const now = Date.now();
+        if (now - lastMediaAutoRefresh < MEDIA_REFRESH_MS) return;
+        lastMediaAutoRefresh = now;
+      }
       const ok = await loadJsonBin(true);
       if (!ok) return;
       if (page === 'fuvarok') {
