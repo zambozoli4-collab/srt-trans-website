@@ -2374,8 +2374,6 @@
     }
 
     const AUTO_REFRESH_MS = 30000;
-    const MEDIA_REFRESH_MS = 60 * 60 * 1000; // Média oldal: csak óránként frissüljön
-    let lastMediaAutoRefresh = 0;
 
     function getActivePage() {
       const active = document.querySelector('.page.active');
@@ -2402,13 +2400,16 @@
       badge._hideTimer = setTimeout(function() { badge.style.opacity = '0'; }, 2500);
     }
 
+    const MEDIA_REFRESH_MS = 60 * 60 * 1000; // Média oldal: csak óránként frissül (GitHub kérés-korlát miatt)
+    let lastMediaRefresh = 0;
+
     async function autoRefreshTick() {
       const page = getActivePage();
       if (page !== 'fuvarok' && page !== 'kepek') return;
       if (page === 'kepek') {
         const now = Date.now();
-        if (now - lastMediaAutoRefresh < MEDIA_REFRESH_MS) return;
-        lastMediaAutoRefresh = now;
+        if (now - lastMediaRefresh < MEDIA_REFRESH_MS) return;
+        lastMediaRefresh = now;
       }
       const ok = await loadJsonBin(true);
       if (!ok) return;
