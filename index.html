@@ -4859,6 +4859,13 @@
             });
           } catch (e) { console.warn('Trucky eltávolítás hiba:', e.message); }
         }
+        try {
+          await fetch('https://srt-trans-trucky-bot-production.up.railway.app/torol-statisztika', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+            body: JSON.stringify({ discordNev: rec?.discordNev, truckyNev: rec?.truckyNev })
+          });
+        } catch (e) { console.warn('Statisztika törlés hiba:', e.message); }
         await naploAdminEsemenytWeb('admin_torles', {
           nev: rec?.nev, discordNev: rec?.discordNev,
           discordKirugvaIs, truckybolEltavolitvaIs,
@@ -4887,6 +4894,13 @@
             });
           } catch (e) { console.warn('Trucky eltávolítás hiba:', e.message); }
         }
+        try {
+          await fetch('https://srt-trans-trucky-bot-production.up.railway.app/torol-statisztika', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+            body: JSON.stringify({ discordNev: rec?.discordNev, truckyNev: rec?.truckyNev })
+          });
+        } catch (e) { console.warn('Statisztika törlés hiba:', e.message); }
         if (rec?.discordNev) {
           try {
             await fetch('https://srt-trans-trucky-bot-production.up.railway.app/kick-member', {
