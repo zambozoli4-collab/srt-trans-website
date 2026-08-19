@@ -5073,18 +5073,55 @@
           listEl.innerHTML = '<div style="color:var(--muted);">Nincs adat.</div>';
           return;
         }
+        const admin = isAdminUser();
         listEl.innerHTML = lista.map(([id, u]) => `
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
-            <div style="font-weight:700;color:#fff;font-size:15px;margin-bottom:6px;">${(u.truckyName||id).replace(/</g,'&lt;')}</div>
-            <div style="font-size:12px;color:var(--muted);">
-              🛣️ ${szamFormaz(u.totalKm||0)} km összesen<br>
-              📦 ${u.totalTons||0} t szállítva<br>
-              ✅ Truckyban elfogadva: ${u.truckyElfogadva ? formazDatum(u.truckyElfogadva) : 'ismeretlen'}
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;">
+            ${admin ? `<button onclick="deleteTruckyTagMember('${id.replace(/'/g,"\\'")}','${(u.truckyName||id).replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" title="Tag törlése" style="position:absolute;top:10px;right:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;">🗑️</button>` : ''}
+            <div style="font-weight:700;color:#fff;font-size:15px;margin-bottom:6px;${admin ? 'padding-right:28px;' : ''}">${(u.truckyName||id).replace(/</g,'&lt;')}</div>
+            <div style="font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                <span>🛣️ ${szamFormaz(u.totalKm||0)} km összesen</span>
+                ${admin ? `<button onclick="editTruckyTagStat('${id.replace(/'/g,"\\'")}','totalKm','Összes km',${u.totalKm||0})" style="background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:5px;padding:1px 6px;cursor:pointer;font-size:10px;flex-shrink:0;">✏️</button>` : ''}
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                <span>📦 ${u.totalTons||0} t szállítva</span>
+                ${admin ? `<button onclick="editTruckyTagStat('${id.replace(/'/g,"\\'")}','totalTons','Szállított tonna',${u.totalTons||0})" style="background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:5px;padding:1px 6px;cursor:pointer;font-size:10px;flex-shrink:0;">✏️</button>` : ''}
+              </div>
+              <div>✅ Truckyban elfogadva: ${u.truckyElfogadva ? formazDatum(u.truckyElfogadva) : 'ismeretlen'}</div>
             </div>
           </div>
         `).join('');
       } catch (e) {
         listEl.innerHTML = '<div style="color:#f87171;">Hiba a betöltés során.</div>';
+      }
+    };
+
+    window.editTruckyTagStat = async function(id, field, label, currentVal) {
+      if (!isAdminUser()) return;
+      const newValStr = prompt(`${label} szerkesztése:\nJelenlegi érték: ${currentVal}`, currentVal);
+      if (newValStr === null) return;
+      const newVal = parseFloat(String(newValStr).replace(',', '.'));
+      if (isNaN(newVal)) { alert('❌ Érvénytelen szám!'); return; }
+      try {
+        await fetch(`${FIREBASE_URL}/srtdata/data/${id}/${field}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newVal)
+        });
+        await window.toltiTruckyTagokat();
+      } catch (e) {
+        alert('❌ Hiba a mentés során: ' + e.message);
+      }
+    };
+
+    window.deleteTruckyTagMember = async function(id, name) {
+      if (!isAdminUser()) return;
+      if (!confirm(`Biztosan törlöd ${name} Trucky tagot a listából?`)) return;
+      try {
+        await fetch(`${FIREBASE_URL}/srtdata/data/${id}.json`, { method: 'DELETE' });
+        await window.toltiTruckyTagokat();
+      } catch (e) {
+        alert('❌ Hiba a törlés során: ' + e.message);
       }
     };
 
