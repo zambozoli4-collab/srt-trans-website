@@ -1496,6 +1496,25 @@
           setTimeout(() => { document.getElementById('admin-discord-code').style.borderColor = ''; }, 1500);
           return;
         }
+        if (data.role !== 'admin') {
+          // Helyettesek (pl. Boby, Eric) csak média (kép/videó) hozzáférést kapnak,
+          // semmilyen szerkesztési/törlési jogot nem kapnak a weboldal többi részén.
+          mediaAdminMode = true;
+          mediaAdminRole = data.role;
+          sessionStorage.setItem('srt_media_user', username);
+          sessionStorage.setItem('srt_media_auth', '1');
+          sessionStorage.setItem('srt_media_role', data.role);
+          document.getElementById('admin-login-form-media').style.display = 'none';
+          document.getElementById('admin-status-media').style.display = 'flex';
+          document.getElementById('admin-status-label-media').textContent = `✅ Média helyettes: ${username}`;
+          document.getElementById('kep-upload-panel').style.display = 'flex';
+          document.getElementById('video-upload-panel').style.display = 'block';
+          renderMedia();
+          msg.style.color = '#4ade80';
+          msg.textContent = '✅ Média hozzáférés aktiválva (csak kép/videó feltöltés és törlés).';
+          if (window.applyContentGate) window.applyContentGate();
+          return;
+        }
         adminMode = true;
         adminRole = data.role;
         sessionStorage.setItem('srt_admin_user', username);
@@ -1504,9 +1523,8 @@
         if (!allData) await loadJsonBin(true);
         document.getElementById('admin-login-form').style.display = 'none';
         document.getElementById('admin-status').style.display = 'flex';
-        document.getElementById('admin-status-label').textContent =
-          adminRole === 'admin' ? `✅ Admin: ${username}` : `✅ Helyettes: ${username}`;
-        if (adminRole === 'admin' && username.toLowerCase().includes('cobra')) {
+        document.getElementById('admin-status-label').textContent = `✅ Admin: ${username}`;
+        if (username.toLowerCase().includes('cobra')) {
           setTimeout(szerkesztoGombokMutat, 300);
           mediaAdminMode = true;
           mediaAdminRole = 'admin';
@@ -1558,13 +1576,20 @@
       const savedRole = sessionStorage.getItem('srt_admin_role');
       const discordAuth = sessionStorage.getItem('srt_discord_auth');
       if (!savedUser || !savedRole || !discordAuth) return;
+      if (savedRole !== 'admin') {
+        // Régi helyettes admin-munkamenet eltávolítása — helyettesek mostantól
+        // csak a külön média-bejelentkezésen (srt_media_*) keresztül kapnak jogot.
+        sessionStorage.removeItem('srt_admin_user');
+        sessionStorage.removeItem('srt_admin_role');
+        sessionStorage.removeItem('srt_discord_auth');
+        return;
+      }
       adminMode = true;
       adminRole = savedRole;
       document.getElementById('admin-login-form').style.display = 'none';
       document.getElementById('admin-status').style.display = 'flex';
-      document.getElementById('admin-status-label').textContent =
-        savedRole === 'admin' ? `✅ Admin: ${savedUser}` : `✅ Helyettes: ${savedUser}`;
-      if (savedRole === 'admin' && savedUser.toLowerCase().includes('cobra')) {
+      document.getElementById('admin-status-label').textContent = `✅ Admin: ${savedUser}`;
+      if (savedUser.toLowerCase().includes('cobra')) {
         setTimeout(szerkesztoGombokMutat, 500);
         mediaAdminMode = true;
         mediaAdminRole = 'admin';
@@ -2891,6 +2916,11 @@
           msg.textContent = '❌ ' + (data.error || 'Hibás kód');
           return;
         }
+        if (data.role !== 'admin') {
+          msg.style.color = '#f87171';
+          msg.textContent = '❌ Az ATS admin szerkesztéshez teljes admin jogosultság szükséges. Neked csak média (kép/videó) hozzáférésed van.';
+          return;
+        }
         atsAdminMode = true;
         atsAdminRole = data.role;
         sessionStorage.setItem('srt_ats_admin_user', username);
@@ -2898,8 +2928,7 @@
         sessionStorage.setItem('srt_ats_discord_auth', '1');
         document.getElementById('ats-admin-login-form').style.display = 'none';
         document.getElementById('ats-admin-status').style.display = 'flex';
-        document.getElementById('ats-admin-status-label').textContent =
-          atsAdminRole === 'admin' ? `✅ Admin: ${username}` : `✅ Helyettes: ${username}`;
+        document.getElementById('ats-admin-status-label').textContent = `✅ Admin: ${username}`;
         renderATSDrivers();
         if (window.applyContentGate) window.applyContentGate();
       } catch(e) {
@@ -2930,6 +2959,12 @@
         const savedRole = sessionStorage.getItem('srt_ats_admin_role');
         const auth = sessionStorage.getItem('srt_ats_discord_auth');
         if (!savedUser || !savedRole || !auth) return;
+        if (savedRole !== 'admin') {
+          sessionStorage.removeItem('srt_ats_admin_user');
+          sessionStorage.removeItem('srt_ats_admin_role');
+          sessionStorage.removeItem('srt_ats_discord_auth');
+          return;
+        }
         atsAdminMode = true;
         atsAdminRole = savedRole;
         const loginForm = document.getElementById('ats-admin-login-form');
@@ -2937,8 +2972,7 @@
         const statusLabel = document.getElementById('ats-admin-status-label');
         if (loginForm) loginForm.style.display = 'none';
         if (statusDiv) statusDiv.style.display = 'flex';
-        if (statusLabel) statusLabel.textContent =
-          savedRole === 'admin' ? `✅ Admin: ${savedUser}` : `✅ Helyettes: ${savedUser}`;
+        if (statusLabel) statusLabel.textContent = `✅ Admin: ${savedUser}`;
       } catch(e) { console.log('ATS autoLogin hiba:', e.message); }
     })();
 
@@ -3929,7 +3963,7 @@
     ];
 
     const ISMERT_ADMIN_DISCORD_NEVEK = [
-      'cobra', 'cobra086', 'boby', 'bobydik', 'eric', 'eric19792'
+      'cobra', 'cobra086'
     ];
     function ismertAdminDiscordNev(discordNev) {
       const lower = (discordNev || '').trim().toLowerCase();
@@ -3944,12 +3978,25 @@
       return ISMERT_FOADMIN_DISCORD_NEVEK.some(nev => lower === nev || lower.startsWith(nev));
     }
 
+    // Helyettesek (Boby, Eric): ők NEM teljes admin — csak média (kép/videó
+    // feltöltés/törlés), a jelentkezők elfogadása/elutasítása és az
+    // e-mail/üzenetküldés funkcióhoz férnek hozzá. Minden más admin felület
+    // (sofőr-/ATS-statisztika szerkesztés, Trucky Tagok, Tagoklista, oldal
+    // szövegszerkesztés) kizárólag Cobrának (fő-admin) érhető el.
+    const ISMERT_HELYETTES_DISCORD_NEVEK = ['boby', 'bobydik', 'eric', 'eric19792'];
+    function ismertHelyettesDiscordNev(discordNev) {
+      const lower = (discordNev || '').trim().toLowerCase();
+      if (!lower) return false;
+      return ISMERT_HELYETTES_DISCORD_NEVEK.some(nev => lower === nev || lower.startsWith(nev));
+    }
+
     let currentUser = null;
     let currentStatusz = null;
     let currentVanRangja = false;
     let gateEllenorzesKesz = false;
     let currentAdminByRecord = false;
     let currentFoadminByRecord = false;
+    let currentHelyettesByRecord = false;
 
     function isAdminUser() {
       const discordAdmin = !!(window.isAnySiteAdmin && window.isAnySiteAdmin());
@@ -3961,6 +4008,12 @@
       const discordFullAdmin = !!(window.isFullAdmin && window.isFullAdmin());
       const emailAdmin = !!(currentUser && ADMIN_EMAILS.includes(currentUser.email));
       return discordFullAdmin || emailAdmin || currentFoadminByRecord;
+    }
+
+    // Helyettesi jog: média (kép/videó) + jelentkezők elfogadása/elutasítása +
+    // e-mail/üzenetküldés. A fő-adminnak (Cobra) mindig igaz, hiszen ő mindent lát.
+    function isDeputyUser() {
+      return !!(mediaAdminMode || currentHelyettesByRecord || isFullAdminUser());
     }
 
     window.isFirebaseFullAdmin = function() {
@@ -4018,40 +4071,44 @@
       const adminTab = document.getElementById('auth-tab-admin');
       const tagokTab = document.getElementById('auth-tab-tagok');
       if (adminTab) adminTab.style.display = isFullAdminUser() ? 'block' : 'none';
-      if (tagokTab) tagokTab.style.display = isAdminUser() ? 'block' : 'none';
+      if (tagokTab) tagokTab.style.display = isFullAdminUser() ? 'block' : 'none';
       const tabsBar = document.getElementById('auth-tabs-bar');
       if (tabsBar && currentUser) {
-        tabsBar.style.display = isAdminUser() ? 'flex' : 'none';
+        tabsBar.style.display = isFullAdminUser() ? 'flex' : 'none';
       }
       const bellWrap = document.getElementById('bell-wrap');
       if (bellWrap) {
-        bellWrap.style.display = isAdminUser() ? 'block' : 'none';
-        if (isAdminUser()) {
+        bellWrap.style.display = isFullAdminUser() ? 'block' : 'none';
+        if (isFullAdminUser()) {
           bellFigyelokIndítasa();
         }
       }
       // A Discord-kódos admin-belépő widgetek (Média + Fuvarok ETS2/ATS) csak
       // már bejelentkezett adminoknak látszanak, hogy a Discord nevet és a
       // "Kód kérése" lehetőséget ne lássa bárki.
+      // A Média panel, a Jelentkezők (jóváhagyás/elutasítás) és az Üzenetküldés
+      // a helyetteseknek (Boby, Eric) is elérhető — minden más admin felület
+      // kizárólag a fő-adminnak (Cobra).
       const mediaAdminPanel = document.getElementById('admin-panel-media');
       const etsAdminPanel = document.getElementById('admin-panel');
       const atsAdminPanel = document.getElementById('ats-admin-panel');
-      if (mediaAdminPanel) mediaAdminPanel.style.display = isAdminUser() ? 'flex' : 'none';
-      if (etsAdminPanel) etsAdminPanel.style.display = isAdminUser() ? 'flex' : 'none';
-      if (atsAdminPanel) atsAdminPanel.style.display = isAdminUser() ? 'flex' : 'none';
+      if (mediaAdminPanel) mediaAdminPanel.style.display = isDeputyUser() ? 'flex' : 'none';
+      if (etsAdminPanel) etsAdminPanel.style.display = isFullAdminUser() ? 'flex' : 'none';
+      if (atsAdminPanel) atsAdminPanel.style.display = isFullAdminUser() ? 'flex' : 'none';
       const jelentkezokBtn = document.getElementById('jelentkezok-quick-btn');
       const truckyTagokBtn = document.getElementById('truckytagok-quick-btn');
       const tagoklistaBtn = document.getElementById('tagoklista-quick-btn');
       const uzenetBtn = document.getElementById('uzenet-quick-btn');
-      if (jelentkezokBtn) jelentkezokBtn.style.display = isAdminUser() ? 'flex' : 'none';
-      if (truckyTagokBtn) truckyTagokBtn.style.display = isAdminUser() ? 'flex' : 'none';
-      if (tagoklistaBtn) tagoklistaBtn.style.display = isAdminUser() ? 'flex' : 'none';
-      if (uzenetBtn) uzenetBtn.style.display = isAdminUser() ? 'flex' : 'none';
+      if (jelentkezokBtn) jelentkezokBtn.style.display = isDeputyUser() ? 'flex' : 'none';
+      if (truckyTagokBtn) truckyTagokBtn.style.display = isFullAdminUser() ? 'flex' : 'none';
+      if (tagoklistaBtn) tagoklistaBtn.style.display = isFullAdminUser() ? 'flex' : 'none';
+      if (uzenetBtn) uzenetBtn.style.display = isDeputyUser() ? 'flex' : 'none';
       frissitiAdminOldalZarat();
     }
 
     function frissitiAdminOldalZarat() {
-      const jogosult = isAdminUser();
+      const jogosult = isFullAdminUser();
+      const jJogosult = isDeputyUser();
       const jPage = document.getElementById('jelentkezok-page-content');
       const jLock = document.getElementById('jelentkezok-page-lock');
       const tPage = document.getElementById('truckytagok-page-content');
@@ -4059,9 +4116,9 @@
       const rPage = document.getElementById('tagoklista-page-content');
       const rLock = document.getElementById('tagoklista-page-lock');
       if (jPage && jLock) {
-        jPage.style.display = jogosult ? 'block' : 'none';
-        jLock.style.display = jogosult ? 'none' : 'block';
-        if (jogosult) toltiJelentkezoket();
+        jPage.style.display = jJogosult ? 'block' : 'none';
+        jLock.style.display = jJogosult ? 'none' : 'block';
+        if (jJogosult) toltiJelentkezoket();
       }
       if (tPage && tLock) {
         tPage.style.display = jogosult ? 'block' : 'none';
@@ -5073,7 +5130,7 @@
           listEl.innerHTML = '<div style="color:var(--muted);">Nincs adat.</div>';
           return;
         }
-        const admin = isAdminUser();
+        const admin = isFullAdminUser();
         listEl.innerHTML = lista.map(([id, u]) => `
           <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;">
             ${admin ? `<button onclick="deleteTruckyTagMember('${id.replace(/'/g,"\\'")}','${(u.truckyName||id).replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" title="Tag törlése" style="position:absolute;top:10px;right:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;">🗑️</button>` : ''}
@@ -5097,7 +5154,7 @@
     };
 
     window.editTruckyTagStat = async function(id, field, label, currentVal) {
-      if (!isAdminUser()) return;
+      if (!isFullAdminUser()) return;
       const newValStr = prompt(`${label} szerkesztése:\nJelenlegi érték: ${currentVal}`, currentVal);
       if (newValStr === null) return;
       const newVal = parseFloat(String(newValStr).replace(',', '.'));
@@ -5115,7 +5172,7 @@
     };
 
     window.deleteTruckyTagMember = async function(id, name) {
-      if (!isAdminUser()) return;
+      if (!isFullAdminUser()) return;
       if (!confirm(`Biztosan törlöd ${name} Trucky tagot a listából?`)) return;
       try {
         await fetch(`${FIREBASE_URL}/srtdata/data/${id}.json`, { method: 'DELETE' });
@@ -5197,6 +5254,7 @@
         currentVanRangja = false;
         currentAdminByRecord = false;
         currentFoadminByRecord = false;
+        currentHelyettesByRecord = false;
         window.applyContentGate();
         return;
       }
@@ -5206,6 +5264,7 @@
         currentStatusz = rec?.statusz || null;
         currentAdminByRecord = !!rec?.adminByRecord || ismertAdminDiscordNev(rec?.discordNev);
         currentFoadminByRecord = !!rec?.foadminByRecord || ismertFoadminDiscordNev(rec?.discordNev);
+        currentHelyettesByRecord = ismertHelyettesDiscordNev(rec?.discordNev);
         console.log('[GATE DEBUG] rec:', rec, '| adminByRecord:', currentAdminByRecord, '| ADMIN_EMAILS match:', ADMIN_EMAILS.includes(currentUser?.email));
 
         const statusMsgEl = document.getElementById('auth-status-message');
