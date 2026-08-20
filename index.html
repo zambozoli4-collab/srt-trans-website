@@ -4328,6 +4328,7 @@
               🚛 <strong>${(e.truckyNev || 'Sofőr').replace(/</g,'&lt;')}</strong>
               ${e.honnan && e.hova ? ` — ${e.honnan.replace(/</g,'&lt;')} → ${e.hova.replace(/</g,'&lt;')}` : ''}
               ${e.aru ? ` <span style="color:var(--orange);">(${e.aru.replace(/</g,'&lt;')}${e.tonna ? ', ' + e.tonna + ' t' : ''}${e.km ? ', ' + Math.round(e.km) + ' km' : ''})</span>` : (e.km ? ` <span style="color:var(--orange);">(${Math.round(e.km)} km)</span>` : '')}
+              ${e.aktualisKm != null && e.km ? ` <span style="color:var(--muted);font-size:11px;">— ${Math.round(e.aktualisKm)} / ${Math.round(e.km)} km</span>` : ''}
               <span style="color:var(--muted);font-size:11px;"> · indult ${formazIdo(e.idopont)}</span>
             </div>
           `).join('');
