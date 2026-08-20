@@ -356,6 +356,14 @@
     <button class="btn-trucky" id="auth-mobile-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="openAuthModal();closeMobileNav()">🔐 Belépés</button>
   </div>
 
+  <div id="pickup-divizio-banner" style="display:none;align-items:center;gap:14px;max-width:1200px;margin:14px auto 0;padding:12px 18px;background:linear-gradient(135deg, rgba(249,115,22,0.18), rgba(249,115,22,0.06));border:1px solid rgba(249,115,22,0.4);border-radius:12px;">
+    <img id="pickup-divizio-banner-img" src="" alt="Divízió" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;">
+    <div>
+      <div style="font-weight:700;color:var(--orange);font-size:14px;">🚀 Új divízió indult</div>
+      <div id="pickup-divizio-banner-text" style="color:var(--text);font-size:14px;"></div>
+    </div>
+  </div>
+
   <div class="page active" id="page-home">
     <section class="hero">
       <div class="hero-bg" id="bg-home"></div>
@@ -1368,11 +1376,27 @@
         allJobs = json?.jobs || {};
         avatarBetolt();
         bgBetolt();
+        renderPickupDivizioBanner();
         return true;
       } catch (e) {
         return false;
       }
     }
+
+    function renderPickupDivizioBanner() {
+      const banner = document.getElementById('pickup-divizio-banner');
+      if (!banner) return;
+      const d = allData?._pickupDivizio;
+      if (!d || Date.now() > d.lejar) {
+        banner.style.display = 'none';
+        return;
+      }
+      document.getElementById('pickup-divizio-banner-img').src = d.kep;
+      document.getElementById('pickup-divizio-banner-text').textContent = d.uzenet;
+      banner.style.display = 'flex';
+    }
+
+    setInterval(renderPickupDivizioBanner, 60 * 1000); // percenként újraellenőrzi, eltűnik ha lejár
 
     function getInitials(name) {
       return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
