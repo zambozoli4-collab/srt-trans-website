@@ -2298,6 +2298,8 @@
       showPage(startPage);
     }
 
+    if (!allData) loadJsonBin(false).then(() => { avatarBetolt(); bgBetolt(); });
+
     function toggleMobileNav() {
       var nav = document.getElementById('mobile-nav');
       var btn = document.getElementById('hamburger-btn');
