@@ -318,7 +318,7 @@
         <button class="nav-btn" id="nav-modok" onclick="showPage('modok')">📦 Módok</button>
         <button class="nav-btn" id="nav-terkep" onclick="showPage('terkep')">🗺 Térkép</button>
         <button class="nav-btn" id="nav-kepek" onclick="showPage('kepek')">🎬 Média</button>
-        <button class="nav-btn" id="nav-piac" onclick="showPage('piac')">📊 Piac</button>
+        <button class="nav-btn" id="nav-piac" onclick="showPage('piac')" style="position:relative;">📊 Piac<span id="piac-nav-dot" style="display:none;position:absolute;top:2px;right:2px;width:9px;height:9px;background:var(--orange);border-radius:50%;box-shadow:0 0 0 2px var(--bg,#0b0b0f);"></span></button>
         <button class="nav-btn" id="nav-kozosseg" onclick="showPage('kozosseg')">💬 Közösség</button>
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Vezetők</button>
       </nav>
@@ -349,7 +349,7 @@
     <button class="nav-btn" id="mob-nav-modok" onclick="showPage('modok');closeMobileNav()">📦 Módok</button>
     <button class="nav-btn" id="mob-nav-terkep" onclick="showPage('terkep');closeMobileNav()">🗺 Térkép</button>
     <button class="nav-btn" id="mob-nav-kepek" onclick="showPage('kepek');closeMobileNav()">🎬 Média</button>
-    <button class="nav-btn" id="mob-nav-piac" onclick="showPage('piac');closeMobileNav()">📊 Piac</button>
+    <button class="nav-btn" id="mob-nav-piac" onclick="showPage('piac');closeMobileNav()" style="position:relative;">📊 Piac<span id="piac-nav-dot-mob" style="display:none;position:absolute;top:6px;right:14px;width:9px;height:9px;background:var(--orange);border-radius:50%;"></span></button>
     <button class="nav-btn" id="mob-nav-kozosseg" onclick="showPage('kozosseg');closeMobileNav()">💬 Közösség</button>
     <button class="nav-btn" id="mob-nav-csapat" onclick="showPage('csapat');closeMobileNav()">👥 Vezetők</button>
     <a class="btn-trucky trucky-dl-btn" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky letöltés</a>
@@ -1384,9 +1384,16 @@
 
     function renderPickupDivizioBanner() {
       const banner = document.getElementById('pickup-divizio-banner');
-      if (!banner) return;
+      const dot = document.getElementById('piac-nav-dot');
+      const dotMob = document.getElementById('piac-nav-dot-mob');
       const d = allData?._pickupDivizio;
-      if (!d || Date.now() > d.lejar) {
+      const aktiv = d && Date.now() <= d.lejar;
+
+      if (dot) dot.style.display = aktiv ? 'block' : 'none';
+      if (dotMob) dotMob.style.display = aktiv ? 'block' : 'none';
+
+      if (!banner) return;
+      if (!aktiv) {
         banner.style.display = 'none';
         return;
       }
@@ -1395,7 +1402,7 @@
       banner.style.display = 'flex';
     }
 
-    setInterval(renderPickupDivizioBanner, 60 * 1000); // percenként újraellenőrzi, eltűnik ha lejár
+    setInterval(() => { loadJsonBin(true).then(renderPickupDivizioBanner); }, 60 * 1000); // percenként újratölti és ellenőrzi (törlés/lejárat esetén eltűnik)
 
     function getInitials(name) {
       return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
