@@ -1338,6 +1338,16 @@
     </div>
   </div>
 
+  <div id="modfajl-modal" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;min-width:320px;max-width:520px;width:100%;max-height:80vh;overflow-y:auto;position:relative;">
+      <button onclick="bezarModFajlBongeszo()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+      <h3 style="color:#fff;font-size:18px;margin-bottom:6px;">📁 Fájlok böngészése</h3>
+      <div id="modfajl-breadcrumb" style="font-size:12px;color:var(--muted);margin-bottom:14px;"></div>
+      <div id="modfajl-lista" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;"></div>
+      <div id="modfajl-statusz" style="margin-top:12px;font-size:12px;color:var(--muted);text-align:center;"></div>
+    </div>
+  </div>
+
   <div id="lightbox" onclick="if(event.target===this)closeLightbox()">
     <button id="lightbox-close" onclick="closeLightbox()">✕</button>
     <button class="lightbox-arrow" id="lightbox-prev" onclick="lightboxNav(-1)">&#8249;</button>
@@ -5310,33 +5320,90 @@
       });
     };
 
-    // Védett mod-letöltés: a backend ellenőrzi a bejelentkezést, mielőtt
-    // bármilyen fájlelérést adna — a Drive mappa maga NEM publikus.
-    window.letoltiVedettModot = async function(modId, btnEl) {
+    // Védett mod-fájl böngésző: a backend minden lépésnél ellenőrzi a
+    // bejelentkezést, mielőtt bármilyen mappa- vagy fájlelérést adna —
+    // a Drive mappák maguk NEM publikusak. Tetszőleges mélységű
+    // almappa-szerkezetet támogat.
+    let modfajlUtvonal = []; // [{ id, nev }] — a jelenlegi navigációs útvonal (breadcrumb)
+    let modfajlGyokerModId = null;
+    let modfajlToken = null;
+
+    window.letoltiVedettModot = async function(modId) {
       if (!currentUser) { openAuthModal(); return; }
-      const eredetiSzoveg = btnEl.textContent;
-      btnEl.textContent = '⏳ Előkészítés...';
-      btnEl.style.pointerEvents = 'none';
+      modfajlGyokerModId = modId;
+      modfajlUtvonal = [];
+      document.getElementById('modfajl-modal').style.display = 'flex';
       try {
-        const idToken = await currentUser.getIdToken();
-        const listRes = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/mod-lista', {
+        modfajlToken = await currentUser.getIdToken();
+      } catch (e) {
+        alert('❌ Hiba: nem sikerült ellenőrizni a bejelentkezést.');
+        bezarModFajlBongeszo();
+        return;
+      }
+      renderModFajlSzint(null);
+    };
+
+    window.bezarModFajlBongeszo = function() {
+      document.getElementById('modfajl-modal').style.display = 'none';
+    };
+
+    async function renderModFajlSzint(folderId) {
+      const listaEl = document.getElementById('modfajl-lista');
+      const statuszEl = document.getElementById('modfajl-statusz');
+      const breadcrumbEl = document.getElementById('modfajl-breadcrumb');
+      listaEl.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px;">⏳ Betöltés...</div>';
+      statuszEl.textContent = '';
+
+      // Breadcrumb kirajzolása
+      breadcrumbEl.innerHTML = ['🏠', ...modfajlUtvonal.map(u => u.nev)].map((nev, i) => {
+        const kattinthato = i < modfajlUtvonal.length; // az utolsó (jelenlegi) is kattintható, csak újratölt
+        return `<span onclick="modfajlUgras(${i - 1})" style="cursor:pointer;text-decoration:underline;">${nev}</span>`;
+      }).join(' <span style="opacity:0.5;">›</span> ');
+
+      try {
+        const body = folderId ? { idToken: modfajlToken, folderId } : { idToken: modfajlToken, modId: modfajlGyokerModId };
+        const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/mod-lista', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken, modId })
+          body: JSON.stringify(body)
         });
-        const listData = await listRes.json().catch(() => ({}));
-        if (!listRes.ok) throw new Error(listData.error || 'Nincs jogosultság a letöltéshez');
-        const files = listData.files || [];
-        if (!files.length) throw new Error('Nincs elérhető fájl ebben a mappában');
-        files.forEach(f => {
-          window.open(`https://srt-trans-trucky-bot-production.up.railway.app/mod-fajl/${f.id}?token=${encodeURIComponent(idToken)}`, '_blank');
-        });
+        const dataRes = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(dataRes.error || 'Nincs jogosultság');
+        const items = dataRes.items || [];
+        if (!items.length) {
+          listaEl.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px;">Ez a mappa üres.</div>';
+          return;
+        }
+        listaEl.innerHTML = items.map(it => {
+          if (it.type === 'folder') {
+            return `<div onclick='modfajlLepesBe(${JSON.stringify(it.id)}, ${JSON.stringify(it.name)})' style="padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);color:#fff;font-size:14px;display:flex;align-items:center;gap:8px;">📁 ${it.name.replace(/</g,'&lt;')}</div>`;
+          }
+          return `<div onclick='modfajlLetolt(${JSON.stringify(it.id)}, this)' style="padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;display:flex;align-items:center;gap:8px;">📄 ${it.name.replace(/</g,'&lt;')}</div>`;
+        }).join('');
       } catch (e) {
-        alert('❌ Hiba: ' + e.message);
-      } finally {
-        btnEl.textContent = eredetiSzoveg;
-        btnEl.style.pointerEvents = '';
+        listaEl.innerHTML = '';
+        statuszEl.textContent = '❌ Hiba: ' + e.message;
+        statuszEl.style.color = '#f87171';
       }
+    }
+
+    window.modfajlLepesBe = function(folderId, nev) {
+      modfajlUtvonal.push({ id: folderId, nev });
+      renderModFajlSzint(folderId);
+    };
+
+    window.modfajlUgras = function(index) {
+      // index -1 = gyökér, egyébként az útvonal adott pontjára ugrik vissza
+      modfajlUtvonal = modfajlUtvonal.slice(0, index + 1);
+      const cel = index >= 0 ? modfajlUtvonal[index].id : null;
+      renderModFajlSzint(cel);
+    };
+
+    window.modfajlLetolt = function(fileId, elemEl) {
+      const eredeti = elemEl.innerHTML;
+      elemEl.innerHTML = '⏳ Letöltés indítása...';
+      window.open(`https://srt-trans-trucky-bot-production.up.railway.app/mod-fajl/${fileId}?token=${encodeURIComponent(modfajlToken)}`, '_blank');
+      setTimeout(() => { elemEl.innerHTML = eredeti; }, 1200);
     };
 
     async function ellenorziSrtRangot(discordNev, truckyNev) {
