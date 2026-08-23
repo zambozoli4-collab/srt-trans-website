@@ -2878,6 +2878,7 @@
         if (!noHashUpdate) window.location.hash = 'fuvarok';
       }
       if (window.frissitiFuvarWidgeteket) window.frissitiFuvarWidgeteket();
+      if (window.frissitiOnlineJatekosokWidgeteket) window.frissitiOnlineJatekosokWidgeteket();
     }
 
     function switchATSView(view) {
@@ -4417,38 +4418,53 @@
       window.frissitiFuvarWidgeteket();
     }, (hiba) => console.warn('Legutóbbi fuvarok figyelési hiba:', hiba.message));
 
+    let onlineJatekosokETS2Adat = [];
+    let onlineJatekosokATSAdat = [];
+
+    window.frissitiOnlineJatekosokWidgeteket = function() {
+      const aktualisJatek = aktualisJatekFul();
+
+      const boxEts = document.getElementById('online-jatekosok-box');
+      const listElEts = document.getElementById('online-jatekosok-list');
+      if (boxEts && listElEts) {
+        if (aktualisJatek !== 'ETS2' || onlineJatekosokETS2Adat.length === 0) {
+          boxEts.style.display = 'none';
+        } else {
+          boxEts.style.display = 'block';
+          listElEts.innerHTML = onlineJatekosokETS2Adat
+            .slice()
+            .sort((a, b) => a.localeCompare(b))
+            .map(nev => `<div style="font-size:13px;color:var(--text);">🟡 <strong>${String(nev).replace(/</g,'&lt;')}</strong></div>`)
+            .join('');
+        }
+      }
+
+      const boxAts = document.getElementById('online-jatekosok-box-ats');
+      const listElAts = document.getElementById('online-jatekosok-list-ats');
+      if (boxAts && listElAts) {
+        if (aktualisJatek !== 'ATS' || onlineJatekosokATSAdat.length === 0) {
+          boxAts.style.display = 'none';
+        } else {
+          boxAts.style.display = 'block';
+          listElAts.innerHTML = onlineJatekosokATSAdat
+            .slice()
+            .sort((a, b) => a.localeCompare(b))
+            .map(nev => `<div style="font-size:13px;color:var(--text);">🟡 <strong>${String(nev).replace(/</g,'&lt;')}</strong></div>`)
+            .join('');
+        }
+      }
+    };
+
     onValue(ref(db, 'onlineJatekosokETS2'), (snapshot) => {
       const nyers = snapshot.val();
-      const nevek = Array.isArray(nyers) ? nyers.filter(Boolean) : Object.values(nyers || {}).filter(Boolean);
-      const box = document.getElementById('online-jatekosok-box');
-      const listEl = document.getElementById('online-jatekosok-list');
-      if (!box || !listEl) return;
-      if (nevek.length === 0) {
-        box.style.display = 'none';
-        return;
-      }
-      box.style.display = 'block';
-      listEl.innerHTML = nevek
-        .sort((a, b) => a.localeCompare(b))
-        .map(nev => `<div style="font-size:13px;color:var(--text);">🟡 <strong>${String(nev).replace(/</g,'&lt;')}</strong></div>`)
-        .join('');
+      onlineJatekosokETS2Adat = Array.isArray(nyers) ? nyers.filter(Boolean) : Object.values(nyers || {}).filter(Boolean);
+      window.frissitiOnlineJatekosokWidgeteket();
     }, (hiba) => console.warn('Online játékosok (ETS2) figyelési hiba:', hiba.message));
 
     onValue(ref(db, 'onlineJatekosokATS'), (snapshot) => {
       const nyers = snapshot.val();
-      const nevek = Array.isArray(nyers) ? nyers.filter(Boolean) : Object.values(nyers || {}).filter(Boolean);
-      const box = document.getElementById('online-jatekosok-box-ats');
-      const listEl = document.getElementById('online-jatekosok-list-ats');
-      if (!box || !listEl) return;
-      if (nevek.length === 0) {
-        box.style.display = 'none';
-        return;
-      }
-      box.style.display = 'block';
-      listEl.innerHTML = nevek
-        .sort((a, b) => a.localeCompare(b))
-        .map(nev => `<div style="font-size:13px;color:var(--text);">🟡 <strong>${String(nev).replace(/</g,'&lt;')}</strong></div>`)
-        .join('');
+      onlineJatekosokATSAdat = Array.isArray(nyers) ? nyers.filter(Boolean) : Object.values(nyers || {}).filter(Boolean);
+      window.frissitiOnlineJatekosokWidgeteket();
     }, (hiba) => console.warn('Online játékosok (ATS) figyelési hiba:', hiba.message));
 
     onValue(ref(db, 'esemenyIdopontok'), (snapshot) => {
