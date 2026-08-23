@@ -386,7 +386,7 @@
             <span class="mod-card-tag tag-required">Kötelező</span>
             <h3>Konvoj módok</h3>
             <p>Szerverre való felcsatlakozáshoz elengedhetetlen modcsomag. Ezt mindenképpen le kell töltened!</p>
-            <a class="btn-dl" href="https://drive.google.com/drive/u/1/folders/1w2ujNsOMxQmuBxERJB_rdjGdTNDMOSGr" target="_blank">⬇ Letöltés</a>
+            <a class="btn-dl" id="dl-konvoj-modok" href="javascript:void(0)" onclick="openAuthModal(); return false;">🔒 Belépés a letöltéshez</a>
           </div>
           <div class="mod-card">
             <div class="mod-card-icon">🎨</div>
@@ -404,7 +404,7 @@
             <span class="mod-card-tag tag-optional">Nem kötelező</span>
             <h3>Nem kötelező módok</h3>
             <p>Extra vizuális és gameplay javítások. Csak ezeket a módokat használhatod a szerveren!</p>
-            <a class="btn-dl" href="https://drive.google.com/drive/u/1/folders/15iIiWAR40LEn9qsRbkf-k5xzEMuic5ye" target="_blank">⬇ Letöltés</a>
+            <a class="btn-dl" id="dl-nem-kotelezo-modok" href="javascript:void(0)" onclick="openAuthModal(); return false;">🔒 Belépés a letöltéshez</a>
           </div>
         </div>
       </div>
@@ -5278,6 +5278,33 @@
         if (modokContent) modokContent.style.display = 'none';
         if (modokLockDenied) modokLockDenied.style.display = 'block';
       }
+
+      // A Konvoj módok és a Nem kötelező módok letöltő gombja csak
+      // bejelentkezett/regisztrált felhasználóknak látszik élő linkként —
+      // aki nincs bejelentkezve, egy zárolt gombot lát a valódi link helyett.
+      const vedettLetoltesek = [
+        { id: 'dl-konvoj-modok', url: 'https://drive.google.com/drive/u/1/folders/1w2ujNsOMxQmuBxERJB_rdjGdTNDMOSGr' },
+        { id: 'dl-nem-kotelezo-modok', url: 'https://drive.google.com/drive/u/1/folders/15iIiWAR40LEn9qsRbkf-k5xzEMuic5ye' },
+      ];
+      vedettLetoltesek.forEach(({ id, url }) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (bejelentkezve) {
+          el.href = url;
+          el.target = '_blank';
+          el.removeAttribute('onclick');
+          el.textContent = '⬇ Letöltés';
+          el.style.opacity = '';
+          el.style.cursor = '';
+        } else {
+          el.href = 'javascript:void(0)';
+          el.removeAttribute('target');
+          el.setAttribute('onclick', 'openAuthModal(); return false;');
+          el.textContent = '🔒 Belépés a letöltéshez';
+          el.style.opacity = '0.7';
+          el.style.cursor = 'pointer';
+        }
+      });
     };
 
     async function ellenorziSrtRangot(discordNev, truckyNev) {
