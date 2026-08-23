@@ -5280,22 +5280,25 @@
       }
 
       // A Konvoj módok és a Nem kötelező módok letöltő gombja csak
-      // bejelentkezett/regisztrált felhasználóknak látszik élő linkként —
-      // aki nincs bejelentkezve, egy zárolt gombot lát a valódi link helyett.
+      // bejelentkezett/regisztrált felhasználóknak látszik élő gombként —
+      // aki nincs bejelentkezve, egy zárolt gombot lát. A valódi Drive fájl
+      // SOHA nem kerül nyers linkként a DOM-ba: a letöltés a backenden
+      // (Firebase token ellenőrzéssel) keresztül, streamelve történik —
+      // lásd letoltiVedettModot() lentebb.
       const vedettLetoltesek = [
-        { id: 'dl-konvoj-modok', url: 'https://drive.google.com/drive/u/1/folders/1w2ujNsOMxQmuBxERJB_rdjGdTNDMOSGr' },
-        { id: 'dl-nem-kotelezo-modok', url: 'https://drive.google.com/drive/u/1/folders/15iIiWAR40LEn9qsRbkf-k5xzEMuic5ye' },
+        { id: 'dl-konvoj-modok', modId: 'konvoj' },
+        { id: 'dl-nem-kotelezo-modok', modId: 'nem-kotelezo' },
       ];
-      vedettLetoltesek.forEach(({ id, url }) => {
+      vedettLetoltesek.forEach(({ id, modId }) => {
         const el = document.getElementById(id);
         if (!el) return;
         if (bejelentkezve) {
-          el.href = url;
-          el.target = '_blank';
-          el.removeAttribute('onclick');
+          el.href = 'javascript:void(0)';
+          el.removeAttribute('target');
+          el.setAttribute('onclick', `letoltiVedettModot('${modId}', this); return false;`);
           el.textContent = '⬇ Letöltés';
           el.style.opacity = '';
-          el.style.cursor = '';
+          el.style.cursor = 'pointer';
         } else {
           el.href = 'javascript:void(0)';
           el.removeAttribute('target');
@@ -5305,6 +5308,35 @@
           el.style.cursor = 'pointer';
         }
       });
+    };
+
+    // Védett mod-letöltés: a backend ellenőrzi a bejelentkezést, mielőtt
+    // bármilyen fájlelérést adna — a Drive mappa maga NEM publikus.
+    window.letoltiVedettModot = async function(modId, btnEl) {
+      if (!currentUser) { openAuthModal(); return; }
+      const eredetiSzoveg = btnEl.textContent;
+      btnEl.textContent = '⏳ Előkészítés...';
+      btnEl.style.pointerEvents = 'none';
+      try {
+        const idToken = await currentUser.getIdToken();
+        const listRes = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/mod-lista', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken, modId })
+        });
+        const listData = await listRes.json().catch(() => ({}));
+        if (!listRes.ok) throw new Error(listData.error || 'Nincs jogosultság a letöltéshez');
+        const files = listData.files || [];
+        if (!files.length) throw new Error('Nincs elérhető fájl ebben a mappában');
+        files.forEach(f => {
+          window.open(`https://srt-trans-trucky-bot-production.up.railway.app/mod-fajl/${f.id}?token=${encodeURIComponent(idToken)}`, '_blank');
+        });
+      } catch (e) {
+        alert('❌ Hiba: ' + e.message);
+      } finally {
+        btnEl.textContent = eredetiSzoveg;
+        btnEl.style.pointerEvents = '';
+      }
     };
 
     async function ellenorziSrtRangot(discordNev, truckyNev) {
