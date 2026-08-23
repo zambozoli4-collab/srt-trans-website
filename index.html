@@ -393,7 +393,7 @@
             <span class="mod-card-tag tag-required">Kötelező</span>
             <h3>Céges festés & logó</h3>
             <p>Az SRT TRANS KFT. hivatalos festése, logója és vizuális elemek. Tagság esetén kötelező!</p>
-            <a class="btn-dl" href="https://drive.google.com/drive/u/1/folders/1Ek2Y62muE99FabcLXMv79_OMsjue8sys" target="_blank">⬇ Letöltés</a>
+            <a class="btn-dl" id="dl-festes-logo" href="javascript:void(0)" onclick="openAuthModal(); return false;">🔒 Belépés a letöltéshez</a>
           </div>
         </div>
       </div>
@@ -415,14 +415,14 @@
             <span class="mod-card-tag tag-extra">Extra</span>
             <h3>ProMods térkép</h3>
             <p>A ProMods kiegészítőkkel Európa sokkal részletesebb. Szerver használatához szükséges!</p>
-            <a class="btn-dl blue" href="https://drive.google.com/drive/folders/1RSXdhA0wwB4ekF6TKT6RzhjSw-sVTRtE?usp=drive_link" target="_blank">⬇ Letöltés</a>
+            <a class="btn-dl blue" id="dl-promods" href="javascript:void(0)" onclick="openAuthModal(); return false;">🔒 Belépés a letöltéshez</a>
           </div>
           <div class="mod-card">
             <div class="mod-card-icon blue">📦</div>
             <span class="mod-card-tag tag-extra">Extra</span>
             <h3>DLC csomag</h3>
             <p>Ajánlott DLC-k listája az optimális szerveres élményhez.</p>
-            <a class="btn-dl blue" href="https://drive.google.com/drive/folders/1mwiTzu2u7a3R_PW38narTJyyokd8yQCE?usp=sharing" target="_blank">⬇ Letöltés</a>
+            <a class="btn-dl blue" id="dl-dlc" href="javascript:void(0)" onclick="openAuthModal(); return false;">🔒 Belépés a letöltéshez</a>
           </div>
         </div>
       </div>
@@ -5298,6 +5298,9 @@
       const vedettLetoltesek = [
         { id: 'dl-konvoj-modok', modId: 'konvoj' },
         { id: 'dl-nem-kotelezo-modok', modId: 'nem-kotelezo' },
+        { id: 'dl-promods', modId: 'promods' },
+        { id: 'dl-dlc', modId: 'dlc' },
+        { id: 'dl-festes-logo', modId: 'festes-logo' },
       ];
       vedettLetoltesek.forEach(({ id, modId }) => {
         const el = document.getElementById(id);
