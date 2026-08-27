@@ -3645,8 +3645,9 @@ body { font-size: 15px; }
               </div>
               <div style="display:flex; align-items:center; gap:10px;">
                 <button onclick="lepHonap(-1)" style="width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:#fff;cursor:pointer;font-size:14px;">◀</button>
-                <div id="aktivHonapLabel" style="font-weight:700; color:#000; min-width:150px; text-align:center; font-size:14px;"></div>
+                <div id="aktivHonapLabel" style="font-weight:700; color:#fff; min-width:150px; text-align:center; font-size:14px;"></div>
                 <button onclick="lepHonap(1)" style="width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:#fff;cursor:pointer;font-size:14px;">▶</button>
+                <button id="osszesHonapBtn" onclick="mutassOsszesHonapot()" style="padding:8px 14px;border-radius:8px;background:var(--orange);border:1px solid var(--orange);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Összes hónap</button>
               </div>
             </div>
             <div id="osszegzesPanelWrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:16px;"></div>
@@ -4961,6 +4962,7 @@ body { font-size: 15px; }
 
     let aktivJatekSzuro = 'osszes';
     let aktivHonapOffset = 0;
+    let honapAktiv = false; // false = "Összes hónap" (minden fuvar látszik), true = az aktivHonapOffset szerinti hónapra szűrve
     const HONAP_NEVEK = ['Január','Február','Március','Április','Május','Június','Július','Augusztus','Szeptember','Október','November','December'];
 
     function aktivHonapAdatok() {
@@ -4972,6 +4974,13 @@ body { font-size: 15px; }
 
     window.lepHonap = function(delta) {
       aktivHonapOffset += delta;
+      honapAktiv = true;
+      if (currentDriver) showDriverJobs(currentDriver);
+    };
+
+    window.mutassOsszesHonapot = function() {
+      honapAktiv = false;
+      aktivHonapOffset = 0;
       if (currentDriver) showDriverJobs(currentDriver);
     };
 
@@ -5015,9 +5024,14 @@ body { font-size: 15px; }
       });
 
       const ha = aktivHonapAdatok();
-      document.getElementById('aktivHonapLabel').textContent = HONAP_NEVEK[ha.honap] + ' ' + ha.ev;
+      document.getElementById('aktivHonapLabel').textContent = honapAktiv ? (HONAP_NEVEK[ha.honap] + ' ' + ha.ev) : 'Összes hónap';
+      const osszesHonapBtnEl = document.getElementById('osszesHonapBtn');
+      if (osszesHonapBtnEl) {
+        osszesHonapBtnEl.style.background = honapAktiv ? 'var(--surface)' : 'var(--orange)';
+        osszesHonapBtnEl.style.borderColor = honapAktiv ? 'var(--border)' : 'var(--orange)';
+      }
 
-      const honapSzurve = osszesFuvar.filter(j => j.datum && String(j.datum).startsWith(ha.kulcs));
+      const honapSzurve = honapAktiv ? osszesFuvar.filter(j => j.datum && String(j.datum).startsWith(ha.kulcs)) : osszesFuvar;
       const ets2Honap = honapSzurve.filter(j => !srtJobIsATS(j));
       const atsHonap = honapSzurve.filter(j => srtJobIsATS(j));
       let tablaFuvarok = aktivJatekSzuro === 'ets2' ? ets2Honap : (aktivJatekSzuro === 'ats' ? atsHonap : honapSzurve);
