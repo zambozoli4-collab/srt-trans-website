@@ -3199,7 +3199,17 @@ body { font-size: 15px; }
         </div>
 
         <div class="srt-dash-panel srt-daily-panel">
-          <div class="srt-dash-title">Napi áttekintés</div>
+          <div class="srt-dash-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <span>Napi áttekintés</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button type="button" onclick="lepNapiAttekintesNap(-1)" style="width:28px;height:28px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:13px;">◀</button>
+              <span id="srt-daily-date-label" style="font-weight:700;color:var(--text);font-size:13px;min-width:110px;text-align:center;"></span>
+              <button type="button" onclick="lepNapiAttekintesNap(1)" style="width:28px;height:28px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:13px;">▶</button>
+              <button type="button" onclick="lepNapiAttekintesHonap(-1)" style="padding:6px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:12px;white-space:nowrap;">◀ Hónap</button>
+              <button type="button" onclick="lepNapiAttekintesHonap(1)" style="padding:6px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:12px;white-space:nowrap;">Hónap ▶</button>
+              <button type="button" onclick="resetNapiAttekintesNap()" style="padding:6px 12px;border-radius:8px;background:var(--orange);border:1px solid var(--orange);color:#fff;cursor:pointer;font-size:12px;white-space:nowrap;">Ma</button>
+            </div>
+          </div>
           <div class="srt-daily-head">
             <span>Ki</span><span>Távolság</span><span>Fuvarok</span><span>Művelet</span>
           </div>
@@ -3645,7 +3655,7 @@ body { font-size: 15px; }
               </div>
               <div style="display:flex; align-items:center; gap:10px;">
                 <button onclick="lepHonap(-1)" style="width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:#fff;cursor:pointer;font-size:14px;">◀</button>
-                <div id="aktivHonapLabel" style="font-weight:700; color:#fff; min-width:150px; text-align:center; font-size:14px;"></div>
+                <div id="aktivHonapLabel" style="font-weight:700; color:var(--text); min-width:150px; text-align:center; font-size:14px;"></div>
                 <button onclick="lepHonap(1)" style="width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:#fff;cursor:pointer;font-size:14px;">▶</button>
                 <button id="osszesHonapBtn" onclick="mutassOsszesHonapot()" style="padding:8px 14px;border-radius:8px;background:var(--orange);border:1px solid var(--orange);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Összes hónap</button>
               </div>
@@ -5815,7 +5825,7 @@ body { font-size: 15px; }
           <div style="min-width:22px;text-align:center;font-size:13px;font-weight:700;color:${colors[i]||'var(--muted)'};flex-shrink:0;">${i+1}.</div>
           <div style="font-size:22px;flex-shrink:0;">${medals[i]||''}</div>
           <div style="flex:1;min-width:0;font-size:14px;font-weight:700;color:${colors[i]||'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.nev}</div>
-          <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0;">${formatNum(e.ertek)} ${egyseg}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;flex-shrink:0;">${formatNum(e.ertek)} ${egyseg}</div>
         </div>`).join('');
       if (rest.length) html += rest.map((e,i) => `
         <div style="display:flex;align-items:center;gap:10px;padding:8px 16px;border-radius:10px;margin-bottom:4px;">
@@ -5851,7 +5861,7 @@ body { font-size: 15px; }
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-size:20px;">${kat.ikon}</span>
-              <div style="font-size:14px;font-weight:700;color:#fff;">${kat.nev}</div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);">${kat.nev}</div>
             </div>
             ${isAdmin ? `<button onclick="editRanglistaKat('${kat.key}','${kat.nev}','${kat.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
           </div>
@@ -5875,7 +5885,7 @@ body { font-size: 15px; }
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-size:20px;">${s.ikon}</span>
-              <div style="font-size:14px;font-weight:700;color:#fff;">${s.nev}</div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);">${s.nev}</div>
             </div>
             ${isAdmin ? `<button onclick="editHetiSection('${s.key}','${s.nev}','${s.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
           </div>
@@ -6527,7 +6537,7 @@ body { font-size: 15px; }
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <span style="font-size:20px;">${kat.ikon}</span>
-                <div style="font-size:14px;font-weight:700;color:#fff;">${kat.nev}</div>
+                <div style="font-size:14px;font-weight:700;color:var(--text);">${kat.nev}</div>
               </div>
               ${isAdmin ? `<button onclick="editATSRanglistaKat('${kat.key}','${kat.nev}','${kat.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
             </div>
@@ -6566,7 +6576,7 @@ body { font-size: 15px; }
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-size:20px;">${s.ikon}</span>
-              <div style="font-size:14px;font-weight:700;color:#fff;">${s.nev}</div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);">${s.nev}</div>
             </div>
             ${isAdmin ? `<button onclick="editATSHetiKat('${s.key}','${s.nev}','${s.egyseg}')" style="padding:4px 10px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:6px;cursor:pointer;font-size:11px;">✏️ Szerkeszt</button>` : ''}
           </div>
@@ -9266,16 +9276,37 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     return isNaN(d.getTime()) ? null : d;
   }
 
-  function todayJobsFor(name) {
+  let srtDailyOverviewDate = new Date();
+
+  function todayJobsFor(name, forDate) {
     const jobs = (allJobs && allJobs[key(name)]) || [];
-    const now = new Date();
-    const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+    const ref = forDate || srtDailyOverviewDate || new Date();
+    const y = ref.getFullYear(), m = ref.getMonth(), d = ref.getDate();
     return jobs.filter(j => {
       const dt = jobDate(j);
       return ets2Job(j) && dt &&
         dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === d;
     });
   }
+
+  window.lepNapiAttekintesNap = function(delta) {
+    const d = new Date(srtDailyOverviewDate);
+    d.setDate(d.getDate() + delta);
+    srtDailyOverviewDate = d;
+    renderDaily();
+  };
+
+  window.lepNapiAttekintesHonap = function(delta) {
+    const d = new Date(srtDailyOverviewDate);
+    d.setMonth(d.getMonth() + delta);
+    srtDailyOverviewDate = d;
+    renderDaily();
+  };
+
+  window.resetNapiAttekintesNap = function() {
+    srtDailyOverviewDate = new Date();
+    renderDaily();
+  };
 
   function findPersonalDriver() {
     if (!allData) return null;
@@ -9356,6 +9387,13 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     const el = document.getElementById('srt-daily-overview');
     if (!el) return;
 
+    const labelEl = document.getElementById('srt-daily-date-label');
+    if (labelEl) {
+      const today = new Date();
+      const isToday = srtDailyOverviewDate.toDateString() === today.toDateString();
+      labelEl.textContent = isToday ? 'Ma' : srtDailyOverviewDate.toLocaleDateString('hu-HU', { year:'numeric', month:'2-digit', day:'2-digit' });
+    }
+
     const entries = Object.entries(allData || {})
       .filter(([id]) => !String(id).startsWith('_'))
       .map(([id, u]) => ({ id, u: u || {}, name: (u && u.truckyName) || id }))
@@ -9368,7 +9406,9 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       });
 
     if (!entries.length) {
-      el.innerHTML = '<div class="srt-empty-row">Ma még nincs rögzített ETS2 fuvar.</div>';
+      const today = new Date();
+      const isToday = srtDailyOverviewDate.toDateString() === today.toDateString();
+      el.innerHTML = `<div class="srt-empty-row">${isToday ? 'Ma még nincs rögzített ETS2 fuvar.' : 'Ezen a napon nincs rögzített ETS2 fuvar.'}</div>`;
       return;
     }
 
@@ -11376,5 +11416,8 @@ function srtJobTruckId(j) {
   vertical-align:-1px;
 }
 </style>
-<!-- PIAC ÉLŐ ADATOK FELIRAT: FEKETE SZÖVEG -->
-<style>#page-piac .section-eyebrow { color: #000 !important; }</style>
+<!-- PIAC ÉLŐ ADATOK FELIRAT: a ".page:not(#page-home) .section-eyebrow" szabály (nagyobb
+     specificitású, mint a korábbi "#page-piac .section-eyebrow" próbálkozások) kék szöveget
+     kényszerít ki, ami a szintén kék jelvény-háttéren (#2f80b9) láthatatlanná vált.
+     Ez a szabály explicit ID-t ad hozzá, hogy biztosan felülírja, és fehér szöveget állít be. -->
+<style>.page:not(#page-home)#page-piac .section-eyebrow { color: #fff !important; }</style>
