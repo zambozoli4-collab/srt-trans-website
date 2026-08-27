@@ -38,35 +38,16 @@
     .page { display: none; min-height: calc(100vh - 64px); }
     .page.active { display: block; }
     .bg-overlay { position: fixed; inset: 0; z-index: -1; background: #070d18; }
+    .site-header { position: sticky; top: 0; z-index: 100; background: rgba(7,13,24,0.82); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
+    .header-inner { max-width: 1120px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: var(--orange); text-decoration: none; letter-spacing: 0.05em; white-space: nowrap; flex-shrink: 0; }
+    .logo span { color: var(--text); }
+    .nav { display: flex; gap: 2px; align-items: center; flex-shrink: 1; }
     .nav-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; padding: 6px 10px; border-radius: 8px; white-space: nowrap; transition: color 0.2s, background 0.2s; }
     .nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.06); }
     .nav-btn.active { color: var(--orange); background: var(--orange-dim); }
     .btn-trucky { background: var(--orange); color: #fff; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; white-space: nowrap; }
     .btn-trucky:hover { opacity: 0.85; }
-    /* --- Bal oldali kék sidebar navigáció (TrucksBook stílus) --- */
-    .site-header { position: fixed; top: 0; left: 0; bottom: 0; width: 236px; z-index: 100; background: linear-gradient(180deg, #12224a 0%, #0c1730 60%, #0a1226 100%); border-right: 1px solid rgba(255,255,255,0.08); border-bottom: none; overflow-y: auto; overflow-x: hidden; box-shadow: 4px 0 24px rgba(0,0,0,0.35); }
-    .site-header .header-inner { max-width: none; margin: 0; padding: 22px 14px 20px; height: auto; min-height: 100%; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px; }
-    .site-header .logo { justify-content: center; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .site-header .nav { display: flex; flex-direction: column; gap: 3px; align-items: stretch; flex-shrink: 0; width: 100%; }
-    .site-header .nav-btn { color: rgba(232,240,252,0.65); padding: 11px 14px; border-radius: 10px; text-align: left; width: 100%; display: flex; align-items: center; }
-    .site-header .nav-btn:hover { color: #fff; background: rgba(255,255,255,0.06); }
-    .site-header .nav-btn.active { color: #fff; background: linear-gradient(90deg, var(--blue), #2563eb); box-shadow: 0 4px 14px rgba(59,130,246,0.35); }
-    .nav-group { width: 100%; }
-    .nav-group .nav-btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .nav-arrow { font-size: 10px; transition: transform 0.2s ease; flex-shrink: 0; opacity: 0.7; }
-    .nav-arrow.open { transform: rotate(180deg); }
-    .nav-submenu { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; display: flex; flex-direction: column; }
-    .nav-submenu.open { max-height: 500px; }
-    .nav-subheader { background: none; border: none; cursor: pointer; color: rgba(232,240,252,0.62); font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; padding: 9px 12px 9px 28px; border-radius: 8px; text-align: left; width: 100%; display: flex; align-items: center; gap: 6px; justify-content: space-between; transition: color 0.2s, background 0.2s; }
-    .nav-subheader:hover { color: #fff; background: rgba(255,255,255,0.06); }
-    .nav-subitems { max-height: 0; overflow: hidden; transition: max-height 0.2s ease; display: flex; flex-direction: column; }
-    .nav-subitems.open { max-height: 200px; }
-    .nav-subitem { background: none; border: none; cursor: pointer; color: rgba(232,240,252,0.48); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; padding: 8px 12px 8px 42px; border-radius: 8px; text-align: left; width: 100%; display: block; transition: color 0.2s, background 0.2s; }
-    .nav-subitem:hover { color: #fff; background: rgba(255,255,255,0.06); }
-    .sidebar-footer { margin-top: auto; padding-top: 18px; display: flex; flex-direction: column; gap: 10px; }
-    .sidebar-icons { display: flex; flex-wrap: wrap; gap: 8px; }
-    .site-header .btn-trucky { padding: 10px 16px; border-radius: 10px; width: 100%; text-align: center; display: block; }
-    body { margin-left: 236px; }
     .container { max-width: 1120px; margin: 0 auto; padding: 64px 24px; }
     .container-wide { max-width: 1600px; margin: 0 auto; padding: 64px 24px; }
     .section-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
@@ -214,15 +195,9 @@
        működő bejelentkezés-gombbal, mint telefonon. */
     @media (max-width: 1024px) {
       .hamburger { display: flex; }
-      .site-header .nav { display: none; }
+      .nav { display: none; }
       .trucky-dl-btn { display: none; }
-      .site-header { position: sticky; top: 0; left: auto; right: auto; bottom: auto; width: 100%; height: 64px; background: rgba(7,13,24,0.82); backdrop-filter: blur(16px); border-right: none; border-bottom: 1px solid var(--border); box-shadow: none; overflow: visible; }
-      .site-header .header-inner { max-width: 1120px; margin: 0 auto; padding: 0 20px; height: 64px; min-height: 0; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
-      .site-header .logo { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-      .sidebar-footer { margin-top: 0; padding-top: 0; flex-direction: row; align-items: center; gap: 8px; }
-      .sidebar-icons { flex-wrap: nowrap; }
-      .site-header .btn-trucky#auth-header-btn, .site-header #auth-header-btn.btn-trucky { width: auto; }
-      body { margin-left: 0; }
+      .header-inner { padding: 0 20px; }
     }
     @media (max-width: 768px) {
       .hamburger { display: flex; }
@@ -329,56 +304,6 @@
     .video-thumb-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.6); border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; font-size: 24px; pointer-events: none; transition: background 0.2s; }
     .video-thumb:hover .video-thumb-play { background: rgba(249,115,22,0.85); }
   </style>
-
-<style id="srt-functional-css">
-  /* Functional SPA layer — preserves the existing visual design */
-  .page { min-height: calc(100vh - 64px); }
-  .app-view { display:none; animation: srtFade .18s ease; }
-  .app-view.active { display:block; }
-  @keyframes srtFade { from { opacity:.35; transform:translateY(4px) } to { opacity:1; transform:none } }
-  .functional-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin:0 0 22px; }
-  .functional-search { flex:1; min-width:220px; background:rgba(255,255,255,.05); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:11px 14px; outline:none; }
-  .functional-search:focus { border-color:rgba(59,130,246,.55); }
-  .data-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:24px; }
-  .data-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
-  .data-card .k { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
-  .data-card .v { color:#fff; font-size:28px; font-weight:800; margin-top:5px; }
-  .data-table-wrap { overflow:auto; border:1px solid var(--border); border-radius:var(--radius); background:var(--card); }
-  .data-table { width:100%; border-collapse:collapse; min-width:680px; }
-  .data-table th,.data-table td { padding:12px 14px; text-align:left; border-bottom:1px solid var(--border); font-size:13px; }
-  .data-table th { color:#fff; background:rgba(255,255,255,.04); font-weight:600; }
-  .data-table td { color:var(--muted); }
-  .status { display:inline-flex; padding:4px 9px; border-radius:999px; font-size:11px; font-weight:700; }
-  .status.online { color:#4ade80; background:rgba(34,197,94,.12); }
-  .status.offline { color:#f87171; background:rgba(239,68,68,.12); }
-  .status.active { color:#93c5fd; background:var(--blue-dim); }
-  .action-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
-  .small-btn { border:1px solid var(--border); background:rgba(255,255,255,.05); color:#fff; border-radius:8px; padding:8px 12px; cursor:pointer; }
-  .small-btn.primary { background:var(--orange); border-color:transparent; }
-  .empty { padding:35px 20px; text-align:center; color:var(--muted); }
-  .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.65); backdrop-filter:blur(5px); z-index:1000; display:none; align-items:center; justify-content:center; padding:20px; }
-  .modal-backdrop.open { display:flex; }
-  .modal { width:min(560px,100%); background:#0d1525; border:1px solid var(--border); border-radius:16px; padding:24px; box-shadow:0 20px 60px rgba(0,0,0,.55); }
-  .modal h3 { color:#fff; margin-bottom:16px; }
-  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .form-field { display:flex; flex-direction:column; gap:6px; }
-  .form-field.full { grid-column:1/-1; }
-  .form-field label { font-size:12px; color:var(--muted); }
-  .form-field input,.form-field select { width:100%; background:rgba(255,255,255,.05); color:#fff; border:1px solid var(--border); border-radius:8px; padding:10px; outline:none; }
-  .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
-  .toast { position:fixed; right:22px; bottom:22px; z-index:1200; background:#101b2f; border:1px solid var(--border); color:#fff; padding:12px 16px; border-radius:10px; opacity:0; transform:translateY(10px); pointer-events:none; transition:.2s; }
-  .toast.show { opacity:1; transform:none; }
-  @media(max-width:800px){
-    body{margin-left:0}
-    .site-header{width:210px; transform:translateX(-100%); transition:.2s}
-    .site-header.mobile-open{transform:none}
-    .mobile-menu{display:block!important}
-    .hero h1{white-space:normal}
-    .form-grid{grid-template-columns:1fr}
-  }
-  .mobile-menu{display:none; position:fixed; left:12px; top:12px; z-index:1100; border:1px solid var(--border); background:#12224a; color:#fff; border-radius:9px; padding:9px 12px; cursor:pointer}
-</style>
-
 </head>
 <body>
 
@@ -389,18 +314,7 @@
       <a class="logo" href="#" onclick="showPage('home'); return false;" style="display:flex;align-items:center;"><img src="data:image/png;base64,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" alt="SRT Trans" style="height:34px;width:auto;display:block;"></a>
       <nav class="nav">
         <button class="nav-btn active" id="nav-home" onclick="showPage('home')">🏠 Kezdőlap</button>
-        <div class="nav-group" id="nav-fuvarok-group">
-          <button class="nav-btn" id="nav-fuvarok" onclick="toggleFuvarokNav('')">
-            <span>🚛 Fuvarok</span>
-            <span class="nav-arrow" id="fuvarok-nav-arrow">▾</span>
-          </button>
-          <div class="nav-submenu" id="fuvarok-nav-submenu">
-            <div class="nav-subitems open" id="fuvarok-sub-combined" style="display:block;">
-              <button class="nav-subitem" onclick="goFuvarok('all','fuvarok')">📋 Fuvarok / Sofőrök</button>
-              <button class="nav-subitem" onclick="goFuvarok('all','statisztika')">📊 Statisztika</button>
-            </div>
-          </div>
-        </div>
+        <button class="nav-btn" id="nav-fuvarok" onclick="showPage('fuvarok')">🚛 Fuvarok</button>
         <button class="nav-btn" id="nav-modok" onclick="showPage('modok')">📦 Módok</button>
         <button class="nav-btn" id="nav-terkep" onclick="showPage('terkep')">🗺 Térkép</button>
         <button class="nav-btn" id="nav-kepek" onclick="showPage('kepek')">🎬 Média</button>
@@ -408,25 +322,21 @@
         <button class="nav-btn" id="nav-kozosseg" onclick="showPage('kozosseg')">💬 Közösség</button>
         <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')">👥 Vezetők</button>
       </nav>
-      <div class="sidebar-footer">
-        <a class="btn-trucky trucky-dl-btn" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
-        <div class="sidebar-icons">
-          <button id="tagoklista-quick-btn" onclick="showPage('tagoklista')" title="Regisztrált tagok" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">👥</button>
-          <button id="jelentkezok-quick-btn" onclick="showPage('jelentkezok')" title="Jelentkezők" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">📋</button>
-          <button id="truckytagok-quick-btn" onclick="showPage('truckytagok')" title="Trucky Tagok" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">🚛</button>
-          <div style="position:relative;display:none;" id="bell-wrap">
-            <button id="bell-btn" onclick="bellKattintas()" style="background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;position:relative;">
-              🔔
-              <span id="bell-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:20px;display:flex;align-items:center;justify-content:center;padding:0 3px;">0</span>
-            </button>
-            <div id="bell-dropdown" style="display:none;position:absolute;top:46px;right:0;width:320px;max-height:400px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:200;padding:10px;">
-              <div id="bell-list" style="display:flex;flex-direction:column;gap:8px;"></div>
-            </div>
-          </div>
-          <button id="uzenet-quick-btn" onclick="megnyitUzenetKuldo()" title="Üzenet küldése" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">💬</button>
+      <a class="btn-trucky trucky-dl-btn" href="https://truckyapp.com/client-download" target="_blank">⬇ Trucky</a>
+      <button id="tagoklista-quick-btn" onclick="showPage('tagoklista')" title="Regisztrált tagok" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">👥</button>
+      <button id="jelentkezok-quick-btn" onclick="showPage('jelentkezok')" title="Jelentkezők" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">📋</button>
+      <button id="truckytagok-quick-btn" onclick="showPage('truckytagok')" title="Trucky Tagok" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">🚛</button>
+      <div style="position:relative;display:none;" id="bell-wrap">
+        <button id="bell-btn" onclick="bellKattintas()" style="background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;position:relative;">
+          🔔
+          <span id="bell-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:20px;display:flex;align-items:center;justify-content:center;padding:0 3px;">0</span>
+        </button>
+        <div id="bell-dropdown" style="display:none;position:absolute;top:46px;right:0;width:320px;max-height:400px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:200;padding:10px;">
+          <div id="bell-list" style="display:flex;flex-direction:column;gap:8px;"></div>
         </div>
-        <button class="btn-trucky" id="auth-header-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="openAuthModal()">🔐 Belépés</button>
       </div>
+      <button id="uzenet-quick-btn" onclick="megnyitUzenetKuldo()" title="Üzenet küldése" style="display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:16px;align-items:center;justify-content:center;">💬</button>
+      <button class="btn-trucky" id="auth-header-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="openAuthModal()">🔐 Belépés</button>
       <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menü">
         <span></span><span></span><span></span>
       </button>
@@ -435,30 +345,7 @@
 
   <div class="mobile-nav" id="mobile-nav">
     <button class="nav-btn active" id="mob-nav-home" onclick="showPage('home');closeMobileNav()">🏠 Kezdőlap</button>
-    <div class="nav-group" id="mob-nav-fuvarok-group">
-      <button class="nav-btn" id="mob-nav-fuvarok" onclick="toggleFuvarokNav('mob-')">
-        <span>🚛 Fuvarok</span>
-        <span class="nav-arrow" id="mob-fuvarok-nav-arrow">▾</span>
-      </button>
-      <div class="nav-submenu" id="mob-fuvarok-nav-submenu">
-        <button class="nav-subheader" onclick="toggleFuvarokSubgroup('ets','mob-')">
-          <span>🚛 Euro Truck Simulator 2</span>
-          <span class="nav-arrow" id="mob-fuvarok-sub-arrow-ets">▾</span>
-        </button>
-        <div class="nav-subitems" id="mob-fuvarok-sub-ets">
-          <button class="nav-subitem" onclick="goFuvarok('ets','fuvarok')">📋 Fuvarok / Sofőrök</button>
-          <button class="nav-subitem" onclick="goFuvarok('ets','statisztika')">📊 Statisztika</button>
-        </div>
-        <button class="nav-subheader" onclick="toggleFuvarokSubgroup('ats','mob-')">
-          <span>🎮 American Truck Simulator</span>
-          <span class="nav-arrow" id="mob-fuvarok-sub-arrow-ats">▾</span>
-        </button>
-        <div class="nav-subitems" id="mob-fuvarok-sub-ats">
-          <button class="nav-subitem" onclick="goFuvarok('ats','fuvarok')">📋 Fuvarok / Sofőrök</button>
-          <button class="nav-subitem" onclick="goFuvarok('ats','statisztika')">📊 Statisztika</button>
-        </div>
-      </div>
-    </div>
+    <button class="nav-btn" id="mob-nav-fuvarok" onclick="showPage('fuvarok');closeMobileNav()">🚛 Fuvarok</button>
     <button class="nav-btn" id="mob-nav-modok" onclick="showPage('modok');closeMobileNav()">📦 Módok</button>
     <button class="nav-btn" id="mob-nav-terkep" onclick="showPage('terkep');closeMobileNav()">🗺 Térkép</button>
     <button class="nav-btn" id="mob-nav-kepek" onclick="showPage('kepek');closeMobileNav()">🎬 Média</button>
@@ -878,45 +765,32 @@
                   <div id="detailSub" style="font-size: 13px; color: var(--muted); margin-top: 2px;"></div>
                 </div>
               </div>
-              <div id="speedingStats" style="display:none;"></div>
+              <div id="speedingStats" style="text-align:right; flex-shrink:0;"></div>
             </div>
-            <div id="statsGrid" class="stats-grid" style="display:none;"></div>
-
-            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; margin-bottom: 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:space-between;">
-              <div style="display:flex; gap:8px;" id="jatekSzuroBtns">
-                <button class="jatek-szuro-btn" data-szuro="osszes" onclick="valtJatekSzuro('osszes')" style="padding:8px 16px;border-radius:8px;background:var(--orange);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;">🎮 Összes Játék</button>
-                <button class="jatek-szuro-btn" data-szuro="ets2" onclick="valtJatekSzuro('ets2')" style="padding:8px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;">🚛 ETS2</button>
-                <button class="jatek-szuro-btn" data-szuro="ats" onclick="valtJatekSzuro('ats')" style="padding:8px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;">🚚 ATS</button>
+            <div id="statsGrid" class="stats-grid" style="margin-bottom: 16px;"></div>
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
+              <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                <div style="font-size: 15px; font-weight: 700; color: #fff;">📋 Fuvar előzmények</div>
+                <div id="jobCount" style="font-size: 12px; color: var(--muted); background: rgba(255,255,255,0.06); padding: 3px 10px; border-radius: 999px;"></div>
               </div>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <button onclick="lepHonap(-1)" style="width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:#fff;cursor:pointer;font-size:14px;">◀</button>
-                <div id="aktivHonapLabel" style="font-weight:700; color:#fff; min-width:150px; text-align:center; font-size:14px;"></div>
-                <button onclick="lepHonap(1)" style="width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:#fff;cursor:pointer;font-size:14px;">▶</button>
+              <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+              <div style="min-width: 900px;">
+              <div class="job-table-header" style="display: grid; grid-template-columns: 40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px; gap: 0; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);">
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">#</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">KAMION</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600;">ÚTVONAL / ÁRU</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">FELVÉTEL / LEADÁS</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">FOGYASZTÁS</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">TONNA</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">KM</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">SEBESSÉG</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">MAX km/h</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BEVÉTEL</div>
+                <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: right;">BÜNTETÉS</div>
               </div>
-            </div>
-
-            <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
-              <div style="flex:2; min-width:320px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
-                <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
-                  <div style="font-size: 15px; font-weight: 700; color: #fff;">✅ Befejezett fuvarok</div>
-                  <div id="jobCount" style="font-size: 12px; color: var(--muted); background: rgba(255,255,255,0.06); padding: 3px 10px; border-radius: 999px;"></div>
-                </div>
-                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                <div style="min-width: 560px;">
-                <div class="job-table-header" style="display: grid; grid-template-columns: 40px minmax(90px,1fr) minmax(90px,1fr) minmax(150px,1.6fr) 90px 90px 100px; gap: 0; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.03);">
-                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">#</div>
-                  <div style="font-size: 11px; color: var(--muted); font-weight: 600;">HONNAN</div>
-                  <div style="font-size: 11px; color: var(--muted); font-weight: 600;">HOVA</div>
-                  <div style="font-size: 11px; color: var(--muted); font-weight: 600;">SZÁLLÍTMÁNY</div>
-                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">TÁV.</div>
-                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">IDŐ</div>
-                  <div style="font-size: 11px; color: var(--muted); font-weight: 600; text-align: center;">MŰVELET</div>
-                </div>
-                <div id="jobsList" style="max-height: calc(100vh - 470px); min-height: 480px; overflow-y: auto;"></div>
-                </div>
-                </div>
+              <div id="jobsList" style="max-height: calc(100vh - 470px); min-height: 480px; overflow-y: auto;"></div>
               </div>
-              <div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:16px;" id="osszegzesPanelWrap"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -1274,15 +1148,6 @@
     </div>
   </div>
 
-  <div id="jarmu-modal" onclick="if(event.target===this)bezarJarmuModal()" style="display:none;position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:20px;">
-    <div id="jarmu-modal-card" style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;max-width:640px;width:100%;max-height:86vh;overflow-y:auto;position:relative;">
-      <button onclick="bezarJarmuModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
-      <div id="jarmu-modal-title" style="font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;padding-right:32px;"></div>
-      <div id="jarmu-modal-sub" style="font-size:12px;color:var(--muted);margin-bottom:20px;"></div>
-      <div id="jarmu-modal-body"></div>
-    </div>
-  </div>
-
   <div id="auth-modal" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:20px;">
     <div id="auth-modal-card" style="background:linear-gradient(rgba(7,13,24,0.55),rgba(7,13,24,0.72)),url('https://images.unsplash.com/photo-1736134869393-bb43683d5d28?w=1200&q=80') center/cover no-repeat;border:1px solid rgba(249,115,22,0.25);border-radius:20px;padding:28px;min-width:320px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;position:relative;">
       <button onclick="closeAuthModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;z-index:2;">✕</button>
@@ -1562,60 +1427,6 @@
 
     function formatNum(n) {
       return Number(n || 0).toLocaleString('hu-HU');
-    }
-
-    // Kamionnevek teljes (márka + modell) kiírása, ne csak a rövid kódot (pl. "S" -> "Scania S")
-    const KAMION_NEV_TERKEP = {
-      // Scania
-      'S': 'Scania S', 'R': 'Scania R', 'R 2016': 'Scania R (2016)', 'NG R': 'Scania R (2016)',
-      'P': 'Scania P', 'G': 'Scania G', 'L': 'Scania L', 'T': 'Scania T',
-      'STREAMLINE': 'Scania Streamline', '4-SERIES': 'Scania 4-Series', '3-SERIES': 'Scania 3-Series',
-      // Volvo
-      'FH': 'Volvo FH', 'FH16': 'Volvo FH16', 'FH 2012': 'Volvo FH (2012)', 'FH16 2012': 'Volvo FH16 (2012)',
-      'FM': 'Volvo FM', 'FMX': 'Volvo FMX', 'F12': 'Volvo F12', 'F16': 'Volvo F16', 'F10': 'Volvo F10',
-      'N10': 'Volvo N10', 'F88': 'Volvo F88', 'F89': 'Volvo F89', 'VNL': 'Volvo VNL',
-      // MAN
-      'TGX': 'MAN TGX', 'TGS': 'MAN TGS', 'TGA': 'MAN TGA', 'TGX EURO 6': 'MAN TGX (Euro 6)',
-      // Mercedes-Benz
-      'ACTROS': 'Mercedes-Benz Actros', 'NEW ACTROS': 'Mercedes-Benz New Actros', 'ACTROS MP4': 'Mercedes-Benz Actros (MP4)',
-      // Renault
-      'MAGNUM': 'Renault Magnum', 'PREMIUM': 'Renault Premium', 'T RANGE': 'Renault T Range', 'C RANGE': 'Renault C Range',
-      // Iveco
-      'STRALIS': 'Iveco Stralis', 'S-WAY': 'Iveco S-Way', 'HI-WAY': 'Iveco Hi-Way',
-      // DAF
-      'XF': 'DAF XF', 'XF EURO 6': 'DAF XF (Euro 6)', '105 XF': 'DAF 105 XF', 'XG': 'DAF XG', 'XG+': 'DAF XG+', 'CF': 'DAF CF',
-      // Kenworth
-      'W900': 'Kenworth W900', 'T680': 'Kenworth T680', 'T880': 'Kenworth T880',
-      // Peterbilt
-      '379': 'Peterbilt 379', '389': 'Peterbilt 389', '567': 'Peterbilt 567', '579': 'Peterbilt 579',
-      // Freightliner
-      'CASCADIA': 'Freightliner Cascadia', 'FLD': 'Freightliner FLD', 'CORONADO': 'Freightliner Coronado',
-      // Western Star
-      '49X': 'Western Star 49X', '5700XE': 'Western Star 5700XE', '5700 XE': 'Western Star 5700XE',
-      // International
-      'LONESTAR': 'International LoneStar', 'PROSTAR': 'International ProStar', '9900I': 'International 9900i',
-      // Mack
-      'ANTHEM': 'Mack Anthem', 'PINNACLE': 'Mack Pinnacle', 'GRANITE': 'Mack Granite',
-      // Egyéb, Trucky/gyári rövidítések
-      'FH6': 'Volvo FH', 'FH 6': 'Volvo FH', 'FH16 6': 'Volvo FH16',
-      'NGD': 'DAF XG', 'NGS': 'Scania S (2016)', 'NGR': 'Scania R (2016)'
-    };
-    function teljesKamionNev(nev) {
-      if (!nev) return nev;
-      var tiszta = String(nev).trim();
-      var kulcs = tiszta.toUpperCase();
-      if (KAMION_NEV_TERKEP[kulcs]) return KAMION_NEV_TERKEP[kulcs];
-      // Kezeli a "KÓD (évszám)" mintát, pl. "S (2016)" -> "Scania S (2016)"
-      var illesztes = tiszta.match(/^(.*?)\s*(\(\d{4}\))\s*$/);
-      if (illesztes) {
-        var alapKod = illesztes[1].trim();
-        var evszam = illesztes[2];
-        var alapKulcs = alapKod.toUpperCase();
-        if (KAMION_NEV_TERKEP[alapKulcs]) {
-          return KAMION_NEV_TERKEP[alapKulcs] + ' ' + evszam;
-        }
-      }
-      return tiszta;
     }
 
     let adminMode = false;
@@ -2177,6 +1988,9 @@
           <div class="driver-sidebar-item" onclick="showDriverJobs('${name}')" id="driver-${name.replace(/[^a-zA-Z0-9]/g,'_')}"
             style="padding: 10px 18px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 8px;">
             <div style="min-width:20px; text-align:center; font-size:12px; font-weight:700; color:var(--muted); flex-shrink:0;">${idx + 1}.</div>
+            <div style="width: 40px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #6b0f2b, #9b1040); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
+                <img src="data:image/png;base64,PLACEHOLDER" style="width:26px;height:26px;object-fit:contain;" onerror="this.style.display='none';this.parentElement.innerHTML='🚛'"/>
+              </div>
             <div class="driver-sidebar-name-wrap" style="overflow: hidden; flex:1;">
               <div class="driver-sidebar-name" style="font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</div>
               <div class="driver-sidebar-sub" style="font-size: 11px; color: var(--muted);">${km} km · ${jobs} fuvar</div>
@@ -2234,27 +2048,6 @@
       }
     }
 
-    let aktivJatekSzuro = 'osszes';
-    let aktivHonapOffset = 0;
-    const HONAP_NEVEK = ['Január','Február','Március','Április','Május','Június','Július','Augusztus','Szeptember','Október','November','December'];
-
-    function aktivHonapAdatok() {
-      const d = new Date();
-      d.setDate(1);
-      d.setMonth(d.getMonth() + aktivHonapOffset);
-      return { ev: d.getFullYear(), honap: d.getMonth(), kulcs: d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') };
-    }
-
-    window.lepHonap = function(delta) {
-      aktivHonapOffset += delta;
-      showDriverJobs(currentDriver);
-    };
-
-    window.valtJatekSzuro = function(szuro) {
-      aktivJatekSzuro = szuro;
-      showDriverJobs(currentDriver);
-    };
-
     function showDriverJobs(driverName) {
       currentDriver = driverName;
       sessionStorage.setItem('srt_ets_driver', driverName);
@@ -2273,175 +2066,112 @@
       document.getElementById('detailAvatar').innerHTML = `<img src="data:image/png;base64,PLACEHOLDER" style="width:32px;height:32px;object-fit:contain;" onerror="this.outerHTML='🚛'"/>`;
       document.getElementById('detailName').textContent = driverName;
       const u = Object.values(allData).find(d => d.truckyName === driverName) || {};
-      const osszesFuvar = allJobs[jobKey(driverName)] || [];
-      document.getElementById('detailSub').textContent = `${osszesFuvar.length} fuvar · ${formatNum(Math.round(u.totalKm || 0))} km összes`;
-
-      // Játék-szűrő gombok kiemelése
-      document.querySelectorAll('#jatekSzuroBtns .jatek-szuro-btn').forEach(btn => {
-        const aktiv = btn.dataset.szuro === aktivJatekSzuro;
-        btn.style.background = aktiv ? 'var(--orange)' : 'var(--surface)';
-        btn.style.color = aktiv ? '#fff' : 'var(--muted)';
-        btn.style.borderColor = aktiv ? 'var(--orange)' : 'var(--border)';
-      });
-
-      // Hónap címke
-      const ha = aktivHonapAdatok();
-      document.getElementById('aktivHonapLabel').textContent = HONAP_NEVEK[ha.honap] + ' ' + ha.ev;
-
-      // Hónap szerint szűrt fuvarok (mindkét játékból, az összegzéshez)
-      const honapSzurve = osszesFuvar.filter(j => j.datum && j.datum.startsWith(ha.kulcs));
-      const ets2Honap = honapSzurve.filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
-      const atsHonap = honapSzurve.filter(j => j.gameType === 'ats' || j.fuvarTipus === 'ats');
-
-      // A táblázatban megjelenő fuvarok: hónap + játék-szűrő szerint
-      let tablaFuvarok;
-      if (aktivJatekSzuro === 'ets2') tablaFuvarok = ets2Honap;
-      else if (aktivJatekSzuro === 'ats') tablaFuvarok = atsHonap;
-      else tablaFuvarok = honapSzurve;
-
-      window.__aktivFuvarLista = tablaFuvarok;
-      window.__aktivFuvarSofor = driverName;
-
-      const jobCount = document.getElementById('jobCount');
-      jobCount.textContent = `${tablaFuvarok.length} fuvar`;
-      const list = document.getElementById('jobsList');
-      if (!tablaFuvarok.length) {
-        list.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--muted);">Ebben a hónapban nincs rögzített fuvar ehhez a szűréshez</div>';
-      } else {
-        list.innerHTML = tablaFuvarok.map(function(j, i) {
-          var rowBg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015);';
-          var num = i + 1;
-          var honnan = j.honnan || '?';
-          var hova = j.hova || '?';
-          var aru = j.aru || '-';
-          var tav = formatNum(Math.round(j.km||0)) + ' km';
-          var ido = j.idotartam || j.ido || '-';
-          var html = '';
-          html += '<div style="display:grid;grid-template-columns:40px minmax(90px,1fr) minmax(90px,1fr) minmax(150px,1.6fr) 90px 90px 100px;gap:0;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;' + rowBg + 'transition:background 0.15s">';
-          html += '<div style="font-size:13px;font-weight:700;color:var(--muted);text-align:center">' + num + '</div>';
-          html += '<div style="font-size:12px;color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + honnan + '</div>';
-          html += '<div style="font-size:12px;color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + hova + '</div>';
-          html += '<div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📦 ' + aru + '</div>';
-          html += '<div style="text-align:center;font-size:12px;font-weight:700;color:var(--orange);white-space:nowrap;">' + tav + '</div>';
-          html += '<div style="text-align:center;font-size:12px;color:var(--muted);white-space:nowrap;">' + ido + '</div>';
-          html += '<div style="text-align:center;"><button onclick="nyitFuvarReszletek(' + i + ')" style="padding:6px 14px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;">Részletek</button></div>';
-          html += '</div>';
-          return html;
-        }).join('');
+      const jobs = (allJobs[jobKey(driverName)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
+      document.getElementById('detailSub').textContent = `${jobs.length} fuvar · ${formatNum(Math.round(u.totalKm || 0))} km összes`;
+      const gyorsFuvarok = jobs.filter(j => (j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 100));
+      const maxSeb = jobs.reduce((max, j) => j.maxSebesseg && j.maxSebesseg > max ? j.maxSebesseg : max, 0);
+      const speedEl = document.getElementById('speedingStats');
+      if (speedEl) {
+        if (gyorsFuvarok.length > 0) {
+          speedEl.innerHTML = '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:8px 14px;text-align:right">'
+            + '<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">🏁 GYORS FUVAROK</div>'
+            + '<div style="font-size:22px;font-weight:800;color:#f87171;">' + gyorsFuvarok.length + ' db</div>'
+            + (maxSeb > 0 ? '<div style="font-size:11px;color:var(--muted);margin-top:3px;">Max: <span style="color:#f87171;font-weight:700;">' + maxSeb + ' km/h</span></div>' : '')
+            + '</div>';
+        } else {
+          speedEl.innerHTML = '<div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:8px 14px;text-align:right">'
+            + '<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">🏁 GYORS FUVAROK</div>'
+            + '<div style="font-size:22px;font-weight:800;color:#4ade80;">0 db</div>'
+            + '<div style="font-size:11px;color:#4ade80;margin-top:3px;">✅ Szabálykövető</div>'
+            + '</div>';
+        }
       }
-
-      // Összegzés panelek (jobb oldal) - mindig hónap szerint, játékonként
-      const osszegzo = jobs => ({
-        tav: jobs.reduce((s,j)=>s+(j.km||0),0),
-        bevetel: jobs.reduce((s,j)=>s+(j.bevételFt||0),0),
-        bunt: jobs.reduce((s,j)=>s+(j.büntFt||0),0),
-        tonna: jobs.reduce((s,j)=>s+(j.tonna||0),0)
-      });
-      const osszegzesPanel = (cim, jobs) => {
-        const o = osszegzo(jobs);
-        return `<div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px;">
-          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">📊 Összegzés – ${cim}</div>
-          <div style="display:flex;flex-direction:column;gap:9px;">
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">Elfogadott Távolság</span><span style="color:#fff;font-weight:700;">${formatNum(Math.round(o.tav))} km</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">Bevétel</span><span style="color:#4ade80;font-weight:700;">${formatNum(Math.round(o.bevetel))} Ft</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">Szabálysértések</span><span style="color:${o.bunt>0?'#f87171':'#fff'};font-weight:700;">${formatNum(Math.round(o.bunt))} Ft</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">Rakomány súlya</span><span style="color:#fff;font-weight:700;">${formatNum(Math.round(o.tonna))} t</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">Fuvarok száma</span><span style="color:#fff;font-weight:700;">${jobs.length} db</span></div>
-          </div>
-        </div>`;
-      };
-      const wrap = document.getElementById('osszegzesPanelWrap');
-      let panelHtml = '';
-      if (aktivJatekSzuro === 'osszes' || aktivJatekSzuro === 'ets2') panelHtml += osszegzesPanel('ETS2', ets2Honap);
-      if (aktivJatekSzuro === 'osszes' || aktivJatekSzuro === 'ats') panelHtml += osszegzesPanel('ATS', atsHonap);
-      wrap.innerHTML = panelHtml;
+      const stats = document.getElementById('statsGrid');
+      const editBtn = (key, label, val, unit) => isAdminMode() ? `<button onclick="editDriverStat('${driverName}','${key}','${label}',${val},'${unit}')" style="position:absolute;top:8px;right:8px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);color:var(--orange);border-radius:5px;padding:2px 7px;cursor:pointer;font-size:10px;">✏️</button>` : '';
+      stats.innerHTML = `
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('totalKm','Összes km',Math.round(u.totalKm||0),'km')}
+          <div class="stat-label">Összes km</div><div class="stat-value orange">${formatNum(Math.round(u.totalKm || 0))} km</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('totalTons','Összes tonna',u.totalTons||0,'t')}
+          <div class="stat-label">Összes tonna</div><div class="stat-value">${formatNum(u.totalTons || 0)} t</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('totalRevenue','Összes bevétel',Math.round(u.totalRevenue||0),'Ft')}
+          <div class="stat-label">Összes bevétel</div><div class="stat-value">${formatNum(Math.round(u.totalRevenue || 0))} Ft</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('monthlyKm','Havi km',Math.round(u.monthlyKm||0),'km')}
+          <div class="stat-label">Havi km</div><div class="stat-value orange">${formatNum(Math.round(u.monthlyKm || 0))} km</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('monthlyTons','Havi tonna',u.monthlyTons||0,'t')}
+          <div class="stat-label">Havi tonna</div><div class="stat-value">${formatNum(u.monthlyTons || 0)} t</div></div>
+        <div class="stat-card" style="position:relative;">
+          ${editBtn('monthlyFuel','Havi fogyasztás',Math.round(u.monthlyFuel||0),'L')}
+          <div class="stat-label">Havi fogyasztás</div><div class="stat-value" style="color:#60a5fa;">${formatNum(Math.round(u.monthlyFuel || 0))} L</div></div>`;
+      const jobCount = document.getElementById('jobCount');
+      jobCount.textContent = `${jobs.length} fuvar`;
+      const list = document.getElementById('jobsList');
+      if (!jobs.length) {
+        list.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--muted);">Még nincs rögzített fuvar</div>';
+        return;
+      }
+      const sortedJobs = [...jobs];
+      list.innerHTML = sortedJobs.map(function(j, i) {
+        var isVerseny = (j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 100);
+        var adminCol = isAdminMode() ? ' 50px' : '';
+        var cols = '40px 110px minmax(150px,1fr) 130px 95px 65px 75px 85px 80px 105px 105px' + adminCol;
+        var rowBg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015);';
+        var num = i + 1;
+        var honnan = j.honnan || '?';
+        var hova = j.hova || '?';
+        var aru = j.aru || '-';
+        var kamion = j.kamion || '-';
+        var fuvarTipusLabel = '-';
+        var fuvarTipusColor = 'rgba(255,255,255,0.5)';
+        if (j.fuvarTipus) {
+          switch(j.fuvarTipus) {
+            case 'freight_market': fuvarTipusLabel = '📋 Piaci'; fuvarTipusColor = '#60a5fa'; break;
+            case 'cargo_market': fuvarTipusLabel = '📋 Piaci'; fuvarTipusColor = '#60a5fa'; break;
+            case 'quick_job': fuvarTipusLabel = '⚡ Gyors'; fuvarTipusColor = '#f87171'; break;
+            case 'pickup': fuvarTipusLabel = '📦 Pickup'; fuvarTipusColor = '#a78bfa'; break;
+            case 'external_contracts': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
+            case 'external_market': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
+            case 'world_of_trucks': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
+            default: fuvarTipusLabel = '📋 ' + j.fuvarTipus; fuvarTipusColor = 'rgba(255,255,255,0.5)';
+          }
+        }
+        var felvetel = j.felvételIdeje || j.datumFormazva || '-';
+        var leadas = j.leadásIdeje || '-';
+        var fogyasztas = j.avgFuelJob ? j.avgFuelJob + ' L/100' : (j.üzemanyag ? j.üzemanyag + ' L' : '-');
+        var sebBg = isVerseny ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)';
+        var sebColor = isVerseny ? '#f87171' : '#4ade80';
+        var sebSzoveg = isVerseny ? '🏁 verseny' : '✅ valós';
+        var maxColor = (j.maxSebesseg && j.maxSebesseg > 100) ? '#f87171' : j.maxSebesseg ? '#c084fc' : 'var(--muted)';
+        var maxSeb = j.maxSebesseg ? j.maxSebesseg + ' km/h' : '-';
+        var bunt = j.büntFt > 0 ? '-' + formatNum(j.büntFt) + ' Ft' : '-';
+        var buntColor = j.büntFt > 0 ? '#f87171' : 'var(--muted)';
+        var adminBtn = isAdminMode() ? '<div style="text-align:center"><button onclick="deleteJob(\'' + driverName + '\', ' + i + ')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">🗑️</button></div>' : '';
+        var html = '';
+        html += '<div style="display:grid;grid-template-columns:' + cols + ';gap:0;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;' + rowBg + 'transition:background 0.15s">';
+        html += '<div style="font-size:13px;font-weight:700;color:var(--muted);text-align:center">' + num + '</div>';
+        html += '<div style="text-align:center;padding:0 4px;overflow:hidden"><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + kamion + '</div><div style="font-size:10px;color:' + fuvarTipusColor + ';white-space:nowrap;margin-top:2px">' + fuvarTipusLabel + '</div></div>';
+        html += '<div style="overflow:hidden;padding:0 8px"><div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + honnan + ' → ' + hova + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📦 ' + aru + '</div></div>';
+        html += '<div style="text-align:center"><div style="font-size:11px;color:rgba(255,255,255,0.7);white-space:nowrap">📅 ' + felvetel + '</div><div style="font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap">🏁 ' + leadas + '</div></div>';
+        html += '<div style="text-align:center;font-size:12px;color:#60a5fa;font-weight:600;white-space:nowrap">' + fogyasztas + '</div>';
+        html += '<div style="text-align:center;font-size:13px;font-weight:700;color:var(--orange)">' + (j.tonna||0) + ' t</div>';
+        html += '<div style="text-align:center;font-size:13px;font-weight:700;color:var(--orange)">' + formatNum(Math.round(j.km||0)) + ' km</div>';
+        html += '<div style="text-align:center"><span style="font-size:11px;padding:3px 8px;border-radius:999px;white-space:nowrap;background:' + sebBg + ';color:' + sebColor + ';font-weight:600">' + sebSzoveg + '</span></div>';
+        html += '<div style="text-align:center;font-size:12px;font-weight:700;color:' + maxColor + ';white-space:nowrap">' + maxSeb + '</div>';
+        html += '<div style="text-align:right;font-size:12px;font-weight:700;color:#4ade80;white-space:nowrap">' + formatNum(j.bevételFt||0) + ' Ft</div>';
+        html += (j.truckyUrl && j.büntFt > 0) ? '<div style="text-align:right;font-size:12px;font-weight:700;white-space:nowrap;color:' + buntColor + ';cursor:pointer;text-decoration:underline" onclick="window.open(\'' + j.truckyUrl + '\',\'_blank\')">⚠️ ' + bunt + '</div>' : '<div style="text-align:right;font-size:12px;font-weight:700;white-space:nowrap;color:' + buntColor + '">' + bunt + '</div>';
+        html += adminBtn;
+        html += '</div>';
+        return html;
+      }).join('');
     }
-
-    // Fuvar "Részletek" modal (a táblázat "Részletek" gombjához)
-    window.nyitFuvarReszletek = function(idx) {
-      const j = (window.__aktivFuvarLista || [])[idx];
-      if (!j) return;
-      const driverName = window.__aktivFuvarSofor;
-      const kamion = teljesKamionNev(j.kamion) || '-';
-      const isVerseny = (j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 100);
-      const felvetel = j.felvételIdeje || j.datumFormazva || '-';
-      const leadas = j.leadásIdeje || '-';
-      const fogyasztas = j.avgFuelJob ? j.avgFuelJob + ' L/100km' : (j.üzemanyag ? j.üzemanyag + ' L' : '-');
-      const maxSeb = j.maxSebesseg ? j.maxSebesseg + ' km/h' : '-';
-      const bunt = j.büntFt > 0 ? formatNum(j.büntFt) + ' Ft' : '-';
-
-      document.getElementById('jarmu-modal-title').textContent = '📦 ' + (j.honnan||'?') + ' → ' + (j.hova||'?');
-      document.getElementById('jarmu-modal-sub').textContent = (j.aru||'-') + ' · ' + formatNum(Math.round(j.km||0)) + ' km';
-      const rows = [
-        ['🚛 Kamion', kamion, driverName ? `onclick="bezarJarmuModal();setTimeout(()=>megnyitJarmuModalSofor('${driverName.replace(/'/g,"\\'")}'),150)" style="cursor:pointer;text-decoration:underline dotted;"` : ''],
-        ['📅 Felvétel', felvetel, ''],
-        ['🏁 Leadás', leadas, ''],
-        ['⛽ Fogyasztás', fogyasztas, ''],
-        ['🏋️ Tonna', (j.tonna||0) + ' t', ''],
-        ['🚦 Sebesség', isVerseny ? '🏁 verseny' : '✅ valós', ''],
-        ['📈 Max sebesség', maxSeb, ''],
-        ['💰 Bevétel', formatNum(j.bevételFt||0) + ' Ft', ''],
-        ['⚠️ Büntetés', bunt, '']
-      ];
-      document.getElementById('jarmu-modal-body').innerHTML = `<div style="background:var(--surface);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;">
-        ${rows.map(r => `<div ${r[2]} style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">${r[0]}</span><span style="color:#fff;font-weight:700;">${r[1]}</span></div>`).join('')}
-      </div>
-      ${(typeof isAdminMode === 'function' && isAdminMode() && driverName) ? `<button onclick="torolFuvarReszletekbol('${driverName.replace(/'/g,"\\'")}', ${idx})" style="margin-top:14px;width:100%;padding:10px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-weight:700;cursor:pointer;font-size:13px;">🗑️ Fuvar törlése</button>` : ''}`;
-      document.getElementById('jarmu-modal').style.display = 'flex';
-    };
-
-    // Admin: fuvar törlése a "Részletek" modalból (a listaindexet átfordítja a teljes tömb indexére)
-    window.torolFuvarReszletekbol = async function(driverName, idxAListaban) {
-      const j = (window.__aktivFuvarLista || [])[idxAListaban];
-      if (!j) return;
-      const teljesLista = allJobs[jobKey(driverName)] || [];
-      const valodiIdx = teljesLista.indexOf(j);
-      if (valodiIdx === -1) return;
-      bezarJarmuModal();
-      await deleteJob(driverName, valodiIdx);
-    };
-
 
     function showDrivers() {
       document.getElementById('jobs-view').style.display = 'none';
     }
-
-    function toggleFuvarokNav(prefix) {
-      const menu = document.getElementById(prefix + 'fuvarok-nav-submenu');
-      const arrow = document.getElementById(prefix + 'fuvarok-nav-arrow');
-      if (!menu) return;
-      const willOpen = !menu.classList.contains('open');
-      menu.classList.toggle('open', willOpen);
-      if (arrow) arrow.classList.toggle('open', willOpen);
-    }
-
-    function toggleFuvarokSubgroup(game, prefix) {
-      const sub = document.getElementById(prefix + 'fuvarok-sub-' + game);
-      const arrow = document.getElementById(prefix + 'fuvarok-sub-arrow-' + game);
-      if (!sub) return;
-      const willOpen = !sub.classList.contains('open');
-      sub.classList.toggle('open', willOpen);
-      if (arrow) arrow.classList.toggle('open', willOpen);
-    }
-
-    function goFuvarok(game, view) {
-      showPage('fuvarok');
-      switchGameTab(game);
-      if (game === 'ets') {
-        switchFuvarokView(view || 'fuvarok');
-      } else {
-        switchATSView(view || 'fuvarok');
-      }
-      closeMobileNav();
-    }
-
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('#nav-fuvarok-group')) {
-        const menu = document.getElementById('fuvarok-nav-submenu');
-        const arrow = document.getElementById('fuvarok-nav-arrow');
-        if (menu && menu.classList.contains('open')) { menu.classList.remove('open'); if (arrow) arrow.classList.remove('open'); }
-      }
-    });
 
     function showPage(name) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -3328,6 +3058,7 @@
           <div class="driver-sidebar-item" onclick="showATSDriverJobs('${nameEsc}');event.stopPropagation();" id="ats-driver-${name.replace(/[^a-zA-Z0-9]/g,'_')}"
             style="padding: 10px 18px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 8px;">
             <div style="min-width:20px; text-align:center; font-size:12px; font-weight:700; color:var(--muted); flex-shrink:0;">${idx + 1}.</div>
+            <div style="width: 40px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #1d4ed8, #1e40af); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; font-size: 18px;">🎮</div>
             <div class="driver-sidebar-name-wrap" style="min-width: 0; flex:1;">
               <div style="font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</div>
               <div style="font-size: 11px; color: var(--muted);">${km} km · ${atsJobs.length} fuvar</div>
@@ -3440,9 +3171,7 @@
         var honnan = j.honnan || '?';
         var hova = j.hova || '?';
         var aru = j.aru || '-';
-        var kamion = teljesKamionNev(j.kamion) || '-';
-        var kamionSafeDriver = name.replace(/'/g,"\\'");
-        var kamionOnclick = "onclick=\"megnyitJarmuModalSofor('" + kamionSafeDriver + "', event)\"";
+        var kamion = j.kamion || '-';
         var fuvarTipusLabel = '-';
         var fuvarTipusColor = 'rgba(255,255,255,0.5)';
         if (j.piacTipus) {
@@ -3471,7 +3200,7 @@
         var html = '';
         html += '<div style="display:grid;grid-template-columns:' + cols + ';gap:0;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;' + rowBg + 'transition:background 0.15s">';
         html += '<div style="font-size:13px;font-weight:700;color:var(--muted);text-align:center">' + num + '</div>';
-        html += '<div ' + kamionOnclick + ' title="Jármű állapotának megtekintése" style="text-align:center;padding:0 4px;overflow:hidden;cursor:pointer;"><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:underline dotted;text-underline-offset:2px;">' + kamion + '</div><div style="font-size:10px;color:' + fuvarTipusColor + ';white-space:nowrap;margin-top:2px">' + fuvarTipusLabel + '</div></div>';
+        html += '<div style="text-align:center;padding:0 4px;overflow:hidden"><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + kamion + '</div><div style="font-size:10px;color:' + fuvarTipusColor + ';white-space:nowrap;margin-top:2px">' + fuvarTipusLabel + '</div></div>';
         html += '<div style="overflow:hidden;padding:0 8px"><div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + honnan + ' → ' + hova + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📦 ' + aru + '</div></div>';
         html += '<div style="text-align:center"><div style="font-size:11px;color:rgba(255,255,255,0.7);white-space:nowrap">📅 ' + felvetel + '</div><div style="font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap">🏁 ' + leadas + '</div></div>';
         html += '<div style="text-align:center;font-size:12px;color:#60a5fa;font-weight:600;white-space:nowrap">' + fogyasztas + '</div>';
@@ -4576,14 +4305,12 @@
         if (jarmuvek.length === 0) {
           jarmuvekEl.innerHTML = '<div style="color:var(--muted);grid-column:1/-1;">Nincs elérhető jármű-adat.</div>';
         } else {
-          window.__jarmuvekAdat = jarmuvek;
-          jarmuvekEl.innerHTML = jarmuvek.map((v, idx) => `
-            <div onclick="megnyitJarmuModal(${idx})" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:background 0.2s,border-color 0.2s;" onmouseover="this.style.borderColor='rgba(249,115,22,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
-              <div style="font-size:14px;font-weight:700;color:#fff;">🚛 ${teljesKamionNev((v.modell || v.tipus || 'Ismeretlen').toString()).replace(/</g,'&lt;')}</div>
+          jarmuvekEl.innerHTML = jarmuvek.map(v => `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;">
+              <div style="font-size:14px;font-weight:700;color:#fff;">🚛 ${(v.modell || v.tipus || 'Ismeretlen').toString().replace(/</g,'&lt;')}</div>
               ${v.sofor ? `<div style="font-size:12px;color:var(--orange);margin-top:4px;">👤 ${v.sofor.replace(/</g,'&lt;')}</div>` : ''}
               ${v.garazs ? `<div style="font-size:12px;color:var(--muted);margin-top:2px;">🏢 ${v.garazs.replace(/</g,'&lt;')}</div>` : ''}
               ${v.km != null ? `<div style="font-size:12px;color:var(--muted);">${szamFormaz(v.km)} km</div>` : ''}
-              <div style="font-size:11px;color:var(--orange);margin-top:8px;">🔧 Állapot megtekintése →</div>
             </div>
           `).join('');
         }
@@ -4603,118 +4330,6 @@
         }
       }
     }, (hiba) => console.warn('Flotta figyelési hiba:', hiba.message));
-
-    // ===== Jármű részletes állapot modal (Trucky karbantartás/sérülés adatok) =====
-    window.megnyitJarmuModal = function(idx) {
-      const v = (window.__jarmuvekAdat || [])[idx];
-      if (!v) return;
-      const r = v.reszletek || null;
-      const nev = teljesKamionNev((v.modell || v.tipus || 'Ismeretlen').toString());
-
-      document.getElementById('jarmu-modal-title').textContent = '🚛 ' + nev;
-      const subParts = [];
-      if (v.sofor) subParts.push('👤 ' + v.sofor);
-      if (v.garazs) subParts.push('🏢 ' + v.garazs);
-      if (v.km != null) subParts.push(szamFormaz(v.km) + ' km');
-      document.getElementById('jarmu-modal-sub').textContent = subParts.join(' · ');
-
-      const bodyEl = document.getElementById('jarmu-modal-body');
-
-      if (!r) {
-        bodyEl.innerHTML = `
-          <div style="color:var(--muted);font-size:13px;background:var(--surface);border-radius:10px;padding:16px;text-align:center;">
-            Ehhez a járműhöz még nincs részletes karbantartási adat szinkronizálva.
-          </div>
-          ${v.truckyId ? `<a href="https://hub.truckyapp.com/vehicles/${v.truckyId}" target="_blank" style="display:block;text-align:center;margin-top:14px;padding:10px;background:var(--orange);color:#fff;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">🔗 Megnyitás a Trucky-ban</a>` : ''}
-        `;
-        document.getElementById('jarmu-modal').style.display = 'flex';
-        return;
-      }
-
-      let html = '';
-
-      // Statisztikák
-      if (r.statisztika) {
-        const s = r.statisztika;
-        html += `<div style="margin-bottom:22px;">
-          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:10px;">📊 Statisztikák</div>
-          <div style="background:var(--surface);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;">
-            ${s.bevetel != null ? `<div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">Bevétel</span><span style="color:#fff;font-weight:700;">${szamFormaz(s.bevetel)} Tč</span></div>` : ''}
-            ${s.uzemanyag != null ? `<div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">Elhasznált üzemanyag</span><span style="color:#fff;font-weight:700;">${szamFormaz(s.uzemanyag)} l</span></div>` : ''}
-            ${s.serulesAra != null ? `<div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--muted);">Sérülés ára</span><span style="color:#f87171;font-weight:700;">${szamFormaz(s.serulesAra)} Tč</span></div>` : ''}
-          </div>
-        </div>`;
-      }
-
-      // Következő karbantartás
-      if (Array.isArray(r.kovetkezoKarbantartas) && r.kovetkezoKarbantartas.length) {
-        const maxKm = Math.max(...r.kovetkezoKarbantartas.map(x => x.km || 0), v.km || 0, 1);
-        html += `<div style="margin-bottom:22px;">
-          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:10px;">🔧 Következő karbantartás</div>
-          <div style="background:var(--surface);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;">
-            ${r.kovetkezoKarbantartas.map(k => {
-              const pct = Math.min(100, Math.max(4, ((v.km || 0) / (k.km || 1)) * 100));
-              return `<div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text);">${(k.nev||'').replace(/</g,'&lt;')}</span><span style="color:var(--muted);">${szamFormaz(k.km)} km</span></div>
-                <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;"><div style="height:100%;width:${pct}%;background:var(--orange);"></div></div>
-              </div>`;
-            }).join('')}
-          </div>
-        </div>`;
-      }
-
-      // Sérülések (Unfixable Damage)
-      if (Array.isArray(r.serulesek) && r.serulesek.length) {
-        html += `<div style="margin-bottom:22px;">
-          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:10px;">⚠️ Sérülések</div>
-          <div style="background:var(--surface);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;">
-            ${r.serulesek.map(d => `<div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text);">${(d.nev||'').replace(/</g,'&lt;')}</span><span style="color:var(--muted);">${d.szazalek}% ${d.ar != null ? '· ' + szamFormaz(d.ar) + ' Tč' : ''}</span></div>
-                <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;"><div style="height:100%;width:${Math.min(100, d.szazalek||0)}%;background:#f87171;"></div></div>
-              </div>`).join('')}
-          </div>
-        </div>`;
-      }
-
-      // Karbantartási előzmények
-      if (Array.isArray(r.esemenyek) && r.esemenyek.length) {
-        html += `<div>
-          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:10px;">📋 Karbantartási előzmények</div>
-          <div style="background:var(--surface);border-radius:10px;overflow:hidden;">
-            <div style="display:grid;grid-template-columns:1fr 1.2fr 1fr 1fr;gap:8px;padding:10px 14px;background:rgba(255,255,255,0.04);font-size:11px;color:var(--muted);font-weight:700;">
-              <span>Dátum</span><span>Típus</span><span>Ár</span><span>Úthosszmérő</span>
-            </div>
-            ${r.esemenyek.map(e => `<div style="display:grid;grid-template-columns:1fr 1.2fr 1fr 1fr;gap:8px;padding:9px 14px;font-size:12px;border-top:1px solid var(--border);">
-                <span style="color:var(--muted);">${(e.datum||'').replace(/</g,'&lt;')}</span>
-                <span style="color:var(--text);">${(e.tipus||'').replace(/</g,'&lt;')}</span>
-                <span style="color:var(--orange);">${e.ar != null ? szamFormaz(e.ar) + ' Tč' : '-'}</span>
-                <span style="color:var(--muted);">${e.km != null ? szamFormaz(e.km) + ' km' : '-'}</span>
-              </div>`).join('')}
-          </div>
-        </div>`;
-      }
-
-      if (!html) html = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px;">Nincs megjeleníthető adat.</div>';
-      bodyEl.innerHTML = html;
-      document.getElementById('jarmu-modal').style.display = 'flex';
-    };
-
-    window.bezarJarmuModal = function() {
-      document.getElementById('jarmu-modal').style.display = 'none';
-    };
-
-    // Fuvarlistából (sofőr neve alapján) nyitja meg a hozzá tartozó jármű modalját
-    window.megnyitJarmuModalSofor = function(driverName, evt) {
-      if (evt) evt.stopPropagation();
-      const lista = window.__jarmuvekAdat || [];
-      const norm = s => (s || '').toString().trim().toLowerCase();
-      const idx = lista.findIndex(v => norm(v.sofor) === norm(driverName));
-      if (idx === -1) {
-        alert('Ehhez a sofőrhöz jelenleg nincs hozzárendelt jármű a flottában.');
-        return;
-      }
-      window.megnyitJarmuModal(idx);
-    };
 
     onValue(ref(db, 'piaciTrendek'), (snapshot) => {
       const p = snapshot.val();
@@ -6001,416 +5616,5 @@
       }
     };
   </script>
-
-<button class="mobile-menu" onclick="document.querySelector('.site-header').classList.toggle('mobile-open')">☰ Menü</button>
-
-<div id="srtApp" class="container-wide" style="padding-top:24px">
-  <section id="view-home" class="app-view active">
-    <div class="section-eyebrow">SRT TRANS KFT.</div>
-    <h2 class="section-title">Vállalati vezérlőpult</h2>
-    <div class="data-grid">
-      <div class="data-card"><div class="k">Aktív fuvarok</div><div class="v" id="statJobs">0</div></div>
-      <div class="data-card"><div class="k">Online sofőrök</div><div class="v" id="statDrivers">0</div></div>
-      <div class="data-card"><div class="k">Összes kilométer</div><div class="v" id="statKm">0 km</div></div>
-      <div class="data-card"><div class="k">Értesítések</div><div class="v" id="statNotifications">0</div></div>
-    </div>
-    <div class="quick-grid" style="padding:0;max-width:none">
-      <div class="quick-card" onclick="showView('ets2-jobs')"><div class="quick-card-icon">🚛</div><h3>ETS2 fuvarok</h3><p>Fuvarok és sofőrök kezelése.</p></div>
-      <div class="quick-card" onclick="showView('ets2-stats')"><div class="quick-card-icon">📊</div><h3>Statisztika</h3><p>Kilométer, bevétel és teljesítmény.</p></div>
-      <div class="quick-card" onclick="showView('drivers')"><div class="quick-card-icon">👥</div><h3>Vezetők</h3><p>Online állapot és ranglista.</p></div>
-      <div class="quick-card" onclick="showView('community')"><div class="quick-card-icon">💬</div><h3>Közösség</h3><p>Közösségi felület és üzenetek.</p></div>
-    </div>
-  </section>
-
-  <section id="view-ets2-jobs" class="app-view">
-    <div class="section-eyebrow">EURO TRUCK SIMULATOR 2</div>
-    <h2 class="section-title">Fuvarok / Sofőrök</h2>
-    <div class="functional-toolbar">
-      <input id="jobSearch" class="functional-search" placeholder="Fuvar keresése..." oninput="renderJobs()">
-      <button class="small-btn primary" onclick="openJobModal()">＋ Új fuvar</button>
-    </div>
-    <div class="data-table-wrap"><table class="data-table"><thead><tr><th>Fuvar</th><th>Honnan</th><th>Hova</th><th>Táv</th><th>Sofőr</th><th>Státusz</th><th></th></tr></thead><tbody id="jobsBody"></tbody></table></div>
-  </section>
-
-  <section id="view-ets2-stats" class="app-view">
-    <div class="section-eyebrow">EURO TRUCK SIMULATOR 2</div>
-    <h2 class="section-title">Statisztika</h2>
-    <div class="data-grid">
-      <div class="data-card"><div class="k">Összes fuvar</div><div class="v" id="statsJobs">0</div></div>
-      <div class="data-card"><div class="k">Összes km</div><div class="v" id="statsKm">0</div></div>
-      <div class="data-card"><div class="k">Becsült bevétel</div><div class="v" id="statsRevenue">0 Ft</div></div>
-      <div class="data-card"><div class="k">Átlagos fuvar</div><div class="v" id="statsAvg">0 km</div></div>
-    </div>
-  </section>
-
-  <section id="view-ats-jobs" class="app-view">
-    <div class="section-eyebrow">AMERICAN TRUCK SIMULATOR</div><h2 class="section-title">Fuvarok / Sofőrök</h2>
-    <div class="data-card"><h3 style="color:#fff">ATS fuvarkezelés</h3><p style="color:var(--muted);margin-top:8px">Az ATS modul ugyanazzal a kezelési rendszerrel használható, mint az ETS2.</p><div class="action-row"><button class="small-btn primary" onclick="openJobModal('ATS')">＋ Új ATS fuvar</button></div></div>
-  </section>
-
-  <section id="view-ats-stats" class="app-view">
-    <div class="section-eyebrow">AMERICAN TRUCK SIMULATOR</div><h2 class="section-title">Statisztika</h2>
-    <div class="data-grid"><div class="data-card"><div class="k">ATS fuvarok</div><div class="v" id="atsJobs">0</div></div><div class="data-card"><div class="k">ATS km</div><div class="v" id="atsKm">0</div></div></div>
-  </section>
-
-  <section id="view-mods" class="app-view">
-    <div class="section-eyebrow">KIEGÉSZÍTŐK</div><h2 class="section-title">Módok</h2>
-    <div class="mod-grid" id="modsGrid"></div>
-  </section>
-
-  <section id="view-map" class="app-view">
-    <div class="section-eyebrow">KÖVETÉS</div><h2 class="section-title">Térkép</h2>
-    <div class="data-card"><h3 style="color:#fff">Élő sofőrkövetés</h3><p style="color:var(--muted);margin-top:8px">A térképes modul API/telemetria bekötésre előkészítve.</p><div id="mapStatus" class="action-row"><span class="status offline">Nincs telemetria kapcsolat</span></div></div>
-  </section>
-
-  <section id="view-media" class="app-view">
-    <div class="section-eyebrow">MÉDIA</div><h2 class="section-title">Média</h2>
-    <div class="data-card"><h3 style="color:#fff">SRT TRANS média</h3><p style="color:var(--muted);margin-top:8px">Képek és videók kezelési felülete.</p><div class="action-row"><button class="small-btn primary" onclick="toast('Média feltöltéséhez backend szükséges.')">＋ Média hozzáadása</button></div></div>
-  </section>
-
-  <section id="view-market" class="app-view">
-    <div class="section-eyebrow">GAZDASÁG</div><h2 class="section-title">Piac</h2>
-    <div class="data-grid"><div class="data-card"><div class="k">Üzemanyag</div><div class="v">650 Ft/l</div></div><div class="data-card"><div class="k">EUR árfolyam</div><div class="v">400 Ft</div></div></div>
-  </section>
-
-  <section id="view-community" class="app-view">
-    <div class="section-eyebrow">KÖZÖSSÉG</div><h2 class="section-title">Közösség</h2>
-    <div class="data-card"><h3 style="color:#fff">Közösségi üzenetek</h3><p style="color:var(--muted);margin-top:8px">Discord/kommunikációs backendhez csatlakoztatható.</p></div>
-  </section>
-
-  <section id="view-drivers" class="app-view">
-    <div class="section-eyebrow">CSAPAT</div><h2 class="section-title">Vezetők</h2>
-    <div class="data-table-wrap"><table class="data-table"><thead><tr><th>Sofőr</th><th>Játék</th><th>Km</th><th>Státusz</th><th>Rang</th></tr></thead><tbody id="driversBody"></tbody></table></div>
-  </section>
-
-  <section id="view-login" class="app-view">
-    <div class="section-eyebrow">FIÓK</div><h2 class="section-title">Belépés</h2>
-    <div class="data-card" style="max-width:520px"><div class="form-field"><label>Felhasználónév</label><input id="loginUser" placeholder="Felhasználónév"></div><div class="form-field" style="margin-top:12px"><label>Jelszó</label><input id="loginPass" type="password" placeholder="Jelszó"></div><div class="action-row"><button class="small-btn primary" onclick="login()">Belépés</button></div><p id="loginResult" style="color:var(--muted);margin-top:12px"></p></div>
-  </section>
-</div>
-
-<div id="jobModal" class="modal-backdrop">
-  <div class="modal">
-    <h3>Új fuvar</h3>
-    <div class="form-grid">
-      <div class="form-field"><label>Játék</label><select id="fGame"><option>ETS2</option><option>ATS</option></select></div>
-      <div class="form-field"><label>Fuvar neve</label><input id="fName" placeholder="Pl. SRT Cargo"></div>
-      <div class="form-field"><label>Honnan</label><input id="fFrom" placeholder="Budapest"></div>
-      <div class="form-field"><label>Hova</label><input id="fTo" placeholder="München"></div>
-      <div class="form-field"><label>Távolság (km)</label><input id="fKm" type="number" min="0" placeholder="850"></div>
-      <div class="form-field"><label>Sofőr</label><input id="fDriver" placeholder="SRT Sofőr"></div>
-    </div>
-    <div class="modal-actions"><button class="small-btn" onclick="closeJobModal()">Mégse</button><button class="small-btn primary" onclick="saveJob()">Mentés</button></div>
-  </div>
-</div>
-<div id="toast" class="toast"></div>
-
-<script id="srt-functional-js">
-const SRT_KEY='srt_trans_app_v1';
-const defaultData={
-  jobs:[
-    {id:1,game:'ETS2',name:'Nemzetközi fuvar',from:'Budapest',to:'München',km:780,driver:'SRT Sofőr 01',status:'active'},
-    {id:2,game:'ETS2',name:'Hűtött szállítmány',from:'Bécs',to:'Milánó',km:910,driver:'SRT Sofőr 02',status:'active'},
-    {id:3,game:'ATS',name:'Long Haul',from:'Chicago',to:'Denver',km:1600,driver:'SRT Sofőr 03',status:'active'}
-  ],
-  drivers:[
-    {name:'SRT Sofőr 01',game:'ETS2',km:12450,status:'online',rank:'SRT Rang'},
-    {name:'SRT Sofőr 02',game:'ETS2',km:9870,status:'online',rank:'Sofőr'},
-    {name:'SRT Sofőr 03',game:'ATS',km:8320,status:'offline',rank:'Sofőr'}
-  ],
-  mods:[
-    {name:'ProMods',desc:'Kiegészítő térképcsomag ETS2-höz.',tag:'Ajánlott'},
-    {name:'RusMap',desc:'Oroszországi térképbővítés.',tag:'Extra'},
-    {name:'RoExtended',desc:'Kelet-európai térképbővítés.',tag:'Extra'},
-    {name:'SRT TRANS Pack',desc:'SRT TRANS saját kiegészítői.',tag:'Saját'}
-  ]
-};
-let data=loadData();
-function loadData(){try{return JSON.parse(localStorage.getItem(SRT_KEY))||structuredClone(defaultData)}catch(e){return structuredClone(defaultData)}}
-function persist(){localStorage.setItem(SRT_KEY,JSON.stringify(data));renderAll()}
-function showView(id){
-  document.querySelectorAll('.app-view').forEach(v=>v.classList.remove('active'));
-  const el=document.getElementById('view-'+id); if(el) el.classList.add('active');
-  document.querySelectorAll('.site-header .nav-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.site-header .nav-subitem').forEach(b=>b.classList.remove('active'));
-  document.querySelector('.site-header')?.classList.remove('mobile-open');
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function toggleMainDropdown(button){
-  const group=button.parentElement, menu=group.querySelector('.nav-submenu');
-  menu.classList.toggle('open'); group.classList.toggle('open');
-}
-function toggleSubDropdown(button){
-  const wrapper=button.parentElement, items=wrapper.querySelector('.nav-subitems');
-  document.querySelectorAll('.nav-subitems').forEach(x=>{if(x!==items)x.classList.remove('open')});
-  document.querySelectorAll('.nav-submenu-wrapper').forEach(x=>{if(x!==wrapper)x.classList.remove('open')});
-  items.classList.toggle('open'); wrapper.classList.toggle('open');
-}
-function renderJobs(){
-  const q=(document.getElementById('jobSearch')?.value||'').toLowerCase();
-  const rows=data.jobs.filter(j=>(j.name+' '+j.from+' '+j.to+' '+j.driver).toLowerCase().includes(q));
-  const body=document.getElementById('jobsBody'); if(!body)return;
-  body.innerHTML=rows.length?rows.map(j=>`<tr><td>${esc(j.name)}</td><td>${esc(j.from)}</td><td>${esc(j.to)}</td><td>${j.km} km</td><td>${esc(j.driver)}</td><td><span class="status active">${j.status==='active'?'Aktív':'Lezárt'}</span></td><td><button class="small-btn" onclick="deleteJob(${j.id})">Törlés</button></td></tr>`).join(''):'<tr><td colspan="7" class="empty">Nincs találat.</td></tr>';
-}
-function renderDrivers(){
-  const b=document.getElementById('driversBody'); if(!b)return;
-  b.innerHTML=data.drivers.map(d=>`<tr><td>${esc(d.name)}</td><td>${d.game}</td><td>${d.km.toLocaleString('hu-HU')} km</td><td><span class="status ${d.status}">${d.status==='online'?'Online':'Offline'}</span></td><td>${esc(d.rank)}</td></tr>`).join('');
-}
-function renderStats(){
-  const ets=data.jobs.filter(j=>j.game==='ETS2'), ats=data.jobs.filter(j=>j.game==='ATS');
-  const km=a=>a.reduce((s,j)=>s+Number(j.km||0),0);
-  const revenue=km(ets)*30;
-  set('statJobs',data.jobs.filter(j=>j.status==='active').length); set('statDrivers',data.drivers.filter(d=>d.status==='online').length);
-  set('statKm',km(data.jobs).toLocaleString('hu-HU')+' km'); set('statNotifications','0');
-  set('statsJobs',ets.length); set('statsKm',km(ets).toLocaleString('hu-HU')+' km'); set('statsRevenue',revenue.toLocaleString('hu-HU')+' Ft');
-  set('statsAvg',(ets.length?Math.round(km(ets)/ets.length):0).toLocaleString('hu-HU')+' km');
-  set('atsJobs',ats.length); set('atsKm',km(ats).toLocaleString('hu-HU')+' km');
-}
-function renderMods(){
-  const g=document.getElementById('modsGrid'); if(!g)return;
-  g.innerHTML=data.mods.map(m=>`<div class="mod-card"><div class="mod-card-icon">📦</div><h3>${esc(m.name)}</h3><p>${esc(m.desc)}</p><span class="mod-card-tag tag-extra">${esc(m.tag)}</span><button class="btn-dl" onclick="toast('${esc(m.name)} kiválasztva.')">Megnyitás</button></div>`).join('');
-}
-function renderAll(){renderJobs();renderDrivers();renderStats();renderMods()}
-function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-function openJobModal(game='ETS2'){document.getElementById('fGame').value=game;document.getElementById('jobModal').classList.add('open')}
-function closeJobModal(){document.getElementById('jobModal').classList.remove('open')}
-function saveJob(){
-  const j={id:Date.now(),game:document.getElementById('fGame').value,name:document.getElementById('fName').value||'Új fuvar',from:document.getElementById('fFrom').value||'Ismeretlen',to:document.getElementById('fTo').value||'Ismeretlen',km:Number(document.getElementById('fKm').value)||0,driver:document.getElementById('fDriver').value||'Nincs kiosztva',status:'active'};
-  data.jobs.push(j);persist();closeJobModal();toast('Fuvar elmentve.')
-}
-function deleteJob(id){data.jobs=data.jobs.filter(j=>j.id!==id);persist();toast('Fuvar törölve.')}
-function login(){
-  const u=document.getElementById('loginUser').value.trim(), p=document.getElementById('loginPass').value;
-  const r=document.getElementById('loginResult');
-  if(u&&p){r.textContent='Demo belépés sikeres. Éles hitelesítéshez szerveroldali backend szükséges.';r.style.color='#4ade80'}else{r.textContent='Add meg a felhasználónevet és a jelszót.';r.style.color='#f87171'}
-}
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.remove('show'),2200)}
-document.addEventListener('DOMContentLoaded',()=>{
-  document.body.style.opacity='1';
-  document.querySelectorAll('.site-header .nav > .nav-btn').forEach(btn=>{
-    const txt=btn.textContent;
-    if(txt.includes('Kezdőlap'))btn.onclick=()=>showView('home');
-    if(txt.includes('Módok'))btn.onclick=()=>showView('mods');
-    if(txt.includes('Térkép'))btn.onclick=()=>showView('map');
-    if(txt.includes('Média'))btn.onclick=()=>showView('media');
-    if(txt.includes('Piac'))btn.onclick=()=>showView('market');
-    if(txt.includes('Közösség'))btn.onclick=()=>showView('community');
-    if(txt.includes('Vezetők'))btn.onclick=()=>showView('drivers');
-  });
-  document.querySelectorAll('.nav-subitem').forEach(btn=>{
-    if(btn.textContent.includes('Fuvarok'))btn.onclick=()=>showView(btn.closest('.nav-submenu').textContent.includes('American')?'ats-jobs':'ets2-jobs');
-    if(btn.textContent.includes('Statisztika'))btn.onclick=()=>showView(btn.closest('.nav-submenu').textContent.includes('American')?'ats-stats':'ets2-stats');
-  });
-  document.querySelector('.btn-login-outline')?.addEventListener('click',e=>{e.preventDefault();showView('login')});
-  renderAll();
-});
-</script>
-
-
-<style id="srt-fuvarok-final-overrides">
-/* ===== SRT TRANS: közös ETS2 + ATS fuvarfelület ===== */
-#page-fuvarok #game-tab-ets,
-#page-fuvarok #game-tab-ats,
-#page-fuvarok > .container > .tab-nav:has(#game-tab-ets),
-#page-fuvarok #game-panel-ats { display:none !important; }
-
-/* A két játék ugyanazon a Fuvarok / Sofőrök oldalon marad. */
-#page-fuvarok #game-panel-ets { display:block !important; }
-#page-fuvarok #game-panel-ets > .section-title { display:none !important; }
-
-/* A belső játék-szűrő helyett egységes felület */
-#page-fuvarok #jatekSzuroBtns { display:none !important; }
-
-/* Csak a két kért értesítési panel legyen felül */
-#page-fuvarok #online-jatekosok-box,
-#page-fuvarok #online-jatekosok-box-ats { display:none !important; }
-
-#srt-fuvar-alerts {
-  display:flex;
-  align-items:flex-start;
-  gap:12px;
-  margin:0 0 22px;
-  flex-wrap:wrap;
-}
-.srt-alert-card {
-  position:relative;
-  min-width:220px;
-  max-width:520px;
-  border:1px solid var(--border);
-  border-radius:12px;
-  background:rgba(13,21,37,.82);
-  box-shadow:0 8px 24px rgba(0,0,0,.18);
-  overflow:hidden;
-  cursor:pointer;
-  transition:.18s ease;
-}
-.srt-alert-card:hover { transform:translateY(-1px); border-color:rgba(255,255,255,.16); }
-.srt-alert-head {
-  display:flex;
-  align-items:center;
-  gap:9px;
-  padding:11px 14px;
-  color:#fff;
-  font-size:13px;
-  font-weight:700;
-}
-.srt-alert-dot {
-  width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 8px;
-}
-.srt-alert-card.green { border-color:rgba(74,222,128,.32); }
-.srt-alert-card.red { border-color:rgba(239,68,68,.34); }
-.srt-alert-card.green .srt-alert-dot { background:#4ade80; box-shadow:0 0 9px rgba(74,222,128,.7); animation:pulse 1.25s infinite; }
-.srt-alert-card.red .srt-alert-dot { background:#ef4444; box-shadow:0 0 9px rgba(239,68,68,.7); animation:pulse 1.25s infinite; }
-.srt-alert-count { margin-left:auto; color:var(--muted); font-size:11px; font-weight:600; }
-.srt-alert-body {
-  display:none;
-  padding:0 14px 13px;
-  border-top:1px solid var(--border);
-}
-.srt-alert-card.open .srt-alert-body { display:block; }
-.srt-alert-row {
-  padding:9px 0;
-  border-bottom:1px solid rgba(255,255,255,.06);
-  color:#fff;
-  font-size:12px;
-  line-height:1.45;
-}
-.srt-alert-row:last-child { border-bottom:0; }
-.srt-alert-row small { color:var(--muted); }
-.srt-alert-empty { color:var(--muted); padding:10px 0 2px; font-size:12px; }
-#srt-fuvar-alerts.hidden { display:none; }
-@media(max-width:700px){
-  .srt-alert-card { width:100%; max-width:none; }
-}
-</style>
-<script id="srt-fuvar-final-js">
-(function(){
-  function escS(v){
-    return String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-  }
-  function fmtKm(v){ return Number(v||0).toLocaleString('hu-HU'); }
-  function fmtTime(v){
-    if(!v) return '';
-    try { return new Date(v).toLocaleString('hu-HU',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}); }
-    catch(e){ return ''; }
-  }
-
-  /* Közös, játékfüggetlen Fuvarok navigáció. */
-  window.goFuvarok = function(game, view){
-    showPage('fuvarok');
-    switchFuvarokView(view || 'fuvarok');
-    /* A részletes sofőrnézetben továbbra is választható ETS2/ATS belül,
-       de a felső játékfülek megszűntek. */
-    if(view === 'fuvarok'){
-      setTimeout(function(){
-        if(typeof window.frissitiFuvarWidgeteket === 'function') window.frissitiFuvarWidgeteket();
-        if(typeof window.frissitiOnlineJatekosokWidgeteket === 'function') window.frissitiOnlineJatekosokWidgeteket();
-      },50);
-    }
-  };
-
-  /* A két játékpanel helyett egy közös oldal maradjon. */
-  window.switchGameTab = function(game, noHashUpdate){
-    const ets=document.getElementById('game-panel-ets');
-    const ats=document.getElementById('game-panel-ats');
-    if(ets) ets.style.display='block';
-    if(ats) ats.style.display='none';
-    const a=document.getElementById('game-tab-ets'), b=document.getElementById('game-tab-ats');
-    if(a) a.classList.remove('active');
-    if(b) b.classList.remove('active');
-    if(window.frissitiFuvarWidgeteket) window.frissitiFuvarWidgeteket();
-  };
-
-  function ensureAlertUI(){
-    const page=document.getElementById('page-fuvarok');
-    if(!page || document.getElementById('srt-fuvar-alerts')) return;
-    const content=page.querySelector('#fuvarok-content');
-    if(!content) return;
-    const eyebrow=content.querySelector('.section-eyebrow');
-    const wrap=document.createElement('div');
-    wrap.id='srt-fuvar-alerts';
-    wrap.innerHTML=`
-      <div class="srt-alert-card green" id="srt-delivered-card" onclick="this.classList.toggle('open')">
-        <div class="srt-alert-head">
-          <span class="srt-alert-dot"></span>
-          <span>🚚 Leadott fuvarok</span>
-          <span class="srt-alert-count" id="srt-delivered-count">0</span>
-        </div>
-        <div class="srt-alert-body" id="srt-delivered-body"></div>
-      </div>
-      <div class="srt-alert-card red" id="srt-active-card" onclick="this.classList.toggle('open')">
-        <div class="srt-alert-head">
-          <span class="srt-alert-dot"></span>
-          <span>🚛 Aktuális fuvarok</span>
-          <span class="srt-alert-count" id="srt-active-count">0</span>
-        </div>
-        <div class="srt-alert-body" id="srt-active-body"></div>
-      </div>`;
-    if(eyebrow) eyebrow.insertAdjacentElement('afterend',wrap);
-    else content.prepend(wrap);
-  }
-
-  function getGame(e){
-    return (e && (e.jatek || e.gameType || e.fuvarTipus) || 'ETS2').toString().toLowerCase()==='ats' ? 'ATS':'ETS2';
-  }
-  function jobText(e){
-    const name=e.truckyName || e.sofor || e.driver || e.nev || e.name || 'Ismeretlen sofőr';
-    const from=e.honnan || e.from || '?';
-    const to=e.hova || e.to || '?';
-    const cargo=e.aru || e.cargo || e.fuvar || '';
-    const km=Number(e.km||0);
-    const extra=cargo ? ` <span style="color:var(--orange)">(${escS(cargo)}${km?`, ${fmtKm(km)} km`:''})</span>` : (km?` <span style="color:var(--orange)">(${fmtKm(km)} km)</span>`:'');
-    return `<strong>${escS(name)}</strong> — ${escS(from)} → ${escS(to)}${extra} <small>· ${getGame(e)}${e.idopont?' · '+fmtTime(e.idopont):''}</small>`;
-  }
-
-  window.frissitiFuvarWidgeteket = function(){
-    ensureAlertUI();
-    const delivered=Object.values(window.legutobbiFuvarokAdat || {});
-    const active=Object.values(window.aktivFuvarokAdat || {});
-    const deliveredRecent=delivered.filter(e=>e && e.idopont && (Date.now()-new Date(e.idopont).getTime())<=24*60*60*1000)
-      .sort((a,b)=>new Date(b.idopont)-new Date(a.idopont)).slice(0,10);
-    const activeRecent=active.filter(e=>e && e.idopont && (Date.now()-new Date(e.idopont).getTime())<=12*60*60*1000)
-      .sort((a,b)=>new Date(b.idopont)-new Date(a.idopont)).slice(0,10);
-
-    const dc=document.getElementById('srt-delivered-count'), ac=document.getElementById('srt-active-count');
-    const db=document.getElementById('srt-delivered-body'), ab=document.getElementById('srt-active-body');
-    const dcard=document.getElementById('srt-delivered-card'), acard=document.getElementById('srt-active-card');
-    if(!dc||!ac||!db||!ab) return;
-
-    dc.textContent=deliveredRecent.length;
-    ac.textContent=activeRecent.length;
-    db.innerHTML=deliveredRecent.length ? deliveredRecent.map(jobText).map(x=>`<div class="srt-alert-row">${x}</div>`).join('') : '<div class="srt-alert-empty">Nincs frissen leadott fuvar.</div>';
-    ab.innerHTML=activeRecent.length ? activeRecent.map(jobText).map(x=>`<div class="srt-alert-row">${x}</div>`).join('') : '<div class="srt-alert-empty">Jelenleg nincs aktív fuvar.</div>';
-
-    dcard.style.display=deliveredRecent.length ? '' : 'none';
-    acard.style.display=activeRecent.length ? '' : 'none';
-  };
-
-  /* A régi statikus két dobozt elrejtjük, mert az új kompakt panelek helyettesítik őket. */
-  function hideOldWidgets(){
-    ['aktiv-fuvar-box','ki-vezet-eppen-box','online-jatekosok-box','online-jatekosok-box-ats'].forEach(id=>{
-      const e=document.getElementById(id); if(e) e.style.display='none';
-    });
-  }
-
-  function boot(){
-    ensureAlertUI();
-    hideOldWidgets();
-    if(document.getElementById('page-fuvarok')?.classList.contains('active')){
-      setTimeout(window.frissitiFuvarWidgeteket,80);
-    }
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
-  else boot();
-
-  /* A meglévő adatfrissítések után is frissítsük az új paneleket. */
-  setInterval(function(){
-    hideOldWidgets();
-    if(document.getElementById('page-fuvarok')?.classList.contains('active')) window.frissitiFuvarWidgeteket();
-  },5000);
-})();
-</script>
-
 </body>
 </html>
