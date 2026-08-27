@@ -1245,13 +1245,12 @@
     }
 
     #page-piac .section-eyebrow {
-      display: block;
-      padding: 0;
-      background: transparent !important;
-      color: #111 !important;
-      border: 0 !important;
-      border-radius: 0;
-      font-size: 13px !important;
+      display: inline-block;
+      padding: 4px 8px;
+      background: #2f80b9;
+      color: #fff !important;
+      border-radius: 2px;
+      font-size: 9px !important;
     }
 
     #page-piac #pickup-divizio-banner {
@@ -7283,7 +7282,7 @@ body { font-size: 15px; }
       if (tagoklistaBtn) tagoklistaBtn.style.display = 'none';
       if (truckyTagokBtn) truckyTagokBtn.style.display = loggedIn ? 'flex' : 'none';
       if (tagoklistaBtn) tagoklistaBtn.style.display = loggedIn ? 'flex' : 'none';
-      if (uzenetBtn) uzenetBtn.style.display = deputy ? 'flex' : 'none';
+      if (uzenetBtn) uzenetBtn.style.display = admin ? 'flex' : 'none';
       // A Discord-kódos admin-belépő widgetek (Média + Fuvarok ETS2/ATS) csak
       // már bejelentkezett adminoknak látszanak, hogy a Discord nevet és a
       // "Kód kérése" lehetőséget ne lássa bárki.
@@ -7303,7 +7302,7 @@ body { font-size: 15px; }
       if (jelentkezokBtn2) jelentkezokBtn2.style.display = 'none';
       if (truckyTagokBtn2) truckyTagokBtn2.style.display = loggedIn ? 'flex' : 'none';
       if (tagoklistaBtn2) tagoklistaBtn2.style.display = loggedIn ? 'flex' : 'none';
-      if (uzenetBtn2) uzenetBtn2.style.display = deputy ? 'flex' : 'none';
+      if (uzenetBtn2) uzenetBtn2.style.display = admin ? 'flex' : 'none';
       frissitiAdminOldalZarat();
     }
 
@@ -9135,6 +9134,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     });
 
     window.megnyitUzenetKuldo = function() {
+      if (!isAdminUser()) return;
       document.getElementById('uzenet-modal').style.display = 'flex';
       renderUzenetCimzettLista(osszesTagAdat.length ? osszesTagAdat : []);
       if (!osszesTagAdat.length) toltiOsszesTagot().then(() => renderUzenetCimzettLista(osszesTagAdat));
@@ -9398,7 +9398,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
 
 <script type="module" id="srt-page-view-counter">
   import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
   (async function () {
     try {
@@ -9414,10 +9414,12 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         }
       });
 
-      // One view is counted per page load.
-      await runTransaction(counterRef, (current) => {
-        const n = Number(current || 0);
-        return Number.isFinite(n) ? n + 1 : 1;
+      // A számláló növelését a Railway szerver végzi Firebase Admin SDK-val,
+      // így vendégként, mobilnetről és Wi-Fi-ről is biztosan működik.
+      await fetch('https://srt-trans-trucky-bot-production.up.railway.app/page-view', {
+        method: 'GET',
+        cache: 'no-store',
+        keepalive: true
       });
     } catch (err) {
       console.warn('[SRT] Oldalmegnyitás számláló nem frissíthető:', err);
