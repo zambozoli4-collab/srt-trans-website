@@ -3842,7 +3842,7 @@ body { font-size: 15px; }
           <div id="pickup-divizio-banner-text" style="color:var(--text);font-size:14px;"></div>
         </div>
       </div>
-     <p class="section-eyebrow" style="background: transparent;">Trucky élő adatok</p>
+      <p class="section-eyebrow">Trucky élő adatok</p>
       <h2 class="section-title">📊 Piac</h2>
       <div id="ceg-attekinto-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
@@ -4263,10 +4263,19 @@ body { font-size: 15px; }
 
     async function loadJsonBin(force = false) {
       if (!force && allData !== null && allJobs !== null) return true;
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3000);
+      // Megjegyzés: szándékosan NEM AbortController/AbortSignal-t használunk
+      // a fetch időtúllépéséhez, mert egyes sandbox-előnézetekben (ahol a
+      // fetch postMessage-en keresztül fut a szülő ablakhoz) az AbortSignal
+      // objektum nem klónozható, és "DataCloneError"-t dob. Promise.race-es
+      // időtúllépéssel ugyanaz az eredmény, ez a probléma nélkül.
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Időtúllépés (3s)')), 3000);
+      });
       try {
-        const res = await fetch(`${FIREBASE_URL}/srtdata.json`, { signal: controller.signal });
+        const res = await Promise.race([
+          fetch(`${FIREBASE_URL}/srtdata.json`),
+          timeoutPromise
+        ]);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json();
         allData = json?.data || {};
@@ -4281,7 +4290,6 @@ body { font-size: 15px; }
         console.warn('SRT TRANS adatbetöltési hiba:', e);
         return false;
       } finally {
-        clearTimeout(timeout);
         document.body.style.opacity = '1';
       }
     }
@@ -9412,15 +9420,24 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
           const value = Number(snap.val() || 0);
           valueEl.textContent = value.toLocaleString('hu-HU');
         }
+      }, (err) => {
+        console.error('[SRT] Oldalmegnyitás számláló olvasási hiba (Firebase szabályok?):', err);
       });
 
       // A számláló növelését a Railway szerver végzi Firebase Admin SDK-val,
       // így vendégként, mobilnetről és Wi-Fi-ről is biztosan működik.
-      await fetch('https://srt-trans-trucky-bot-production.up.railway.app/page-view', {
+      // FONTOS: a fetch() önmagában NEM dob hibát 4xx/5xx válasznál, ezért
+      // kifejezetten ellenőrizzük a választ, különben a szerveroldali hiba
+      // (pl. hiányzó FIREBASE_SERVICE_ACCOUNT a Railway-en) néma marad.
+      const resp = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/page-view', {
         method: 'GET',
         cache: 'no-store',
         keepalive: true
       });
+      if (!resp.ok) {
+        const hibaSzoveg = await resp.text().catch(() => '');
+        console.error('[SRT] Oldalmegnyitás számláló szerverhiba:', resp.status, hibaSzoveg);
+      }
     } catch (err) {
       console.warn('[SRT] Oldalmegnyitás számláló nem frissíthető:', err);
     }
@@ -11331,4 +11348,3 @@ function srtJobTruckId(j) {
 </style>
 <!-- PIAC ÉLŐ ADATOK FELIRAT: FEKETE SZÖVEG -->
 <style>#page-piac .section-eyebrow { color: #000 !important; }</style>
-
