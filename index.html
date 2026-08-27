@@ -5288,12 +5288,143 @@
         });
         if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error || `Bot hiba (${res.status})`); }
         await window.toltiTruckyTagokat();
+        // Minden sikeres Trucky-szinkron után ellenőrizzük, hogy van-e olyan
+        // jóváhagyott weboldali tag, aki már nincs a friss Trucky tagnévsorban
+        // - ha igen, automatikusan eltávolítjuk a weboldalról és a Discordról is.
+        await window.ellenorziEsEltavolitTavozottTagokat();
       } catch (e) {
         alert('❌ Hiba: ' + e.message);
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = '🔄 Frissítés Truckyból'; }
       }
     };
+
+    // ---------------------------------------------------------------------
+    // AUTOMATIKUS TÁVOZÁS-ÉRZÉKELÉS
+    // Összeveti a friss Trucky tagnévsort (srtdata/data) a jóváhagyott
+    // weboldali regisztrációkkal (regisztraciok). Aki jóváhagyott állapotú,
+    // de a truckyNeve már nem szerepel a Trucky cég friss tagnévsorában,
+    // azt automatikusan töröljük a weboldalról, kirúgjuk a Discordról, és
+    // eltávolítjuk a Trucky-statisztikáját is.
+    //
+    // Biztonsági korlátok:
+    // - Csak fő-admin (Cobra) bejelentkezett munkamenetében fut le ténylegesen,
+    //   mert a törlés/DELETE a Firebase szabályok miatt admin auth tokent igényel.
+    // - Ha a friss Trucky-tagnévsor lekérése üres vagy sikertelen, NEM csinál
+    //   semmit (nehogy egy hibás/üres API-válasz miatt mindenkit kirúgjon).
+    // - A törléshez ugyanazokat a bot-végpontokat hívja, mint a kézi admin törlés.
+    // ---------------------------------------------------------------------
+    window.ellenorziEsEltavolitTavozottTagokat = async function() {
+      if (!isFullAdminUser()) return { futott: false, ok: 'nincs jogosultsag' };
+      try {
+        const truckyRes = await fetch(`${FIREBASE_URL}/srtdata/data.json`);
+        const truckyAdat = await truckyRes.json() || {};
+        const truckyTagNevek = new Set(
+          Object.entries(truckyAdat)
+            .filter(([id]) => !id.startsWith('_'))
+            .map(([, u]) => (u?.truckyName || '').trim().toLowerCase())
+            .filter(Boolean)
+        );
+
+        // Biztonsági kapu: ha nincs egyetlen érvényes Trucky tag sem a
+        // friss listában, valószínűleg hibás/üres a szinkron - ne törölj senkit.
+        if (truckyTagNevek.size === 0) {
+          console.warn('[Trucky auto-eltávolítás] Üres Trucky tagnévsor, kihagyva a biztonság kedvéért.');
+          return { futott: false, ok: 'ures trucky lista' };
+        }
+
+        const regRes = await fetch(`${DB_URL}/regisztraciok.json${await regAuthQS()}`);
+        const regAdat = await regRes.json() || {};
+        const regBejegyzesek = Object.entries(regAdat);
+
+        const tavozottak = regBejegyzesek.filter(([uid, r]) => {
+          if (r?.statusz !== 'jovahagyva') return false;
+          const truckyNev = (r?.truckyNev || '').trim().toLowerCase();
+          if (!truckyNev) return false;
+          return !truckyTagNevek.has(truckyNev);
+        });
+
+        if (!tavozottak.length) return { futott: true, eltavolitva: 0 };
+
+        let sikeresSzam = 0;
+        for (const [uid, rec] of tavozottak) {
+          try {
+            await fetch(`${DB_URL}/regisztraciok/${uid}.json${await regAuthQS()}`, { method: 'DELETE' });
+
+            if (rec?.discordNev) {
+              try {
+                await fetch('https://srt-trans-trucky-bot-production.up.railway.app/kick-member', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+                  body: JSON.stringify({ discordNev: rec.discordNev })
+                });
+              } catch (e) { console.warn('[Trucky auto-eltávolítás] Discord kirúgás hiba:', e.message); }
+            }
+
+            if (rec?.steam) {
+              try {
+                await fetch('https://srt-trans-trucky-bot-production.up.railway.app/trucky-tag-eltavolitas', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+                  body: JSON.stringify({ steamId: rec.steam })
+                });
+              } catch (e) { console.warn('[Trucky auto-eltávolítás] Trucky eltávolítás hiba:', e.message); }
+            }
+
+            try {
+              await fetch('https://srt-trans-trucky-bot-production.up.railway.app/torol-statisztika', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+                body: JSON.stringify({ discordNev: rec?.discordNev, truckyNev: rec?.truckyNev })
+              });
+            } catch (e) { console.warn('[Trucky auto-eltávolítás] Statisztika törlés hiba:', e.message); }
+
+            await naploAdminEsemenytWeb('auto_torles_trucky_tavozas', {
+              nev: rec?.nev, discordNev: rec?.discordNev, truckyNev: rec?.truckyNev,
+              torolte: 'Automatikus (Trucky tagnévsor szinkron)'
+            });
+
+            sikeresSzam++;
+          } catch (e) {
+            console.warn('[Trucky auto-eltávolítás] Hiba a(z) ' + (rec?.nev || uid) + ' eltávolításánál:', e.message);
+          }
+        }
+
+        if (sikeresSzam > 0) {
+          toltiOsszesTagot();
+        }
+        return { futott: true, eltavolitva: sikeresSzam };
+      } catch (e) {
+        console.warn('[Trucky auto-eltávolítás] Általános hiba:', e.message);
+        return { futott: false, ok: e.message };
+      }
+    };
+
+    // Amíg egy fő-admin be van jelentkezve, időzítve (20 percenként) automatikusan
+    // lefuttatjuk a Trucky-szinkront + a távozás-ellenőrzést is, hogy ne kelljen
+    // mindig kézzel megnyomni a "Frissítés Truckyból" gombot.
+    let automatikusTruckySzinkronIdozito = null;
+    function inditAutomatikusTruckySzinkront() {
+      if (automatikusTruckySzinkronIdozito) return;
+      automatikusTruckySzinkronIdozito = setInterval(async () => {
+        if (!isFullAdminUser()) return;
+        try {
+          const res = await fetch('https://srt-trans-trucky-bot-production.up.railway.app/trucky-tagok-szinkron', {
+            method: 'POST',
+            headers: { 'X-Upload-Secret': 'srt-trans-upload-2024' }
+          });
+          if (res.ok) {
+            await window.ellenorziEsEltavolitTavozottTagokat();
+          }
+        } catch (e) { console.warn('[Automatikus Trucky szinkron] hiba:', e.message); }
+      }, 20 * 60 * 1000); // 20 percenként
+    }
+    function leallitAutomatikusTruckySzinkront() {
+      if (automatikusTruckySzinkronIdozito) {
+        clearInterval(automatikusTruckySzinkronIdozito);
+        automatikusTruckySzinkronIdozito = null;
+      }
+    }
 
     window.applyContentGate = function() {
       gateEllenorzesKesz = true;
@@ -5535,9 +5666,21 @@
         if (loggedInDiv) loggedInDiv.style.display = 'none';
         if (tabsBar) tabsBar.style.display = 'flex';
         window.switchAuthTab('login');
+        leallitAutomatikusTruckySzinkront();
       }
 
       await frissitiSajatAllapotot();
+
+      // Ha fő-admin jelentkezett be, elindítjuk (vagy futni hagyjuk) az
+      // időzített Trucky-szinkront + automatikus távozás-ellenőrzést, és
+      // rögtön be is lépéskor lefuttatjuk egyszer, hogy az esetleges
+      // időközben távozott tagokat azonnal észlelje, ne csak 20 perc múlva.
+      if (user && isFullAdminUser()) {
+        inditAutomatikusTruckySzinkront();
+        window.ellenorziEsEltavolitTavozottTagokat();
+      } else if (!user) {
+        leallitAutomatikusTruckySzinkront();
+      }
     });
 
     window.megnyitUzenetKuldo = function() {
