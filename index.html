@@ -4314,7 +4314,23 @@ body { font-size: 15px; }
       banner.style.display = 'flex';
     }
 
-    setInterval(() => { loadJsonBin(true).then(renderPickupDivizioBanner); }, 60 * 1000); // percenként újratölti és ellenőrzi (törlés/lejárat esetén eltűnik)
+    // A divízió-banner ellenőrzése SAJÁT, kis méretű lekéréssel történik
+    // (csak a '_pickupDivizio' rész-ágat kéri le a Firebase-től, NEM a teljes
+    // srtdata.json-t) — így ez a percenkénti/gyakori ellenőrzés nem terheli
+    // feleslegesen a letöltési kvótát. Csak akkor esik vissza a teljes
+    // loadJsonBin(true)-ra, ha ez a könnyű lekérés valamiért hibázik.
+    async function pickupDivizioEllenorzes() {
+      try {
+        const res = await fetch(`${FIREBASE_URL}/srtdata/data/_pickupDivizio.json`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const d = await res.json();
+        if (allData) allData._pickupDivizio = d || null;
+        renderPickupDivizioBanner();
+      } catch (e) {
+        console.warn('Divízió-banner ellenőrzési hiba:', e);
+      }
+    }
+    setInterval(pickupDivizioEllenorzes, 3 * 60 * 1000); // 3 percenként, kis méretű lekéréssel
 
     function getInitials(name) {
       return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -5560,7 +5576,7 @@ body { font-size: 15px; }
       if (e.key === 'ArrowRight') lightboxNav(1);
     }
 
-    const AUTO_REFRESH_MS = 30000;
+    const AUTO_REFRESH_MS = 90000; // 90mp — ritkítva a Firebase letöltési kvóta kímélése miatt
 
     function getActivePage() {
       const active = document.querySelector('.page.active');
