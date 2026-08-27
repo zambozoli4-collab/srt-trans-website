@@ -3218,7 +3218,7 @@ body { font-size: 15px; }
       <aside class="srt-dashboard-side">
         <div class="srt-dash-panel">
           <div class="srt-dash-title">Jelenlegi szolgáltatás állapota</div>
-          <div class="srt-service-row"><span>Dedikált ETS2 szerver</span><em>Üzemképes</em></div>
+          <div class="srt-service-row"><span>Dedikált ETS2 szerver</span><em id="srt-dedikalt-szerver-status">Üzemképes</em></div>
           <div class="srt-service-row"><span>Oldalmegnyitások</span><strong id="srt-page-views">—</strong></div>
         </div>
 
@@ -9503,6 +9503,35 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       }
     } catch (err) {
       console.warn('[SRT] Oldalmegnyitás számláló nem frissíthető:', err);
+    }
+  })();
+</script>
+
+
+<script type="module" id="srt-dedikalt-szerver-status-script">
+  import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  (function () {
+    try {
+      const app = getApp();
+      const db = getDatabase(app);
+      const statusRef = ref(db, 'siteStats/dedikaltSzerver');
+      const elemEl = document.getElementById('srt-dedikalt-szerver-status');
+
+      onValue(statusRef, (snap) => {
+        if (!elemEl) return;
+        const adat = snap.val();
+        // Amíg a bot még sosem küldött állapotüzenetet (pl. friss telepítés
+        // után), nincs adat — ilyenkor maradjon a HTML-be írt alapérték.
+        if (!adat) return;
+        elemEl.textContent = adat.online ? 'Üzemképes' : 'Leállt';
+        elemEl.style.color = adat.online ? '' : 'var(--red, #ef4444)';
+      }, (err) => {
+        console.error('[SRT] Dedikált szerver állapot olvasási hiba (Firebase szabályok?):', err);
+      });
+    } catch (err) {
+      console.warn('[SRT] Dedikált szerver állapot nem frissíthető:', err);
     }
   })();
 </script>
