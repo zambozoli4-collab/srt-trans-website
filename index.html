@@ -3651,7 +3651,7 @@ body { font-size: 15px; }
           <div id="jobs-view">
             <div class="driver-detail-header" style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; justify-content: space-between;">
               <div style="display:flex; align-items:center; gap:16px;">
-                <div id="detailAvatar" style="width: 56px; height: 52px; border-radius: 10px; background: linear-gradient(135deg, #6b0f2b, #9b1040); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;"></div>
+                <div id="detailAvatar" style="width: 56px; height: 52px; border-radius: 10px; background: transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;"></div>
                 <div>
                   <div id="detailName" style="font-size: 20px; font-weight: 800; color: #fff;"></div>
                   <div id="detailSub" style="font-size: 13px; color: var(--muted); margin-top: 2px;"></div>
@@ -4866,6 +4866,68 @@ body { font-size: 15px; }
       }
     }
 
+    // A vezetőségi tagok Trucky sofőr-neve → a "csapat" oldalon feltöltött
+    // profilkép azonosítója (allData['_avatar_' + id]). Ha egy sofőr neve
+    // ide illik, a kamion-ikon helyett az ő valódi feltöltött fotóját
+    // mutatjuk (a listában és a sofőr-részletező oldalon is).
+    const VEZETOSEG_NEV_TERKEP = {
+      'cobra': 'cobra',
+      'eric19792': 'erik',
+      'boby': 'boby',
+      'batki márk': 'spiderman',
+      'marci': 'marcika'
+    };
+    // A többi sofőrnél a random, "fura" identicon minta helyett egy névhez
+    // illő emoji-ikont mutatunk (kör alakú, egyedi háttérszínnel). Ha valaki
+    // nincs benne ebben a listában, marad a generált identicon.
+    const DRIVER_EMOJI_TERKEP = {
+      'imibazsi1': '🦉',
+      'muszka_b.18': '🐻‍❄️',
+      'kellermilan150': '⚽',
+      'macika1990': '🧸',
+      'thebaldguy_official': '🦲',
+      'robertohd': '🎥',
+      'lanczhunoratilla': '⚔️',
+      'norbi': '🦁',
+      'sanyika1998hun': '🎮',
+      'attys31': '🐴',
+      'kovácslacika': '⚒️',
+      'attipapi': '🦸',
+      'farkaslorandattila': '🐺',
+      'sada vlog': '🎬',
+      'silverdani': '🥈',
+      'fero': '🌻',
+      'istván': '👑',
+      'kozsu': '🦊',
+      'gandalf': '🧙',
+      'halaslevi01': '🐟',
+      'hunorka66': '🦅',
+      '4lex': '🚀',
+      'yyurs21': '🌊'
+    };
+    function emojiAvatarSzin(str) {
+      let h = 0;
+      for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+      return h % 360;
+    }
+    // Egy sofőr avatar HTML-jét adja vissza (feltöltött fotó → egyedi emoji →
+    // generált identicon sorrendben), bárhonnan hívható (lista, részletező oldal).
+    function driverAvatarHtml(name, sizePx) {
+      const size = sizePx || 40;
+      const nameKey = String(name || '').trim().toLowerCase();
+      const vezetosegId = VEZETOSEG_NEV_TERKEP[nameKey];
+      const vezetosegKep = vezetosegId ? (allData && allData['_avatar_' + vezetosegId]) : null;
+      const emojiIkon = DRIVER_EMOJI_TERKEP[nameKey];
+      if (vezetosegKep) {
+        return `<img src="${vezetosegKep}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none';this.parentElement.innerHTML='🚛'"/>`;
+      } else if (emojiIkon) {
+        return `<div style="width:${size}px;height:${size}px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.5)}px;background:hsl(${emojiAvatarSzin(nameKey)},60%,45%);">${emojiIkon}</div>`;
+      } else {
+        const generatedAvatarUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(nameKey)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+        return `<img src="${generatedAvatarUrl}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none';this.parentElement.innerHTML='🚛'"/>`;
+      }
+    }
+
     async function renderDrivers() {
       const list = document.getElementById('driversList');
       list.innerHTML = '<div style="padding: 12px 18px; color: var(--muted); font-size: 13px;">Betöltés...</div>';
@@ -4906,50 +4968,6 @@ body { font-size: 15px; }
         return;
       }
       window._driversSortedOrder = drivers.map(nameOfEntry);
-      // A vezetőségi tagok Trucky sofőr-neve → a "csapat" oldalon feltöltött
-      // profilkép azonosítója (allData['_avatar_' + id]). Ha egy sofőr neve
-      // ide illik, a kamion-ikon helyett az ő valódi feltöltött fotóját
-      // mutatjuk a listában.
-      const VEZETOSEG_NEV_TERKEP = {
-        'cobra': 'cobra',
-        'eric19792': 'erik',
-        'boby': 'boby',
-        'batki márk': 'spiderman',
-        'marci': 'marcika'
-      };
-      // A többi sofőrnél a random, "fura" identicon minta helyett egy névhez
-      // illő emoji-ikont mutatunk (kör alakú, egyedi háttérszínnel). Ha valaki
-      // nincs benne ebben a listában, marad a generált identicon.
-      const DRIVER_EMOJI_TERKEP = {
-        'imibazsi1': '🦉',
-        'muszka_b.18': '🐻‍❄️',
-        'kellermilan150': '⚽',
-        'macika1990': '🧸',
-        'thebaldguy_official': '🦲',
-        'robertohd': '🎥',
-        'lanczhunoratilla': '⚔️',
-        'norbi': '🦁',
-        'sanyika1998hun': '🎮',
-        'attys31': '🐴',
-        'kovácslacika': '⚒️',
-        'attipapi': '🦸',
-        'farkaslorandattila': '🐺',
-        'sada vlog': '🎬',
-        'silverdani': '🥈',
-        'fero': '🌻',
-        'istván': '👑',
-        'kozsu': '🦊',
-        'gandalf': '🧙',
-        'halaslevi01': '🐟',
-        'hunorka66': '🦅',
-        '4lex': '🚀',
-        'yyurs21': '🌊'
-      };
-      function emojiAvatarSzin(str) {
-        let h = 0;
-        for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-        return h % 360;
-      }
       list.innerHTML = drivers.map(([id, u], idx) => {
         const name = u.truckyName || id;
         const jobs = (allJobs[jobKey(name)] || []).filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats').length;
@@ -4957,19 +4975,7 @@ body { font-size: 15px; }
         const nameEsc = name.replace(/'/g, "\\'");
         const isFirst = idx === 0;
         const isLast = idx === drivers.length - 1;
-        const nameKey = name.trim().toLowerCase();
-        const vezetosegId = VEZETOSEG_NEV_TERKEP[nameKey];
-        const vezetosegKep = vezetosegId ? allData['_avatar_' + vezetosegId] : null;
-        const emojiIkon = DRIVER_EMOJI_TERKEP[nameKey];
-        const generatedAvatarUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(nameKey)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
-        let avatarKepHtml;
-        if (vezetosegKep) {
-          avatarKepHtml = `<img src="${vezetosegKep}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none';this.parentElement.innerHTML='🚛'"/>`;
-        } else if (emojiIkon) {
-          avatarKepHtml = `<div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;background:hsl(${emojiAvatarSzin(nameKey)},60%,45%);">${emojiIkon}</div>`;
-        } else {
-          avatarKepHtml = `<img src="${generatedAvatarUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none';this.parentElement.innerHTML='🚛'"/>`;
-        }
+        const avatarKepHtml = driverAvatarHtml(name, 40);
         const moveButtons = isAdminMode() ? `
             <div style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;" onclick="event.stopPropagation();">
               <button onclick="moveDriver('${nameEsc}', -1)" ${isFirst ? 'disabled' : ''} title="Feljebb"
@@ -5089,7 +5095,7 @@ body { font-size: 15px; }
         activeEl.classList.add('active');
       }
       document.getElementById('jobs-view').style.display = 'block';
-      document.getElementById('detailAvatar').innerHTML = `<img src="data:image/png;base64,PLACEHOLDER" style="width:32px;height:32px;object-fit:contain;" onerror="this.outerHTML='🚛'"/>`;
+      document.getElementById('detailAvatar').innerHTML = driverAvatarHtml(driverName, 52);
       document.getElementById('detailName').textContent = driverName;
       const u = Object.values(allData || {}).find(d => d && d.truckyName === driverName) || {};
       const osszesFuvar = allJobs[jobKey(driverName)] || [];
