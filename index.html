@@ -3128,6 +3128,7 @@ body { font-size: 15px; }
       <button class="nav-btn" id="nav-terkep" onclick="showPage('terkep')"><span>🗺 Térkép</span></button>
       <button class="nav-btn" id="nav-kepek" onclick="showPage('kepek')"><span>🎬 Média</span></button>
       <button class="nav-btn" id="nav-piac" onclick="showPage('piac')" style="position:relative;"><span>📊 Piac</span><span id="piac-nav-dot" style="display:none;position:absolute;top:8px;right:10px;width:9px;height:9px;background:var(--orange);border-radius:50%;box-shadow:0 0 0 2px var(--bg,#0b0b0f);"></span></button>
+      <button class="nav-btn" id="nav-pickupdivizio" onclick="showPage('pickupdivizio')" style="position:relative;"><span>📦 Pickup Division</span><span id="pickupdivizio-nav-dot" style="display:none;position:absolute;top:8px;right:10px;width:9px;height:9px;background:var(--orange);border-radius:50%;box-shadow:0 0 0 2px var(--bg,#0b0b0f);"></span></button>
       <button class="nav-btn" id="nav-kozosseg" onclick="showPage('kozosseg')"><span>💬 Közösség</span></button>
       <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')"><span>👥 Vezetők</span></button>
     </nav>
@@ -3164,6 +3165,7 @@ body { font-size: 15px; }
     <button class="nav-btn" id="mob-nav-terkep" onclick="showPage('terkep');closeMobileNav()">🗺 Térkép</button>
     <button class="nav-btn" id="mob-nav-kepek" onclick="showPage('kepek');closeMobileNav()">🎬 Média</button>
     <button class="nav-btn" id="mob-nav-piac" onclick="showPage('piac');closeMobileNav()" style="position:relative;">📊 Piac<span id="piac-nav-dot-mob" style="display:none;position:absolute;top:6px;right:14px;width:9px;height:9px;background:var(--orange);border-radius:50%;"></span></button>
+    <button class="nav-btn" id="mob-nav-pickupdivizio" onclick="showPage('pickupdivizio');closeMobileNav()" style="position:relative;">📦 Pickup Division<span id="pickupdivizio-nav-dot-mob" style="display:none;position:absolute;top:6px;right:14px;width:9px;height:9px;background:var(--orange);border-radius:50%;"></span></button>
     <button class="nav-btn" id="mob-nav-kozosseg" onclick="showPage('kozosseg');closeMobileNav()">💬 Közösség</button>
     <button class="nav-btn" id="mob-nav-csapat" onclick="showPage('csapat');closeMobileNav()">👥 Vezetők</button>
     <a id="mobile-trucky-download" class="btn-trucky trucky-dl-btn" href="https://truckyapp.com/client-download" target="_blank" style="display:none;">⬇ Trucky letöltés</a>
@@ -3858,11 +3860,11 @@ body { font-size: 15px; }
     <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-piac" data-for="page-piac"></div>
     <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-piac"></div>
     <div class="container-wide">
-      <!-- Discordról érkező Pickup kép: mindig a Piac oldal tetején jelenik meg. -->
-      <div id="pickup-divizio-banner" style="display:none;align-items:center;gap:14px;padding:12px 18px;background:linear-gradient(135deg, rgba(249,115,22,0.18), rgba(249,115,22,0.06));border:1px solid rgba(249,115,22,0.4);border-radius:12px;margin-bottom:20px;">
-        <img id="pickup-divizio-banner-img" src="" alt="Pickup" onclick="openLightbox([{url:this.src, nev:'Pickup'}], 0)" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;cursor:pointer;">
+      <!-- Bot.py-ból (Claude vision) érkező Pickup divízió-kontraktus: mindig a Piac oldal tetején jelenik meg, rákattintva a részletes "Pickup Division" oldalra visz. -->
+      <div id="pickup-divizio-banner" onclick="showPage('pickupdivizio')" style="display:none;align-items:center;gap:14px;padding:12px 18px;background:linear-gradient(135deg, rgba(249,115,22,0.18), rgba(249,115,22,0.06));border:1px solid rgba(249,115,22,0.4);border-radius:12px;margin-bottom:20px;cursor:pointer;">
+        <div id="pickup-divizio-banner-icon" style="width:56px;height:56px;border-radius:10px;flex-shrink:0;background:rgba(249,115,22,0.16);display:flex;align-items:center;justify-content:center;font-size:26px;">📦</div>
         <div>
-          <div style="font-weight:700;color:var(--orange);font-size:14px;">📦 Új Pickup kép</div>
+          <div id="pickup-divizio-banner-title" style="font-weight:700;color:var(--orange);font-size:14px;">📦 Új Pickup divízió</div>
           <div id="pickup-divizio-banner-text" style="color:var(--text);font-size:14px;"></div>
         </div>
       </div>
@@ -3918,6 +3920,18 @@ body { font-size: 15px; }
       <h3 style="color:#fff;font-size:18px;margin:40px 0 14px;">📰 Céges hírfolyam</h3>
       <div id="hirfolyam-list" style="display:flex;flex-direction:column;gap:12px;">
         <div style="color:var(--muted);">Betöltés...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-pickupdivizio" style="position:relative;">
+    <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-pickupdivizio" data-for="page-pickupdivizio"></div>
+    <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-pickupdivizio"></div>
+    <div class="container-wide">
+      <p class="section-eyebrow">Discord kép alapján, automatikusan</p>
+      <h2 class="section-title">📦 Pickup Division</h2>
+      <div id="pickupdivizio-content">
+        <div style="text-align:center;padding:60px 20px;color:var(--text);opacity:.65;">⏳ Betöltés...</div>
       </div>
     </div>
   </div>
@@ -4318,27 +4332,174 @@ body { font-size: 15px; }
       }
     }
 
+    // A divízió-adat mostantól a bot.py-ból (Claude vision-nal kiolvasott,
+    // strukturált JSON: divizioNev, szerzodesSzam, sorok[] stb.) érkezik,
+    // nem egy nyers képernyőkép-URL-ből — lásd _pickupDivizio a Firebase-ben.
+    function pdEsc(v) {
+      return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
     function renderPickupDivizioBanner() {
       const banner = document.getElementById('pickup-divizio-banner');
       const dot = document.getElementById('piac-nav-dot');
       const dotMob = document.getElementById('piac-nav-dot-mob');
+      const dot2 = document.getElementById('pickupdivizio-nav-dot');
+      const dot2Mob = document.getElementById('pickupdivizio-nav-dot-mob');
       const d = allData?._pickupDivizio;
-      const aktiv = d && Date.now() <= d.lejar;
+      const aktiv = !!(d && d.lejar && Date.now() <= d.lejar && Array.isArray(d.sorok) && d.sorok.length);
 
-      if (dot) dot.style.display = aktiv ? 'block' : 'none';
-      if (dotMob) dotMob.style.display = aktiv ? 'block' : 'none';
+      [dot, dotMob, dot2, dot2Mob].forEach(el => { if (el) el.style.display = aktiv ? 'block' : 'none'; });
 
       if (!banner) return;
       if (!aktiv) {
         banner.style.display = 'none';
         return;
       }
-      document.getElementById('pickup-divizio-banner-img').src = d.kep;
-      document.getElementById('pickup-divizio-banner-text').textContent = d.uzenet;
+      const kesz = d.sorok.filter(r => r.aktualis >= r.cel).length;
+      const teljesitve = kesz === d.sorok.length;
+      document.getElementById('pickup-divizio-banner-icon').textContent = teljesitve ? '✅' : '📦';
+      document.getElementById('pickup-divizio-banner-title').textContent = `📦 ${d.divizioNev || ''} divízió${d.szerzodesSzam ? ' #' + d.szerzodesSzam : ''}`;
+      document.getElementById('pickup-divizio-banner-text').textContent = teljesitve
+        ? 'Teljesítve! Kattints a részletekért.'
+        : `${kesz}/${d.sorok.length} sor kész — kattints a részletekért.`;
       banner.style.display = 'flex';
     }
 
-    // A divízió-banner ellenőrzése SAJÁT, kis méretű lekéréssel történik
+    // Melyik TASKS-sorok vannak épp lenyitva (index szerint) - a weboldal
+    // saját, kliens-oldali állapota, nem jön a Firebase-ből.
+    const _pdExpandedRows = new Set();
+
+    window.pdToggleRow = function(idx) {
+      if (_pdExpandedRows.has(idx)) _pdExpandedRows.delete(idx);
+      else _pdExpandedRows.add(idx);
+      renderPickupDivizioPage();
+    };
+
+    function pdFormatMoney(v) {
+      const n = (typeof v === 'number') ? v : parseInt(String(v ?? '').replace(/[^\d-]/g, ''), 10);
+      if (!Number.isFinite(n)) return pdEsc(v);
+      return n.toLocaleString('hu-HU');
+    }
+
+    function renderPickupDivizioPage() {
+      const el = document.getElementById('pickupdivizio-content');
+      if (!el) return;
+      const d = allData?._pickupDivizio;
+      const aktiv = !!(d && d.lejar && Date.now() <= d.lejar && Array.isArray(d.sorok) && d.sorok.length);
+
+      if (!aktiv) {
+        el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text);opacity:.65;">📦 Jelenleg nincs aktív Pickup divízió-kontraktus.<br>Amint valaki felteszi az új divízió képernyőképét a Discordra, itt fog megjelenni.</div>';
+        return;
+      }
+
+      const remainMs = Math.max(0, d.lejar - Date.now());
+      const remainDays = Math.floor(remainMs / (24 * 3600 * 1000));
+      const remainHours = Math.floor((remainMs % (24 * 3600 * 1000)) / (3600 * 1000));
+      const teljesitve = d.sorok.every(r => r.aktualis >= r.cel);
+
+      // Felső összesítő sáv (Total deliveries / Total distance / Current reward)
+      const osszesFuvar = d.osszesFuvar ?? d.sorok.reduce((s, r) => s + (r.szallitasok?.length || 0), 0);
+      const osszesTav = d.osszesTav ?? d.sorok.reduce((s, r) => s + (r.szallitasok || []).reduce((s2, sz) => s2 + (typeof sz.km === 'number' ? sz.km : 0), 0), 0);
+      const osszesJutalom = d.osszesJutalom ?? 0;
+      const summaryHtml = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#fff;">${pdEsc(osszesFuvar)}</div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;">📦 Összes szállítás</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#fff;">${pdFormatMoney(osszesTav)} km</div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;">🚚 Összes megtett táv</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#22c55e;">${pdFormatMoney(osszesJutalom)} 🪙</div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;">💰 Eddigi jutalom</div>
+          </div>
+        </div>`;
+
+      const rowsHtml = d.sorok.map((r, idx) => {
+        const pct = Math.max(0, Math.min(100, Math.round((r.aktualis / Math.max(1, r.cel)) * 100)));
+        const rKesz = r.aktualis >= r.cel;
+        const badgeColor = rKesz ? '#22c55e' : (r.aktualis > 0 ? '#f59e0b' : 'var(--muted)');
+        const expanded = _pdExpandedRows.has(idx);
+        const szallitasok = r.szallitasok || [];
+
+        // Per-sofőr összesítés ehhez a sorhoz (ki hány szállítást és hány
+        // km-t teljesített ebből a sorból)
+        const perSofor = {};
+        for (const sz of szallitasok) {
+          const nev = sz.sofor || 'Ismeretlen';
+          if (!perSofor[nev]) perSofor[nev] = { db: 0, km: 0 };
+          perSofor[nev].db += 1;
+          if (typeof sz.km === 'number') perSofor[nev].km += sz.km;
+        }
+        const soforSorok = Object.entries(perSofor).sort((a, b) => b[1].db - a[1].db);
+
+        const extraCols = [];
+        if (r.minTav) extraCols.push(`<div style="text-align:center;min-width:90px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Min. táv</div><div style="color:var(--text);font-weight:600;">${pdEsc(r.minTav)}</div></div>`);
+        if (r.jutalom) extraCols.push(`<div style="text-align:center;min-width:80px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Jutalom</div><div style="color:#22c55e;font-weight:700;">${pdFormatMoney(r.jutalom)} 🪙</div></div>`);
+        if (r.veszteseg) extraCols.push(`<div style="text-align:center;min-width:80px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Veszteség</div><div style="color:#f87171;font-weight:700;">${pdFormatMoney(r.veszteseg)} 🪙</div></div>`);
+
+        const detailHtml = expanded ? `
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+            ${soforSorok.length ? `
+              <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px 16px;align-items:center;">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);">👤 Sofőr</div>
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;">📦 Szállítás</div>
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;">🚚 Megtett táv</div>
+                ${soforSorok.map(([nev, s]) => `
+                  <div style="color:#fff;font-weight:600;">${pdEsc(nev)}</div>
+                  <div style="color:var(--orange);font-weight:700;text-align:right;">${pdEsc(s.db)}</div>
+                  <div style="color:var(--text);text-align:right;">${pdFormatMoney(s.km)} km</div>
+                `).join('')}
+              </div>
+            ` : `<div style="color:var(--text);opacity:.6;font-size:13px;">Ehhez a sorhoz még nem érkezett leadott fuvar.</div>`}
+          </div>
+        ` : '';
+
+        return `
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+              <div style="font-weight:600;color:${rKesz ? '#22c55e' : 'var(--text)'};flex:1;min-width:180px;">${rKesz ? '✅' : '🔸'} ${pdEsc(r.leiras)}</div>
+              <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+                <div style="text-align:center;min-width:56px;">
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Szállítás</div>
+                  <div style="font-weight:700;color:${badgeColor};background:${badgeColor}22;border-radius:8px;padding:2px 10px;white-space:nowrap;">${pdEsc(r.aktualis)}/${pdEsc(r.cel)}</div>
+                </div>
+                ${extraCols.join('')}
+                <button type="button" onclick="pdToggleRow(${idx})" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:#fff;cursor:pointer;font-size:13px;flex-shrink:0;">${expanded ? '▲' : '▼'}</button>
+              </div>
+            </div>
+            <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:6px;overflow:hidden;margin-top:10px;">
+              <div style="height:100%;width:${pct}%;background:${rKesz ? '#22c55e' : 'var(--orange)'};border-radius:6px;transition:width .4s;"></div>
+            </div>
+            ${detailHtml}
+          </div>`;
+      }).join('');
+
+      el.innerHTML = `
+        <div style="background:linear-gradient(135deg, rgba(249,115,22,0.16), rgba(249,115,22,0.04));border:1px solid rgba(249,115,22,0.35);border-radius:16px;padding:22px 24px;margin-bottom:24px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+            <div>
+              <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);font-weight:700;margin-bottom:6px;">Aktív Pickup divízió</div>
+              <h3 style="font-size:24px;color:#fff;margin:0;">${pdEsc(d.divizioNev)} divízió${d.szerzodesSzam ? ' #' + pdEsc(d.szerzodesSzam) : ''}</h3>
+              ${d.uzenet ? `<div style="color:var(--text);opacity:.85;margin-top:6px;">${pdEsc(d.uzenet)}</div>` : ''}
+            </div>
+            <div style="text-align:right;">
+              ${teljesitve
+                ? '<div style="font-weight:700;color:#22c55e;font-size:15px;">✅ Teljesítve!</div>'
+                : `<div style="font-weight:700;color:#fff;font-size:15px;">⏰ ${remainDays} nap ${remainHours} óra</div><div style="color:var(--text);opacity:.7;font-size:12px;">van hátra</div>`
+              }
+            </div>
+          </div>
+        </div>
+        ${summaryHtml}
+        <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);font-weight:700;margin-bottom:12px;">📋 Feladatok</div>
+        <div>${rowsHtml}</div>
+      `;
+    }
+
+    // A divízió-adat ellenőrzése SAJÁT, kis méretű lekéréssel történik
     // (csak a '_pickupDivizio' rész-ágat kéri le a Firebase-től, NEM a teljes
     // srtdata.json-t) — így ez a percenkénti/gyakori ellenőrzés nem terheli
     // feleslegesen a letöltési kvótát. Csak akkor esik vissza a teljes
@@ -4350,6 +4511,7 @@ body { font-size: 15px; }
         const d = await res.json();
         if (allData) allData._pickupDivizio = d || null;
         renderPickupDivizioBanner();
+        if (document.getElementById('page-pickupdivizio')?.classList.contains('active')) renderPickupDivizioPage();
       } catch (e) {
         console.warn('Divízió-banner ellenőrzési hiba:', e);
       }
@@ -5437,6 +5599,7 @@ body { font-size: 15px; }
       else { loadJsonBin(false).then(() => { avatarBetolt(); bgBetolt(); }); }
       if (name === 'fuvarok') { renderDrivers(); renderStatisztika(); }
       if (name === 'kepek') renderMedia();
+      if (name === 'pickupdivizio') renderPickupDivizioPage();
       if (name === 'jelentkezok' && window.toltiJelentkezoket) window.toltiJelentkezoket();
       if (name === 'truckytagok' && window.toltiTruckyTagokat) window.toltiTruckyTagokat();
       if (name === 'tagoklista' && window.toltiTagokListajat) window.toltiTagokListajat();
