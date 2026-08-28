@@ -9506,11 +9506,11 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       return;
     }
 
-    el.innerHTML = entries.map(d => {
+    el.innerHTML = entries.map((d, i) => {
       const distance = d.jobs.reduce((s,j) => s + Number(j.km || 0), 0);
       const count = d.jobs.length;
       return `<div class="srt-daily-row">
-        <strong>${esc(d.name)}</strong>
+        <strong>${i + 1}. ${esc(d.name)}</strong>
         <span>${km(distance)}</span>
         <span>${num(count)}</span>
         <button type="button" class="srt-daily-view-btn" data-driver-name="${esc(d.name)}">Megtekintés →</button>
