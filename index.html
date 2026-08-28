@@ -3209,8 +3209,7 @@ body { font-size: 15px; }
               <button type="button" onclick="lepNapiAttekintesNap(-1)" style="width:28px;height:28px;border-radius:6px;background:var(--srt-panel);border:1px solid var(--srt-border);color:var(--srt-blue-dark);cursor:pointer;font-size:13px;">◀</button>
               <span id="srt-daily-date-label" style="font-weight:700;color:#333;font-size:13px;min-width:110px;text-align:center;"></span>
               <button type="button" onclick="lepNapiAttekintesNap(1)" style="width:28px;height:28px;border-radius:6px;background:var(--srt-panel);border:1px solid var(--srt-border);color:var(--srt-blue-dark);cursor:pointer;font-size:13px;">▶</button>
-              <button type="button" onclick="lepNapiAttekintesHonap(-1)" style="padding:6px 12px;border-radius:6px;background:var(--srt-panel);border:1px solid var(--srt-border);color:var(--srt-blue-dark);cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;">◀ Hónap</button>
-              <button type="button" onclick="lepNapiAttekintesHonap(1)" style="padding:6px 12px;border-radius:6px;background:var(--srt-panel);border:1px solid var(--srt-border);color:var(--srt-blue-dark);cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;">Hónap ▶</button>
+              <input type="date" id="srt-daily-date-picker" onchange="valasztNapiAttekintesDatum(this.value)" style="padding:5px 10px;border-radius:6px;background:var(--srt-panel);border:1px solid var(--srt-border);color:var(--srt-blue-dark);cursor:pointer;font-size:12px;font-weight:700;">
               <button type="button" onclick="resetNapiAttekintesNap()" style="padding:6px 12px;border-radius:6px;background:var(--srt-blue-dark);border:1px solid var(--srt-blue-dark);color:#fff;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;">Ma</button>
             </div>
           </div>
@@ -9381,10 +9380,11 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     renderDaily();
   };
 
-  window.lepNapiAttekintesHonap = function(delta) {
-    const d = new Date(srtDailyOverviewDate);
-    d.setMonth(d.getMonth() + delta);
-    srtDailyOverviewDate = d;
+  window.valasztNapiAttekintesDatum = function(value) {
+    if (!value) return;
+    const [y, m, day] = value.split('-').map(Number);
+    if (!y || !m || !day) return;
+    srtDailyOverviewDate = new Date(y, m - 1, day);
     renderDaily();
   };
 
@@ -9477,6 +9477,14 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       const today = new Date();
       const isToday = srtDailyOverviewDate.toDateString() === today.toDateString();
       labelEl.textContent = isToday ? 'Ma' : srtDailyOverviewDate.toLocaleDateString('hu-HU', { year:'numeric', month:'2-digit', day:'2-digit' });
+    }
+
+    const pickerEl = document.getElementById('srt-daily-date-picker');
+    if (pickerEl) {
+      const y = srtDailyOverviewDate.getFullYear();
+      const m = String(srtDailyOverviewDate.getMonth() + 1).padStart(2, '0');
+      const d = String(srtDailyOverviewDate.getDate()).padStart(2, '0');
+      pickerEl.value = `${y}-${m}-${d}`;
     }
 
     const entries = Object.entries(allData || {})
