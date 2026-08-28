@@ -7389,7 +7389,7 @@ body { font-size: 15px; }
 
       const bellWrap = document.getElementById('bell-wrap');
       if (bellWrap) {
-        bellWrap.style.display = fullAdmin ? 'block' : 'none';
+        bellWrap.style.display = (fullAdmin || deputy) ? 'block' : 'none';
         if (deputy) bellFigyelokIndítasa();
       }
 
@@ -7435,7 +7435,7 @@ body { font-size: 15px; }
     }
 
     function frissitiAdminOldalZarat() {
-      const jogosult = isFullAdminUser();
+      const jogosult = isFullAdminUser() || isDeputyUser();
       const jJogosult = isAdminUser() || isDeputyUser();
       const tagJogosult = !!currentUser;
       const jPage = document.getElementById('jelentkezok-page-content');
@@ -9264,7 +9264,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     });
 
     window.megnyitUzenetKuldo = function() {
-      if (!isAdminUser()) return;
+      if (!isAdminUser() && !isDeputyUser()) return;
       document.getElementById('uzenet-modal').style.display = 'flex';
       renderUzenetCimzettLista(osszesTagAdat.length ? osszesTagAdat : []);
       if (!osszesTagAdat.length) toltiOsszesTagot().then(() => renderUzenetCimzettLista(osszesTagAdat));
