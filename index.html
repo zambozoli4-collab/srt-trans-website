@@ -8443,6 +8443,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
 
     async function toltiAdminKerelmeket() {
       const list = document.getElementById('admin-kerelmek-list');
+      if (!list) return;
       list.innerHTML = '<div style="color:var(--muted);font-size:13px;">Betöltés...</div>';
       try {
         const res = await fetch(`${DB_URL}/regisztraciok.json${await regAuthQS()}`);
@@ -8471,6 +8472,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         list.innerHTML = '<div style="color:#f87171;font-size:13px;">Hiba a betöltés során.</div>';
       }
     }
+    window.toltiAdminKerelmeket = toltiAdminKerelmeket;
 
     window.jovahagyRegisztraciot = async function(uid) {
       try {
