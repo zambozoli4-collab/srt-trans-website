@@ -3214,6 +3214,11 @@ body { font-size: 15px; }
               <button type="button" onclick="resetNapiAttekintesNap()" style="padding:6px 12px;border-radius:8px;background:var(--orange);border:1px solid var(--orange);color:#fff;cursor:pointer;font-size:12px;white-space:nowrap;">Ma</button>
             </div>
           </div>
+          <div id="srt-daily-total" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 14px;margin-bottom:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+            <span style="font-size:12px;color:var(--muted);">Napi összesített távolság</span>
+            <strong id="srt-daily-total-km" style="font-size:16px;color:var(--text);">—</strong>
+            <span style="font-size:12px;color:var(--muted);" id="srt-daily-total-jobs">—</span>
+          </div>
           <div class="srt-daily-head">
             <span>Ki</span><span>Távolság</span><span>Fuvarok</span><span>Művelet</span>
           </div>
@@ -9472,6 +9477,15 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         const bk = b.jobs.reduce((s,j) => s + Number(j.km || 0), 0);
         return bk - ak;
       });
+
+    const totalKmEl = document.getElementById('srt-daily-total-km');
+    const totalJobsEl = document.getElementById('srt-daily-total-jobs');
+    if (totalKmEl || totalJobsEl) {
+      const napiOsszesKm = entries.reduce((s, d) => s + d.jobs.reduce((s2,j) => s2 + Number(j.km || 0), 0), 0);
+      const napiOsszesFuvar = entries.reduce((s, d) => s + d.jobs.length, 0);
+      if (totalKmEl) totalKmEl.textContent = km(napiOsszesKm);
+      if (totalJobsEl) totalJobsEl.textContent = `(${num(napiOsszesFuvar)} fuvar, ${num(entries.length)} sofőrtől)`;
+    }
 
     if (!entries.length) {
       const today = new Date();
