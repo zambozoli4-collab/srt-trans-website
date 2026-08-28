@@ -4872,7 +4872,7 @@ body { font-size: 15px; }
     // mutatjuk (a listában és a sofőr-részletező oldalon is).
     const VEZETOSEG_NEV_TERKEP = {
       'cobra': 'cobra',
-      'eric19792': 'erik',
+      'eric1972': 'erik',
       'boby': 'boby',
       'batki márk': 'spiderman',
       'marci': 'marcika'
@@ -5332,7 +5332,7 @@ body { font-size: 15px; }
     };
 
     function adminPageMegnyitas() {
-      if (!isAdminUser()) {
+      if (!isAdminUser() && !isDeputyUser()) {
         if (typeof openAuthModal === 'function') openAuthModal();
         return false;
       }
@@ -5355,7 +5355,7 @@ body { font-size: 15px; }
     window.openAdminJelentkezok = adminPageMegnyitas;
 
     window.openAdminKerelmek = function() {
-      if (!isAdminUser()) {
+      if (!isAdminUser() && !isDeputyUser()) {
         if (typeof openAuthModal === 'function') openAuthModal();
         return false;
       }
@@ -5407,8 +5407,8 @@ body { font-size: 15px; }
     setTimeout(initAdminMenuActions, 0);
 
     function showPage(name) {
-      // A Kérelmek oldal kizárólag bejelentkezett admin számára nyitható meg.
-      if (name === 'jelentkezok' && !isAdminUser()) {
+      // A Kérelmek oldal bejelentkezett admin vagy helyettes (Boby, Eric) számára nyitható meg.
+      if (name === 'jelentkezok' && !isAdminUser() && !isDeputyUser()) {
         if (typeof openAuthModal === 'function') openAuthModal();
         return;
       }
@@ -7271,7 +7271,7 @@ body { font-size: 15px; }
     // e-mail/üzenetküldés funkcióhoz férnek hozzá. Minden más admin felület
     // (sofőr-/ATS-statisztika szerkesztés, Trucky Tagok, Tagoklista, oldal
     // szövegszerkesztés) kizárólag Cobrának (fő-admin) érhető el.
-    const ISMERT_HELYETTES_DISCORD_NEVEK = ['boby', 'bobydik', 'eric', 'eric19792'];
+    const ISMERT_HELYETTES_DISCORD_NEVEK = ['boby', 'bobydik', 'eric', 'eric1972'];
     function ismertHelyettesDiscordNev(discordNev) {
       const lower = (discordNev || '').trim().toLowerCase();
       if (!lower) return false;
@@ -7376,7 +7376,10 @@ body { font-size: 15px; }
       const loggedIn = !!currentUser;
       const deputy = loggedIn && isDeputyUser();
       const fullAdmin = loggedIn && isFullAdminUser();
-      const admin = loggedIn && isAdminUser();
+      // A Jelentkezők / Kérelmek / Üzenetküldés menüpontokhoz a helyetteseknek
+      // (Boby, Eric) is hozzá kell férniük, nem csak a teljes adminnak — ezért
+      // itt a deputy jogosultságot is figyelembe vesszük.
+      const admin = loggedIn && (isAdminUser() || deputy);
 
       // A Trucky letöltés csak bejelentkezett felhasználónak látszódjon.
       const truckyDownload = document.getElementById('sidebar-trucky-download');
@@ -7386,11 +7389,7 @@ body { font-size: 15px; }
 
       const bellWrap = document.getElementById('bell-wrap');
       if (bellWrap) {
-        // A helyetteseknek (Boby, Eric) is látszódjon az értesítési csengő,
-        // hiszen ők is jóváhagyhatják/elutasíthatják a jelentkezéseket —
-        // ugyanúgy, mint Cobra. Csak a tényleges szerkesztés marad kizárólag
-        // a fő-adminnak.
-        bellWrap.style.display = deputy ? 'block' : 'none';
+        bellWrap.style.display = fullAdmin ? 'block' : 'none';
         if (deputy) bellFigyelokIndítasa();
       }
 
@@ -7437,7 +7436,7 @@ body { font-size: 15px; }
 
     function frissitiAdminOldalZarat() {
       const jogosult = isFullAdminUser();
-      const jJogosult = isAdminUser();
+      const jJogosult = isAdminUser() || isDeputyUser();
       const tagJogosult = !!currentUser;
       const jPage = document.getElementById('jelentkezok-page-content');
       const jLock = document.getElementById('jelentkezok-page-lock');
@@ -8210,7 +8209,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         .filter(r => r && String(r.statusz || '').toLowerCase() === 'fuggoben')
         .length;
 
-      const latszik = pending > 0 && isAdminUser();
+      const latszik = pending > 0 && (isAdminUser() || isDeputyUser());
       wrap.classList.toggle('has-pending', latszik);
       badge.style.display = latszik ? 'block' : 'none';
       itemBadge.style.display = latszik ? 'inline-flex' : 'none';
