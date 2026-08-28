@@ -7307,6 +7307,9 @@ body { font-size: 15px; }
     window.isFirebaseFullAdmin = function() {
       return !!(currentUser && isFullAdminUser());
     };
+    window.isDeputyUser = function() {
+      return !!(currentUser && isDeputyUser());
+    };
 
     window.openAuthModal = function() {
       const modal = document.getElementById('auth-modal');
@@ -11188,7 +11191,8 @@ function srtJobTruckId(j) {
   function adminOK(){
     try {
       return !!(window.isAnySiteAdmin && window.isAnySiteAdmin()) ||
-             !!(window.isFirebaseFullAdmin && window.isFirebaseFullAdmin());
+             !!(window.isFirebaseFullAdmin && window.isFirebaseFullAdmin()) ||
+             !!(window.isDeputyUser && window.isDeputyUser());
     } catch(e){ return true; }
   }
 
