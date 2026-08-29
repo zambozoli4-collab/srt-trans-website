@@ -4321,6 +4321,13 @@ body { font-size: 15px; }
         avatarBetolt();
         bgBetolt();
         renderPickupDivizioBanner();
+        // Ha az oldal frissítéskor pont a Pickup Division fülön nyílik meg
+        // (URL hash alapján), a showPage() még az adatbetöltés befejezése
+        // ELŐTT lefuttatja renderPickupDivizioPage()-t, ezért üres állapotot
+        // mutat. Itt, az adat tényleges megérkezése után újra kirajzoljuk,
+        // ha épp ez az aktív oldal - így nem kell átkattintani Piacra és
+        // vissza ahhoz, hogy megjelenjen.
+        if (document.getElementById('page-pickupdivizio')?.classList.contains('active')) renderPickupDivizioPage();
         return true;
       } catch (e) {
         if (allData === null) allData = {};
@@ -4381,6 +4388,109 @@ body { font-size: 15px; }
       return n.toLocaleString('hu-HU');
     }
 
+    // Város -> ország (ISO 3166-1 alpha-2) hozzárendelés az ETS2/ATS-ben
+    // leggyakrabban előforduló városnevekhez (angol és becézett/magyar
+    // alakok is), hogy a szállítási sorokban zászlót tudjunk mutatni.
+    // Nem teljes lista - ismeretlen városnál egyszerűen nincs zászló.
+    const PD_CITY_COUNTRY = {
+      // Németország
+      'berlin':'DE','hamburg':'DE','munich':'DE','münchen':'DE','cologne':'DE','köln':'DE',
+      'frankfurt':'DE','stuttgart':'DE','dortmund':'DE','essen':'DE','leipzig':'DE','bremen':'DE',
+      'dresden':'DE','hannover':'DE','nuremberg':'DE','nürnberg':'DE','duisburg':'DE','kiel':'DE',
+      'karlsruhe':'DE','mannheim':'DE','rostock':'DE','erfurt':'DE','magdeburg':'DE','aachen':'DE',
+      // Franciaország
+      'paris':'FR','marseille':'FR','lyon':'FR','calais':'FR','lille':'FR','strasbourg':'FR',
+      'bordeaux':'FR','toulouse':'FR','nantes':'FR','reims':'FR','le havre':'FR','metz':'FR',
+      'dijon':'FR','nice':'FR','rouen':'FR','brest':'FR','clermont-ferrand':'FR',
+      // Benelux
+      'brussels':'BE','antwerp':'BE','liège':'BE','ghent':'BE','bruges':'BE','charleroi':'BE',
+      'amsterdam':'NL','rotterdam':'NL','the hague':'NL','eindhoven':'NL','utrecht':'NL','groningen':'NL',
+      'luxembourg':'LU',
+      // UK
+      'london':'GB','manchester':'GB','birmingham':'GB','glasgow':'GB','edinburgh':'GB',
+      'liverpool':'GB','dover':'GB','southampton':'GB','cardiff':'GB','belfast':'GB',
+      // Olaszország
+      'rome':'IT','roma':'IT','milan':'IT','milano':'IT','naples':'IT','napoli':'IT','turin':'IT',
+      'torino':'IT','bologna':'IT','florence':'IT','firenze':'IT','venice':'IT','venezia':'IT',
+      'genoa':'IT','genova':'IT','palermo':'IT','bari':'IT','verona':'IT',
+      // Lengyelország
+      'warsaw':'PL','warszawa':'PL','krakow':'PL','kraków':'PL','gdansk':'PL','gdańsk':'PL',
+      'wroclaw':'PL','wrocław':'PL','poznan':'PL','poznań':'PL','lodz':'PL','łódź':'PL','szczecin':'PL',
+      // Cseh / Szlovák
+      'prague':'CZ','praha':'CZ','brno':'CZ','ostrava':'CZ','plzen':'CZ','plzeň':'CZ',
+      'bratislava':'SK','kosice':'SK','košice':'SK',
+      // Ausztria / Svájc
+      'vienna':'AT','wien':'AT','graz':'AT','linz':'AT','salzburg':'AT','innsbruck':'AT',
+      'zurich':'CH','zürich':'CH','geneva':'CH','genève':'CH','bern':'CH','basel':'CH',
+      // Magyarország
+      'budapest':'HU','debrecen':'HU','szeged':'HU','miskolc':'HU','pecs':'HU','pécs':'HU','gyor':'HU','győr':'HU',
+      // Szlovénia / Horvátország
+      'ljubljana':'SI','maribor':'SI','zagreb':'HR','split':'HR','rijeka':'HR',
+      // Balti államok
+      'tallinn':'EE','tartu':'EE','riga':'LV','vilnius':'LT','kaunas':'LT','klaipeda':'LT','klaipėda':'LT',
+      // Skandinávia
+      'stockholm':'SE','gothenburg':'SE','göteborg':'SE','malmo':'SE','malmö':'SE',
+      'oslo':'NO','bergen':'NO','trondheim':'NO',
+      'copenhagen':'DK','københavn':'DK','aarhus':'DK','odense':'DK',
+      'helsinki':'FI','turku':'FI','tampere':'FI',
+      // Ibéria
+      'madrid':'ES','barcelona':'ES','valencia':'ES','seville':'ES','sevilla':'ES','bilbao':'ES','zaragoza':'ES',
+      'lisbon':'PT','lisboa':'PT','porto':'PT',
+      // Balkán / Fekete-tenger
+      'bucharest':'RO','bucuresti':'RO','bucurești':'RO','cluj-napoca':'RO','timisoara':'RO','timișoara':'RO',
+      'sofia':'BG','plovdiv':'BG','varna':'BG',
+      'istanbul':'TR','ankara':'TR','izmir':'TR',
+      'belgrade':'RS','beograd':'RS','novi sad':'RS',
+      'sarajevo':'BA','tirana':'AL','skopje':'MK','podgorica':'ME',
+      // USA (ATS) - egységesen amerikai zászló
+      'los angeles':'US','san francisco':'US','las vegas':'US','phoenix':'US','denver':'US',
+      'seattle':'US','portland':'US','sacramento':'US','san diego':'US','salt lake city':'US',
+      'oklahoma city':'US','dallas':'US','houston':'US','el paso':'US','albuquerque':'US',
+      'new orleans':'US','wichita':'US','tucson':'US','boise':'US','fargo':'US','cheyenne':'US',
+    };
+
+    function pdFlag(city) {
+      if (!city) return '';
+      const key = String(city).trim().toLowerCase();
+      const iso = PD_CITY_COUNTRY[key];
+      if (!iso) return '';
+      return String.fromCodePoint(...[...iso].map(c => 127397 + c.charCodeAt(0))) + ' ';
+    }
+
+    // Rakomány-szöveg alapján (kulcsszó-egyezés) visszaad egy szemléltető
+    // emoji-t a szállítás típusához. Nem pontos kategorizálás, csak vizuális
+    // segítség - ismeretlen/egyéb rakománynál egy általános doboz ikon jön.
+    function pdCargoIcon(rakomany) {
+      const s = String(rakomany || '').toLowerCase();
+      if (!s) return '📦';
+      const has = (...arr) => arr.some(k => s.includes(k));
+      if (has('üzemanyag', 'gázolaj', 'benzin', 'dízel', 'nyersolaj', 'kőolaj')) return '⛽';
+      if (has('dinamit', 'robbanó', 'lőszer')) return '💥';
+      if (has('biológiailag veszélyes', 'veszélyes hulladék')) return '☣️';
+      if (has('sav', 'lúg', 'klór', 'cianid', 'arzén', 'vegyi', 'ammónia', 'acetilén')) return '🧪';
+      if (has('búza', 'árpa', 'kukorica', 'gabona', 'vetőmag', 'bab', 'karfiol')) return '🌾';
+      if (has('élő állat', 'marha', 'sertés', 'csirke ')) return '🐄';
+      if (has('sör', 'bor', 'ital', 'víz', 'üdítő', 'kávé', 'tea', 'jeges')) return '🥤';
+      if (has('hús', 'hal', 'tej', 'sajt', 'túró', 'tojás', 'kolbász', 'sonka', 'szalonna',
+              'zsír', 'méz', 'joghurt', 'kaviár', 'konzerv', 'tészta', 'cukorka', 'keksz',
+              'perec', 'liszt', 'cukor', 'fűszer', 'étel', 'gyümölcs', 'zöldség')) return '🍽️';
+      if (has('tűzifa', 'rönk', 'deszka', 'fűrészpor', 'bútor')) return '🪵';
+      if (has('papír', 'karton', 'könyv')) return '📄';
+      if (has('textil', 'gyapot', 'gyapjú', 'bőr', 'ruha')) return '🧵';
+      if (has('acél', 'vas', 'alumínium', 'réz', 'fém', 'betonvas', 'gerenda')) return '🔩';
+      if (has('gép', 'motor', 'traktor', 'kombájn', 'generátor', 'szerszám', 'targonca',
+              'daru', 'kotrógép', 'buldózer', 'szélturbina', 'transzformátor', 'kábel', 'vezeték')) return '⚙️';
+      if (has('autó', 'jármű', 'motorkerékpár', 'lakóautó', 'kamion')) return '🚗';
+      if (has('beton', 'tégla', 'cement', 'homok', 'kavics', 'gipsz', 'mészkő', 'márvány',
+              'gránit', 'ablak', 'ajtó', 'szigetelő', 'létra')) return '🧱';
+      if (has('számítógép', 'processzor', 'nyomtató', 'fénymásoló', 'légkondicionáló',
+              'hűtő', 'mosógép', 'szárítógép', 'mosogatógép')) return '🔌';
+      if (has('orvosi', 'gyógyszer', 'kórházi')) return '💊';
+      if (has('hulladék', 'szemét', 'trágya')) return '🗑️';
+      if (has('postai', 'légiposta')) return '📬';
+      return '📦';
+    }
+
     function renderPickupDivizioPage() {
       const el = document.getElementById('pickupdivizio-content');
       if (!el) return;
@@ -4404,11 +4514,11 @@ body { font-size: 15px; }
       const summaryHtml = `
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px;">
           <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
-            <div style="font-size:22px;font-weight:800;color:#fff;">${pdEsc(osszesFuvar)}</div>
+            <div style="font-size:22px;font-weight:800;color:var(--text);">${pdEsc(osszesFuvar)}</div>
             <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;">📦 Összes szállítás</div>
           </div>
           <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
-            <div style="font-size:22px;font-weight:800;color:#fff;">${pdFormatMoney(osszesTav)} km</div>
+            <div style="font-size:22px;font-weight:800;color:var(--text);">${pdFormatMoney(osszesTav)} km</div>
             <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;">🚚 Összes megtett táv</div>
           </div>
           <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
@@ -4448,12 +4558,28 @@ body { font-size: 15px; }
                 <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;">📦 Szállítás</div>
                 <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;">🚚 Megtett táv</div>
                 ${soforSorok.map(([nev, s]) => `
-                  <div style="color:#fff;font-weight:600;">${pdEsc(nev)}</div>
+                  <div style="color:var(--text);font-weight:600;">${pdEsc(nev)}</div>
                   <div style="color:var(--orange);font-weight:700;text-align:right;">${pdEsc(s.db)}</div>
                   <div style="color:var(--text);text-align:right;">${pdFormatMoney(s.km)} km</div>
                 `).join('')}
               </div>
             ` : `<div style="color:var(--text);opacity:.6;font-size:13px;">Ehhez a sorhoz még nem érkezett leadott fuvar.</div>`}
+            ${szallitasok.length ? `
+              <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px;">🧾 Szállítások részletesen</div>
+                ${szallitasok.map(sz => `
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:rgba(127,127,127,0.08);border-radius:8px;padding:8px 12px;font-size:13px;">
+                    <span style="font-size:16px;">${pdCargoIcon(sz.rakomany)}</span>
+                    <span style="color:var(--text);font-weight:600;min-width:120px;">${pdEsc(sz.sofor || 'Ismeretlen')}</span>
+                    <span style="color:var(--text);opacity:.85;">${pdEsc(sz.rakomany || '—')}</span>
+                    <span style="color:var(--muted);margin-left:auto;white-space:nowrap;">
+                      ${pdFlag(sz.honnan)}${pdEsc(sz.honnan || '?')} → ${pdFlag(sz.hova)}${pdEsc(sz.hova || '?')}
+                    </span>
+                    ${typeof sz.km === 'number' ? `<span style="color:var(--text);white-space:nowrap;">${pdFormatMoney(sz.km)} km</span>` : ''}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
           </div>
         ` : '';
 
@@ -4467,7 +4593,7 @@ body { font-size: 15px; }
                   <div style="font-weight:700;color:${badgeColor};background:${badgeColor}22;border-radius:8px;padding:2px 10px;white-space:nowrap;">${pdEsc(r.aktualis)}/${pdEsc(r.cel)}</div>
                 </div>
                 ${extraCols.join('')}
-                <button type="button" onclick="pdToggleRow(${idx})" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:#fff;cursor:pointer;font-size:13px;flex-shrink:0;">${expanded ? '▲' : '▼'}</button>
+                <button type="button" onclick="pdToggleRow(${idx})" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:rgba(127,127,127,0.12);color:var(--text);cursor:pointer;font-size:13px;flex-shrink:0;">${expanded ? '▲' : '▼'}</button>
               </div>
             </div>
             <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:6px;overflow:hidden;margin-top:10px;">
@@ -4482,13 +4608,13 @@ body { font-size: 15px; }
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
             <div>
               <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);font-weight:700;margin-bottom:6px;">Aktív Pickup divízió</div>
-              <h3 style="font-size:24px;color:#fff;margin:0;">${pdEsc(d.divizioNev)} divízió${d.szerzodesSzam ? ' #' + pdEsc(d.szerzodesSzam) : ''}</h3>
+              <h3 style="font-size:24px;color:var(--text);margin:0;">${pdEsc(d.divizioNev)} divízió${d.szerzodesSzam ? ' #' + pdEsc(d.szerzodesSzam) : ''}</h3>
               ${d.uzenet ? `<div style="color:var(--text);opacity:.85;margin-top:6px;">${pdEsc(d.uzenet)}</div>` : ''}
             </div>
             <div style="text-align:right;">
               ${teljesitve
                 ? '<div style="font-weight:700;color:#22c55e;font-size:15px;">✅ Teljesítve!</div>'
-                : `<div style="font-weight:700;color:#fff;font-size:15px;">⏰ ${remainDays} nap ${remainHours} óra</div><div style="color:var(--text);opacity:.7;font-size:12px;">van hátra</div>`
+                : `<div style="font-weight:700;color:var(--text);font-size:15px;">⏰ ${remainDays} nap ${remainHours} óra</div><div style="color:var(--text);opacity:.7;font-size:12px;">van hátra</div>`
               }
             </div>
           </div>
