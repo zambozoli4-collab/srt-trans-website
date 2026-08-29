@@ -3248,7 +3248,8 @@ body { font-size: 15px; }
           <div class="srt-dash-title">Trucky kliens</div>
           <a class="srt-dash-primary" href="https://truckyapp.com/client-download" target="_blank" rel="noreferrer">⬇ Trucky kliens letöltése</a>
           <a id="srt-pickup-client-download" class="srt-dash-secondary" href="https://www.dropbox.com/s/2ugg2vw01j2yap4/PICKUP.zip?dl=1" target="_blank" rel="noreferrer">⬇ Pickup kliens letöltése</a>
-          <p class="srt-dash-note">Trucky a konvojokhoz és szerverkövetéshez, Pickup a saját fuvarrendszerhez.</p>
+          <a id="dl-srt-launcher-home" class="srt-dash-secondary" href="javascript:void(0)" onclick="openAuthModal(); return false;" style="background:linear-gradient(135deg,rgba(37,99,235,0.18),rgba(37,99,235,0.08));border-color:rgba(37,99,235,0.35);color:#93c5fd;">⬇ SRT-Trans Launcher letöltése</a>
+          <p class="srt-dash-note">Trucky a konvojokhoz és szerverkövetéshez, Pickup a saját fuvarrendszerhez, Launcher a fuvarrögzítéshez.</p>
         </div>
 
         <div class="srt-dash-panel">
@@ -3322,6 +3323,13 @@ body { font-size: 15px; }
       <div id="tab-alkalmazasok" class="tab-panel">
         <div class="mod-grid">
           <div class="mod-card">
+            <div class="mod-card-icon blue">🖥️</div>
+            <span class="mod-card-tag tag-required">Kötelező</span>
+            <h3>SRT-Trans Launcher</h3>
+            <p>Az SRT TRANS KFT. saját pluginja ETS2 és ATS játékhoz. Automatikusan rögzíti a fuvarjaidat a weboldalra — Trucky nélkül is működik! Telepítés után csak add meg a nevedet és játssz.</p>
+            <a class="btn-dl" id="dl-srt-launcher" href="javascript:void(0)" onclick="openAuthModal(); return false;">⬇ Letöltés</a>
+          </div>
+          <div class="mod-card">
             <div class="mod-card-icon blue">🚐</div>
             <span class="mod-card-tag tag-extra">App</span>
             <h3>Pickup csomag</h3>
@@ -3361,7 +3369,101 @@ body { font-size: 15px; }
       <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab(this, 'tab-trucky-map')">🚛 Trucky Világ Térkép</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-tmp-map')">🗺 TruckersMP Térkép</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-live-map'); initLiveTerkep()">🔴 Élő SRT Térkép</button>
       </div>
+
+      <!-- ── ÚJ: Élő SRT Térkép tab ── -->
+      <div id="tab-live-map" class="tab-panel">
+        <!-- Leaflet CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+        <style>
+          #live-map-container {
+            width: 100%; height: 68vh; border-radius: 14px;
+            overflow: hidden; border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            position: relative;
+          }
+          #live-map { width: 100%; height: 100%; }
+          #live-map-legend {
+            position: absolute; top: 14px; right: 14px; z-index: 1000;
+            background: rgba(7,13,24,0.88); backdrop-filter: blur(10px);
+            border: 1px solid var(--border); border-radius: 12px;
+            padding: 12px 16px; min-width: 200px; max-width: 260px;
+          }
+          #live-map-legend h4 { font-size: 12px; font-weight: 700; color: var(--orange); margin: 0 0 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+          .live-driver-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; color: var(--text); cursor: pointer; }
+          .live-driver-row:last-child { border-bottom: none; }
+          .live-driver-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+          .live-driver-dot.active { background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,0.3); animation: pulse-green 2s infinite; }
+          .live-driver-dot.stale  { background: #f97316; }
+          .live-driver-dot.offline { background: #6b7280; }
+          @keyframes pulse-green { 0%,100%{box-shadow:0 0 0 3px rgba(74,222,128,0.3)} 50%{box-shadow:0 0 0 6px rgba(74,222,128,0.08)} }
+          #live-map-status { font-size: 11px; color: var(--muted); margin-top: 10px; text-align: center; }
+          #live-map-game-switcher { display: flex; gap: 6px; margin-bottom: 14px; }
+          .live-game-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+          .live-game-btn.active { background: var(--orange-dim); border-color: rgba(249,115,22,0.5); color: var(--orange); }
+          #live-map-driver-info {
+            margin-top: 14px; padding: 12px; background: var(--card);
+            border: 1px solid var(--border); border-radius: 12px;
+            font-size: 13px; display: none;
+          }
+          .driver-info-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
+          .driver-info-label { color: var(--muted); }
+          .driver-info-value { color: var(--text); font-weight: 600; }
+          /* Leaflet popup */
+          .leaflet-popup-content-wrapper { background: rgba(7,13,24,0.95)!important; border: 1px solid rgba(249,115,22,0.3)!important; border-radius: 10px!important; color: #fff!important; }
+          .leaflet-popup-tip { background: rgba(7,13,24,0.95)!important; }
+          .leaflet-popup-content { color: #e8f0fc!important; font-size: 13px!important; line-height: 1.6!important; }
+          #live-map-no-data { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(7,13,24,0.7); z-index: 500; border-radius: 14px; }
+        </style>
+
+        <!-- Játék választó + Sofőr info panel -->
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
+          <div style="flex:1;min-width:220px;">
+            <div id="live-map-game-switcher">
+              <button class="live-game-btn active" id="live-btn-ets2" onclick="setLiveTerkepJatek('ets2')">🚛 ETS2</button>
+              <button class="live-game-btn" id="live-btn-ats" onclick="setLiveTerkepJatek('ats')">🤠 ATS</button>
+            </div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.5;">
+              A térképen az <strong style="color:var(--orange)">srt-trans.dll</strong> plugint futtató sofőrök jelennek meg valós időben.<br>
+              <span style="color:#4ade80;">●</span> Aktív (max 30 mp)&nbsp;&nbsp;
+              <span style="color:#f97316;">●</span> Elavult (30 mp–5 perc)&nbsp;&nbsp;
+              <span style="color:#6b7280;">●</span> Offline
+            </div>
+          </div>
+          <div id="live-map-driver-info" style="flex:1;min-width:220px;">
+            <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px;" id="live-info-nev">—</div>
+            <div class="driver-info-row"><span class="driver-info-label">⚡ Sebesség</span><span class="driver-info-value" id="live-info-speed">—</span></div>
+            <div class="driver-info-row"><span class="driver-info-label">⛽ Üzemanyag</span><span class="driver-info-value" id="live-info-fuel">—</span></div>
+            <div class="driver-info-row"><span class="driver-info-label">📦 Rakomány</span><span class="driver-info-value" id="live-info-cargo">—</span></div>
+            <div class="driver-info-row"><span class="driver-info-label">🎯 Cél</span><span class="driver-info-value" id="live-info-dest">—</span></div>
+            <div class="driver-info-row"><span class="driver-info-label">📏 Hátralévő</span><span class="driver-info-value" id="live-info-navdist">—</span></div>
+            <div class="driver-info-row"><span class="driver-info-label">🚛 Jármű</span><span class="driver-info-value" id="live-info-truck">—</span></div>
+            <div class="driver-info-row"><span class="driver-info-label">🔧 Kopás</span><span class="driver-info-value" id="live-info-wear">—</span></div>
+          </div>
+        </div>
+
+        <!-- Térkép container -->
+        <div id="live-map-container">
+          <div id="live-map"></div>
+          <div id="live-map-no-data">
+            <div style="font-size:40px;margin-bottom:12px;">🗺️</div>
+            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px;">Nincs aktív sofőr</div>
+            <div style="font-size:13px;color:var(--muted);text-align:center;max-width:300px;">Jelenleg egyetlen sofőr sem futtatja az srt-trans.dll plugint, vagy nincs aktív Firebase adat.</div>
+          </div>
+          <div id="live-map-legend">
+            <h4>🔴 Élő Sofőrök</h4>
+            <div id="live-legend-list"><div style="font-size:12px;color:var(--muted);">Töltés...</div></div>
+            <div id="live-map-status">Frissítés: —</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">
+          Az ETS2/ATS belső koordináta-rendszerből konvertált pozíció. Közelítő pontossággal mutatja a helyzetet.
+          Automatikus frissítés: 15 másodpercenként.
+        </div>
+      </div>
+      <!-- ── /Élő SRT Térkép tab ── -->
       <div id="tab-trucky-map" class="tab-panel active">
         <div style="position: relative;">
           <div class="map-wrap" style="height: 70vh;">
@@ -4173,6 +4275,11 @@ body { font-size: 15px; }
           <input type="text" id="reg-trucky-nev" placeholder="Trucky Név (Trucky felhasználóneved) *" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;" />
         </div>
         <p style="font-size:11px;color:var(--muted);margin:-6px 0 10px;">A pontosan ugyanaz a Trucky felhasználónév kell, amivel a <a href="https://hub.truckyapp.com/users" target="_blank" style="color:var(--orange);">hub.truckyapp.com</a>-on regisztrálsz — így tudja a bot automatikusan összekötni a Discord és a Trucky fiókodat.</p>
+        <div style="position:relative;margin-bottom:6px;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">🖥️</span>
+          <input type="text" id="reg-srt-nev" placeholder="SRT-Trans játékon belüli név (opcionális)" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(249,115,22,0.25);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;" />
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin:-2px 0 14px;">Ha telepíted az <strong style="color:var(--orange);">srt-trans.dll</strong> plugint, ide írd a játékon belüli profil neved. Ez alapján köti össze a bot a fuvaraidat a fiókodhoz. Ha ugyanaz mint a Trucky neved, hagyd üresen.</p>
         <div style="position:relative;margin-bottom:10px;">
           <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">🎂</span>
           <input type="number" id="reg-eletkor" placeholder="Életkor *" min="1" max="120" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;" />
@@ -4365,7 +4472,7 @@ body { font-size: 15px; }
       const kesz = d.sorok.filter(r => r.aktualis >= r.cel).length;
       const teljesitve = kesz === d.sorok.length;
       document.getElementById('pickup-divizio-banner-icon').textContent = teljesitve ? '✅' : '📦';
-      document.getElementById('pickup-divizio-banner-title').textContent = `📦 ${d.divizioNev || ''} divízió${d.szerzodesSzam ? ' #' + d.szerzodesSzam : ''}`;
+      document.getElementById('pickup-divizio-banner-title').textContent = `📦 ${d.divizioNev || ''} divízió${!pdIsMissing(d.szerzodesSzam) ? ' #' + d.szerzodesSzam : ''}`;
       document.getElementById('pickup-divizio-banner-text').textContent = teljesitve
         ? 'Teljesítve! Kattints a részletekért.'
         : `${kesz}/${d.sorok.length} sor kész — kattints a részletekért.`;
@@ -4381,6 +4488,15 @@ body { font-size: 15px; }
       else _pdExpandedRows.add(idx);
       renderPickupDivizioPage();
     };
+
+    function pdIsMissing(v) {
+      // Néha a képfelismerő AI a hiányzó értéket a "null" SZÖVEGKÉNT adja
+      // vissza (idézőjelek közé írva) valódi JSON null helyett - ezt itt
+      // kiszűrjük, hogy ne írjuk ki csúnyán a "null" szót a weboldalon.
+      if (v === null || v === undefined || v === '') return true;
+      const s = String(v).trim().toLowerCase();
+      return s === 'null' || s === 'undefined' || s === 'n/a';
+    }
 
     function pdFormatMoney(v) {
       const n = (typeof v === 'number') ? v : parseInt(String(v ?? '').replace(/[^\d-]/g, ''), 10);
@@ -4546,9 +4662,9 @@ body { font-size: 15px; }
         const soforSorok = Object.entries(perSofor).sort((a, b) => b[1].db - a[1].db);
 
         const extraCols = [];
-        if (r.minTav) extraCols.push(`<div style="text-align:center;min-width:90px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Min. táv</div><div style="color:var(--text);font-weight:600;">${pdEsc(r.minTav)}</div></div>`);
-        if (r.jutalom) extraCols.push(`<div style="text-align:center;min-width:80px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Jutalom</div><div style="color:#22c55e;font-weight:700;">${pdFormatMoney(r.jutalom)} 🪙</div></div>`);
-        if (r.veszteseg) extraCols.push(`<div style="text-align:center;min-width:80px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Veszteség</div><div style="color:#f87171;font-weight:700;">${pdFormatMoney(r.veszteseg)} 🪙</div></div>`);
+        if (!pdIsMissing(r.minTav)) extraCols.push(`<div style="text-align:center;min-width:90px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Min. táv</div><div style="color:var(--text);font-weight:600;">${pdEsc(r.minTav)}</div></div>`);
+        if (!pdIsMissing(r.jutalom)) extraCols.push(`<div style="text-align:center;min-width:80px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Jutalom</div><div style="color:#22c55e;font-weight:700;">${pdFormatMoney(r.jutalom)} 🪙</div></div>`);
+        if (!pdIsMissing(r.veszteseg)) extraCols.push(`<div style="text-align:center;min-width:80px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Veszteség</div><div style="color:#f87171;font-weight:700;">${pdFormatMoney(r.veszteseg)} 🪙</div></div>`);
 
         const detailHtml = expanded ? `
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
@@ -4608,7 +4724,7 @@ body { font-size: 15px; }
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
             <div>
               <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);font-weight:700;margin-bottom:6px;">Aktív Pickup divízió</div>
-              <h3 style="font-size:24px;color:var(--text);margin:0;">${pdEsc(d.divizioNev)} divízió${d.szerzodesSzam ? ' #' + pdEsc(d.szerzodesSzam) : ''}</h3>
+              <h3 style="font-size:24px;color:var(--text);margin:0;">${pdEsc(d.divizioNev)} divízió${!pdIsMissing(d.szerzodesSzam) ? ' #' + pdEsc(d.szerzodesSzam) : ''}</h3>
               ${d.uzenet ? `<div style="color:var(--text);opacity:.85;margin-top:6px;">${pdEsc(d.uzenet)}</div>` : ''}
             </div>
             <div style="text-align:right;">
@@ -8651,6 +8767,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       const jelszoMeg = document.getElementById('reg-jelszo-megerosites').value;
       const discordNev = document.getElementById('reg-discord').value.trim();
       const truckyNev = document.getElementById('reg-trucky-nev').value.trim();
+      const srtNev = document.getElementById('reg-srt-nev').value.trim();
       const eletkor = document.getElementById('reg-eletkor').value.trim();
       const steam = document.getElementById('reg-steam').value.trim();
       const ets2Eredeti = document.querySelector('input[name="reg-ets2-eredeti"]:checked')?.value || '';
@@ -8691,7 +8808,9 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         const ismertFoadmin = ismertFoadminDiscordNev(discordNev);
 
         const regisztracio = {
-          nev, email, discordNev, truckyNev, eletkor, steam,
+          nev, email, discordNev, truckyNev,
+          srtNev: srtNev || truckyNev,
+          eletkor, steam,
           ets2Eredeti, otaJatszol, masVtc, masVtcMelyik, voltMarTagja, egyeb,
           marIsmertSofor: marIsmert,
           statusz: ismertAdmin ? 'jovahagyva' : 'fuggoben',
@@ -9299,29 +9418,32 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       // (Firebase token ellenőrzéssel) keresztül, streamelve történik —
       // lásd letoltiVedettModot() lentebb.
       const vedettLetoltesek = [
-        { id: 'dl-konvoj-modok', modId: 'konvoj' },
-        { id: 'dl-nem-kotelezo-modok', modId: 'nem-kotelezo' },
-        { id: 'dl-promods', modId: 'promods' },
-        { id: 'dl-dlc', modId: 'dlc' },
-        { id: 'dl-festes-logo', modId: 'festes-logo' },
+        { id: 'dl-konvoj-modok',        modId: 'konvoj',       rangKell: true  },
+        { id: 'dl-nem-kotelezo-modok',   modId: 'nem-kotelezo', rangKell: true  },
+        { id: 'dl-promods',              modId: 'promods',      rangKell: true  },
+        { id: 'dl-dlc',                  modId: 'dlc',          rangKell: true  },
+        { id: 'dl-festes-logo',          modId: 'festes-logo',  rangKell: true  },
+        { id: 'dl-srt-launcher',         modId: 'srt-launcher', rangKell: false },
+        { id: 'dl-srt-launcher-home',    modId: 'srt-launcher', rangKell: false },
       ];
-      vedettLetoltesek.forEach(({ id, modId }) => {
+      vedettLetoltesek.forEach(({ id, modId, rangKell }) => {
         const el = document.getElementById(id);
         if (!el) return;
-        if (bejelentkezve) {
+        // Rang nélküli letöltés: csak bejelentkezés kell
+        // Ranghoz kötött letöltés: SRT rang vagy admin kell
+        const jogosultELetoltesre = rangKell ? jogosult : !!currentUser;
+        if (jogosultELetoltesre) {
           el.href = 'javascript:void(0)';
           el.removeAttribute('target');
           el.setAttribute('onclick', `letoltiVedettModot('${modId}', this); return false;`);
           el.textContent = '⬇ Letöltés';
           el.style.opacity = '';
-          el.style.cursor = 'pointer';
         } else {
           el.href = 'javascript:void(0)';
           el.removeAttribute('target');
           el.setAttribute('onclick', 'openAuthModal(); return false;');
-          el.textContent = '⬇ Letöltés';
-          el.style.opacity = '0.7';
-          el.style.cursor = 'pointer';
+          el.textContent = rangKell ? '🔒 Letöltés' : '⬇ Letöltés';
+          el.style.opacity = '';
         }
       });
     };
@@ -10374,6 +10496,15 @@ function openJobInfo(game, driverName, index) {
     }
     if (j.feltolto) html += srtCard('Rögzítette', srtEsc(j.feltolto));
     if (j.meGj || j.megjegyzes || j.megjegyzés) html += srtCard('Megjegyzés', srtEsc(j.meGj || j.megjegyzes || j.megjegyzés), true);
+
+    // ── ÚTVONAL VISSZAJÁTSZÁS gomb — ha van rögzített útvonal Firebase-ben ──
+    const driverKulcs = (driverName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const jobDatum = j.datum ? new Date(j.datum).getTime() : null;
+    html += '<div style="grid-column:1/-1;margin-top:10px;">' +
+      '<button onclick="openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ')" ' +
+      'style="width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
+      '🗺️ Útvonal visszajátszása' +
+      '</button></div>';
 
     if (grid) grid.innerHTML = html;
     const modal = byId('srt-job-info-modal');
@@ -11720,6 +11851,507 @@ function srtJobTruckId(j) {
   #uzenet-modal #uzenet-cimzett-lista * {
     color: #fff !important;
   }
+</style>
+
+<!-- ================== ÚTVONAL VISSZAJÁTSZÁS MODAL ================== -->
+<div id="route-playback-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="background:rgba(7,13,24,0.98);border:1px solid rgba(249,115,22,0.3);border-radius:18px;width:min(92vw,880px);max-height:92vh;overflow:hidden;display:flex;flex-direction:column;">
+    <!-- Fejléc -->
+    <div style="padding:18px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--orange);margin-bottom:4px;">Fuvar visszajátszás</div>
+        <div id="route-playback-title" style="font-size:18px;font-weight:800;color:#fff;">— → —</div>
+      </div>
+      <button onclick="closeRoutePlayback()" style="background:rgba(255,255,255,0.08);border:none;border-radius:8px;color:#fff;font-size:20px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <!-- Térkép -->
+    <div id="route-map" style="flex:1;min-height:420px;"></div>
+    <!-- Vezérlő sáv -->
+    <div style="padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;">
+      <button id="route-play-btn" onclick="toggleRoutePlayback()" style="padding:8px 18px;background:var(--orange);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">▶ Lejátszás</button>
+      <input id="route-speed-slider" type="range" min="1" max="10" value="3" style="flex:1;min-width:100px;accent-color:var(--orange);" oninput="document.getElementById('route-speed-label').textContent = this.value + 'x'">
+      <span id="route-speed-label" style="font-size:12px;color:var(--muted);min-width:28px;">3x</span>
+      <span id="route-progress-label" style="font-size:12px;color:var(--muted);">0 / 0 pont</span>
+      <span id="route-speed-cur" style="font-size:12px;color:#4ade80;min-width:70px;text-align:right;">0 km/h</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ÚTVONAL VISSZAJÁTSZÁS
+   Betölti a Firebase routePoints/<driver>/<jobId> adatokat
+   és animálva lejátssza a térképen
+   ============================================================ */
+
+let routeMap = null;
+let routeMapInit = false;
+let routeMarker = null;
+let routePolyline = null;
+let routePoints = [];
+let routePlayInterval = null;
+let routeCurrentIdx = 0;
+let routeIsPlaying = false;
+const FIREBASE_RT_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
+
+async function openRoutePlayback(driverKulcs, game, jobTimestamp) {
+  const modal = document.getElementById('route-playback-modal');
+  modal.style.display = 'flex';
+
+  document.getElementById('route-playback-title').textContent = '⏳ Útvonal betöltése...';
+  document.getElementById('route-progress-label').textContent = '0 / 0 pont';
+  routePoints = [];
+  routeCurrentIdx = 0;
+  stopRouteAnimation();
+
+  // Térkép inicializálás
+  if (!routeMapInit) {
+    if (typeof L === 'undefined') {
+      document.getElementById('route-playback-title').textContent = '❌ Térkép betöltési hiba';
+      return;
+    }
+    routeMap = L.map('route-map', {
+      crs: L.CRS.Simple,
+      minZoom: 2, maxZoom: 8,
+      zoom: 5,
+      center: [15.5, 0.5],
+      zoomControl: true,
+      attributionControl: false,
+    });
+    L.tileLayer(game === 'ats' ? ATS_TILES : ETS2_TILES, {
+      minZoom: 2, maxZoom: 8, tileSize: 256, noWrap: true,
+      errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+    }).addTo(routeMap);
+    routeMapInit = true;
+  } else {
+    routeMap.invalidateSize();
+  }
+
+  // Firebase routePoints lekérés
+  try {
+    const resp = await fetch(`${FIREBASE_RT_URL}/routePoints/${driverKulcs}.json`);
+    const allRoutes = await resp.json();
+
+    if (!allRoutes || typeof allRoutes !== 'object') {
+      document.getElementById('route-playback-title').textContent = '❌ Nincs rögzített útvonal ehhez a fuvarhoz';
+      return;
+    }
+
+    // Megkeressük a jobTimestamp-hoz legközelebb eső útvonalat
+    let bestJobId = null;
+    let bestDiff = Infinity;
+
+    Object.keys(allRoutes).forEach(jobId => {
+      if (jobId === '_meta') return;
+      const meta = allRoutes[jobId]?._meta;
+      if (meta && meta.startTime) {
+        const diff = Math.abs(meta.startTime - jobTimestamp);
+        if (diff < bestDiff) { bestDiff = diff; bestJobId = jobId; }
+      } else {
+        // Ha nincs meta, az első útvonalat választjuk
+        if (!bestJobId) bestJobId = jobId;
+      }
+    });
+
+    if (!bestJobId || !allRoutes[bestJobId]) {
+      document.getElementById('route-playback-title').textContent = '❌ Nem található útvonal';
+      return;
+    }
+
+    const routeData = allRoutes[bestJobId];
+    const meta = routeData._meta || {};
+
+    // Pontok összegyűjtése és rendezése index szerint
+    const pts = [];
+    Object.entries(routeData).forEach(([key, val]) => {
+      if (key === '_meta') return;
+      const idx = parseInt(key);
+      if (!isNaN(idx) && val && val.x !== undefined) pts.push({ idx, ...val });
+    });
+    pts.sort((a, b) => a.idx - b.idx);
+    routePoints = pts;
+
+    const from = meta.from || '?';
+    const to   = meta.to   || '?';
+    const cargo = meta.cargo ? ` · ${meta.cargo}` : '';
+    document.getElementById('route-playback-title').textContent = `${from} → ${to}${cargo}`;
+    document.getElementById('route-progress-label').textContent = `0 / ${routePoints.length} pont`;
+
+    if (routePoints.length === 0) {
+      document.getElementById('route-playback-title').textContent = '❌ Üres útvonal';
+      return;
+    }
+
+    // Régi rétegek törlése
+    if (routeMarker) { routeMap.removeLayer(routeMarker); routeMarker = null; }
+    if (routePolyline) { routeMap.removeLayer(routePolyline); routePolyline = null; }
+
+    // Teljes útvonal halvány vonal (előnézet)
+    const allLatLngs = routePoints.map(p => ets2ToLatLng(p.x, p.z));
+    routePolyline = L.polyline(allLatLngs, { color: 'rgba(249,115,22,0.25)', weight: 3, dashArray: '6 6' }).addTo(routeMap);
+
+    // Start/End marker
+    L.marker(allLatLngs[0], {
+      icon: L.divIcon({ html: '<div style="width:14px;height:14px;border-radius:50%;background:#4ade80;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5);"></div>', className:'', iconSize:[14,14], iconAnchor:[7,7] })
+    }).addTo(routeMap).bindPopup(`🟢 Start: ${from}`);
+    L.marker(allLatLngs[allLatLngs.length-1], {
+      icon: L.divIcon({ html: '<div style="width:14px;height:14px;border-radius:50%;background:#f43f5e;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5);"></div>', className:'', iconSize:[14,14], iconAnchor:[7,7] })
+    }).addTo(routeMap).bindPopup(`🔴 Cél: ${to}`);
+
+    // Truck marker
+    const truckIcon = L.divIcon({
+      html: '<div style="width:26px;height:26px;border-radius:50%;background:#f97316;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.6);">🚛</div>',
+      className: '', iconSize: [26,26], iconAnchor: [13,13]
+    });
+    routeMarker = L.marker(allLatLngs[0], { icon: truckIcon }).addTo(routeMap);
+
+    // Térkép igazítása az útvonalra
+    routeMap.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
+
+    // Automatikus lejátszás indítása
+    routeCurrentIdx = 0;
+    startRouteAnimation();
+
+  } catch(e) {
+    document.getElementById('route-playback-title').textContent = '❌ Hiba: ' + e.message;
+  }
+}
+
+let routeDrawnLatLngs = [];
+
+function startRouteAnimation() {
+  routeIsPlaying = true;
+  document.getElementById('route-play-btn').textContent = '⏸ Szünet';
+  routeDrawnLatLngs = [];
+
+  // Régi animált vonal törlése
+  if (routePolyline) { routeMap.removeLayer(routePolyline); }
+  routePolyline = L.polyline([], { color: '#f97316', weight: 3 }).addTo(routeMap);
+
+  const speed = parseInt(document.getElementById('route-speed-slider').value) || 3;
+  const intervalMs = Math.max(50, Math.round(1000 / speed));
+
+  routePlayInterval = setInterval(() => {
+    if (routeCurrentIdx >= routePoints.length) {
+      stopRouteAnimation();
+      document.getElementById('route-play-btn').textContent = '🔄 Újra';
+      return;
+    }
+
+    const pt = routePoints[routeCurrentIdx];
+    const ll = ets2ToLatLng(pt.x, pt.z);
+
+    routeDrawnLatLngs.push(ll);
+    routePolyline.setLatLngs(routeDrawnLatLngs);
+    if (routeMarker) routeMarker.setLatLng(ll);
+
+    document.getElementById('route-progress-label').textContent =
+      `${routeCurrentIdx + 1} / ${routePoints.length} pont`;
+    document.getElementById('route-speed-cur').textContent =
+      (pt.s || 0) + ' km/h';
+
+    // Kamera követés — csak ha az ablak közepe közelében van
+    if (routeCurrentIdx % 5 === 0) {
+      routeMap.panTo(ll, { animate: true, duration: 0.5 });
+    }
+
+    routeCurrentIdx++;
+  }, intervalMs);
+}
+
+function stopRouteAnimation() {
+  if (routePlayInterval) { clearInterval(routePlayInterval); routePlayInterval = null; }
+  routeIsPlaying = false;
+}
+
+function toggleRoutePlayback() {
+  if (routeIsPlaying) {
+    stopRouteAnimation();
+    document.getElementById('route-play-btn').textContent = '▶ Folytatás';
+  } else {
+    if (routeCurrentIdx >= routePoints.length) {
+      routeCurrentIdx = 0;
+      routeDrawnLatLngs = [];
+      if (routePolyline) routePolyline.setLatLngs([]);
+    }
+    startRouteAnimation();
+  }
+}
+
+function closeRoutePlayback() {
+  stopRouteAnimation();
+  document.getElementById('route-playback-modal').style.display = 'none';
+}
+</script>
+
+<!-- ================== LIVE TÉRKÉP (srt-trans.dll) ================== -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ==============================================================
+   ETS2 / ATS koordináta konverzió Leaflet térképre
+   Forrás: ismert ETS2 térkép projektek koordináta-rendszere
+   ETS2 X: -94000..94000 → Leaflet lng
+   ETS2 Z: -80000..80000 → Leaflet lat (invertált!)
+   ============================================================== */
+
+// ETS2 térkép tile server (nyilvánosan elérhető)
+const ETS2_TILES = 'https://tiles.truckyapp.com/ets2/{z}/{x}/{y}.png';
+const ATS_TILES  = 'https://tiles.truckyapp.com/ats/{z}/{x}/{y}.png';
+
+// ETS2 koordináta → Leaflet LatLng konverzió
+function ets2ToLatLng(x, z) {
+  // ETS2 belső koordináta tartomány és leképezés
+  const lat = -z / 500.0 + 15.5;
+  const lng =  x / 500.0 + 0.5;
+  return [lat, lng];
+}
+
+// ATS koordináta → Leaflet LatLng (más skálán)
+function atsToLatLng(x, z) {
+  const lat = -z / 650.0 + 15.5;
+  const lng =  x / 650.0 + 0.5;
+  return [lat, lng];
+}
+
+let liveMap = null;
+let liveMapInitialized = false;
+let liveMapJatek = 'ets2';
+let liveTileLayer = null;
+let liveDriverMarkers = {};
+let liveRefreshInterval = null;
+let liveSelectedDriver = null;
+
+// Sofőr színek (minden sofőrnek egyedi szín)
+const DRIVER_COLORS = ['#f97316','#3b82f6','#4ade80','#a78bfa','#f43f5e','#06b6d4','#eab308','#ec4899'];
+function getDriverColor(index) { return DRIVER_COLORS[index % DRIVER_COLORS.length]; }
+
+function initLiveTerkep() {
+  if (liveMapInitialized) {
+    refreshLiveDrivers();
+    return;
+  }
+
+  // Leaflet betöltés ellenőrzés
+  if (typeof L === 'undefined') {
+    setTimeout(initLiveTerkep, 500);
+    return;
+  }
+
+  liveMap = L.map('live-map', {
+    crs: L.CRS.Simple,
+    minZoom: 2,
+    maxZoom: 8,
+    zoom: 4,
+    center: [15.5, 0.5],
+    zoomControl: true,
+    attributionControl: false,
+  });
+
+  liveTileLayer = L.tileLayer(ETS2_TILES, {
+    minZoom: 2, maxZoom: 8,
+    tileSize: 256,
+    noWrap: true,
+    errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+  }).addTo(liveMap);
+
+  liveMap.setView([15.5, 0.5], 4);
+  liveMapInitialized = true;
+
+  // Automatikus frissítés 15 mp-enként
+  liveRefreshInterval = setInterval(refreshLiveDrivers, 15000);
+  refreshLiveDrivers();
+}
+
+function setLiveTerkepJatek(jatek) {
+  liveMapJatek = jatek;
+  document.getElementById('live-btn-ets2').classList.toggle('active', jatek === 'ets2');
+  document.getElementById('live-btn-ats').classList.toggle('active', jatek === 'ats');
+
+  if (liveMapInitialized && liveTileLayer) {
+    liveTileLayer.setUrl(jatek === 'ets2' ? ETS2_TILES : ATS_TILES);
+  }
+  refreshLiveDrivers();
+}
+
+function toLatLng(x, y, z, jatek) {
+  return jatek === 'ats' ? atsToLatLng(x, z) : ets2ToLatLng(x, z);
+}
+
+async function refreshLiveDrivers() {
+  if (!liveMapInitialized) return;
+  try {
+    const FIREBASE_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
+    const resp = await fetch(`${FIREBASE_URL}/liveTelemetry.json`);
+    const allData = await resp.json();
+
+    const noDataEl = document.getElementById('live-map-no-data');
+    const legendList = document.getElementById('live-legend-list');
+    const statusEl = document.getElementById('live-map-status');
+
+    if (!allData || typeof allData !== 'object') {
+      noDataEl.style.display = 'flex';
+      legendList.innerHTML = '<div style="font-size:12px;color:var(--muted);">Nincs adat</div>';
+      return;
+    }
+
+    const most = Date.now();
+    const AKTIV_LIMIT = 30 * 1000;   // 30 mp = aktív
+    const STALE_LIMIT = 5 * 60 * 1000; // 5 perc = elavult
+
+    // Szűrés: csak az aktuális játékhoz tartozó sofőrök
+    const drivers = Object.entries(allData)
+      .map(([key, d]) => ({ key, ...d }))
+      .filter(d => {
+        if (!d.position) return false;
+        const gameMatch = liveMapJatek === 'ets2'
+          ? (!d.game || d.game.toLowerCase() !== 'ats')
+          : (d.game && d.game.toLowerCase() === 'ats');
+        return gameMatch;
+      });
+
+    if (drivers.length === 0) {
+      noDataEl.style.display = 'flex';
+      legendList.innerHTML = '<div style="font-size:12px;color:var(--muted);">Nincs aktív sofőr (' + (liveMapJatek === 'ets2' ? 'ETS2' : 'ATS') + ')</div>';
+      // Régi markerek törlése
+      Object.values(liveDriverMarkers).forEach(m => liveMap.removeLayer(m));
+      liveDriverMarkers = {};
+      return;
+    }
+
+    noDataEl.style.display = 'none';
+    let legendHtml = '';
+
+    // Régi markerek törlése (ha már nem szerepel a listában)
+    const currentKeys = new Set(drivers.map(d => d.key));
+    Object.keys(liveDriverMarkers).forEach(k => {
+      if (!currentKeys.has(k)) { liveMap.removeLayer(liveDriverMarkers[k]); delete liveDriverMarkers[k]; }
+    });
+
+    drivers.forEach((d, idx) => {
+      const color = getDriverColor(idx);
+      const pos = d.position;
+      if (!pos || pos.x === undefined || pos.z === undefined) return;
+
+      const frissitve = d.frissitve ? new Date(d.frissitve).getTime() : 0;
+      const korkm = most - frissitve;
+      const dotClass = korkm < AKTIV_LIMIT ? 'active' : korkm < STALE_LIMIT ? 'stale' : 'offline';
+      const dotColor = dotClass === 'active' ? '#4ade80' : dotClass === 'stale' ? '#f97316' : '#6b7280';
+
+      const latLng = toLatLng(pos.x, pos.y, pos.z, liveMapJatek);
+      const nev = d.player || d.key;
+      const speed = d.truck ? Math.round(d.truck.speedKmh || 0) : 0;
+      const fuel = d.truck ? Math.round(d.truck.fuel || 0) : 0;
+      const cargo = d.job && d.job.cargo ? d.job.cargo : '—';
+      const dest = d.job && d.job.to ? d.job.to : '—';
+      const navDist = d.navigation ? (d.navigation.distanceKm || 0).toFixed(1) + ' km' : '—';
+      const truckName = d.truck ? `${d.truck.brand || ''} ${d.truck.name || ''}`.trim() : '—';
+      const maxWear = d.truck && d.truck.wear
+        ? Math.round(Math.max(...Object.values(d.truck.wear)) * 100) + '%'
+        : '—';
+      const paused = d.paused ? ' ⏸' : '';
+
+      // Egyedi ikon
+      const iconHtml = `<div style="
+        width:28px;height:28px;border-radius:50%;
+        background:${color};border:3px solid #fff;
+        display:flex;align-items:center;justify-content:center;
+        font-size:12px;font-weight:800;color:#fff;
+        box-shadow:0 2px 8px rgba(0,0,0,0.5);
+        ${dotClass === 'active' ? 'animation:pulse-marker 2s infinite;' : ''}
+      ">🚛</div>`;
+
+      const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [28,28], iconAnchor: [14,14] });
+
+      const popupContent = `
+        <div style="min-width:180px;">
+          <div style="font-weight:800;font-size:14px;color:${color};margin-bottom:8px;">🚛 ${nev}${paused}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;">
+            <span style="color:#9ca3af;">⚡ Sebesség</span><span>${speed} km/h</span>
+            <span style="color:#9ca3af;">⛽ Üzemanyag</span><span>${fuel} L</span>
+            <span style="color:#9ca3af;">📦 Rakomány</span><span>${cargo}</span>
+            <span style="color:#9ca3af;">🎯 Cél</span><span>${dest}</span>
+            <span style="color:#9ca3af;">📏 Hátralévő</span><span>${navDist}</span>
+            <span style="color:#9ca3af;">🔧 Kopás</span><span>${maxWear}</span>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:#6b7280;">
+            Frissítve: ${frissitve ? new Date(frissitve).toLocaleTimeString('hu-HU') : '—'}
+          </div>
+        </div>`;
+
+      if (liveDriverMarkers[d.key]) {
+        liveDriverMarkers[d.key].setLatLng(latLng);
+        liveDriverMarkers[d.key].setIcon(icon);
+        liveDriverMarkers[d.key].setPopupContent(popupContent);
+      } else {
+        const marker = L.marker(latLng, { icon })
+          .addTo(liveMap)
+          .bindPopup(popupContent, { maxWidth: 240 });
+        marker.on('click', () => showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName, maxWear));
+        liveDriverMarkers[d.key] = marker;
+      }
+
+      // Ha ez a kiválasztott sofőr, frissítjük az info panelt is
+      if (liveSelectedDriver === d.key) {
+        showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName, maxWear);
+      }
+
+      legendHtml += `
+        <div class="live-driver-row" onclick="focusLiveDriver('${d.key}')">
+          <div class="live-driver-dot ${dotClass}" style="background:${dotColor};"></div>
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nev}</span>
+          <span style="color:#6b7280;font-size:11px;">${speed} km/h</span>
+        </div>`;
+    });
+
+    legendList.innerHTML = legendHtml || '<div style="font-size:12px;color:var(--muted);">Nincs adat</div>';
+    statusEl.textContent = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
+
+  } catch(e) {
+    console.warn('[Live Térkép] Firebase hiba:', e.message);
+  }
+}
+
+function showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName, maxWear) {
+  liveSelectedDriver = d.key;
+  const panel = document.getElementById('live-map-driver-info');
+  panel.style.display = 'block';
+  document.getElementById('live-info-nev').textContent = '🚛 ' + nev + (d.paused ? ' ⏸ Szünetelve' : ' ● Aktív');
+  document.getElementById('live-info-speed').textContent = speed + ' km/h';
+  document.getElementById('live-info-fuel').textContent = fuel + ' L';
+  document.getElementById('live-info-cargo').textContent = cargo;
+  document.getElementById('live-info-dest').textContent = dest;
+  document.getElementById('live-info-navdist').textContent = navDist;
+  document.getElementById('live-info-truck').textContent = truckName || '—';
+  document.getElementById('live-info-wear').textContent = maxWear;
+}
+
+function focusLiveDriver(key) {
+  const marker = liveDriverMarkers[key];
+  if (marker && liveMap) {
+    liveMap.setView(marker.getLatLng(), 6, { animate: true });
+    marker.openPopup();
+  }
+}
+
+// Térkép méret újraszámítás ha az oldal váltáskor aktiválódik
+document.addEventListener('DOMContentLoaded', () => {
+  // Ha az oldal betöltésekor a terkep aktív tab-ra kerül, inicializáljon
+  const origShowPage = window.showPage;
+  if (typeof origShowPage === 'function') {
+    window.showPage = function(page) {
+      origShowPage(page);
+      if (page === 'terkep') {
+        setTimeout(() => { if (liveMap) liveMap.invalidateSize(); }, 200);
+      }
+    };
+  }
+});
+</script>
+<style>
+@keyframes pulse-marker {
+  0%,100% { box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 0 0 rgba(74,222,128,0.4); }
+  50%      { box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 0 8px rgba(74,222,128,0); }
+}
 </style>
 
 </body>
