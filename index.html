@@ -7626,6 +7626,7 @@ body { font-size: 15px; }
       signInWithEmailAndPassword,
       updateProfile,
       onAuthStateChanged,
+      onIdTokenChanged,
       signOut,
       sendPasswordResetEmail,
       setPersistence,
@@ -7635,7 +7636,9 @@ body { font-size: 15px; }
     import {
       getDatabase,
       ref,
-      onValue
+      onValue,
+      set,
+      remove
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
@@ -7663,6 +7666,45 @@ body { font-size: 15px; }
         return `?auth=${token}`;
       } catch (e) {
         return '';
+      }
+    }
+
+    // ================== Launcher token-híd (webToken) ==================
+    // A desktop launcher (srt-trans.exe) a sofőr nevét (truckyNev) használja
+    // kulcsként a Firebase-adatok olvasásához (ugyanígy a liveTelemetry és a
+    // truckyEsemenyek ágaknál is) — ugyanezt a kulcsképzést használjuk itt,
+    // hogy a launcher a saját maga generált kulcsával rá tudjon találni a
+    // weboldalon bejelentkezett felhasználó tokenjére, kattintás nélkül.
+    function nevKulcsSzamit(nev) {
+      return (nev || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
+    async function frissitiWebTokent() {
+      try {
+        if (!currentUser) return;
+        const truckyNev = window.srtCurrentRecord && window.srtCurrentRecord.truckyNev;
+        const kulcs = nevKulcsSzamit(truckyNev);
+        if (!kulcs) return; // nincs még kitöltve a Trucky név a profilon
+        const token = await currentUser.getIdToken();
+        await set(ref(db, `webToken/${kulcs}`), {
+          token,
+          email: currentUser.email || null,
+          frissitve: new Date().toISOString(),
+        });
+        webTokenKulcs = kulcs;
+      } catch (e) {
+        console.warn('Web token frissítési hiba:', e.message);
+      }
+    }
+
+    async function torliWebTokent() {
+      const kulcs = webTokenKulcs;
+      webTokenKulcs = null;
+      if (!kulcs) return;
+      try {
+        await remove(ref(db, `webToken/${kulcs}`));
+      } catch (e) {
+        // kijelentkezéskor csendben elnyeljük — a token pár óra után úgyis lejár
       }
     }
 
@@ -7699,6 +7741,7 @@ body { font-size: 15px; }
     }
 
     let currentUser = null;
+    let webTokenKulcs = null; // a launcherbe kiírt webToken bejegyzés kulcsa (sofőrnév alapján)
     let currentStatusz = null;
     let currentVanRangja = false;
     let gateEllenorzesKesz = false;
@@ -8917,9 +8960,15 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     };
 
     window.kijelentkezik = async function() {
+      await torliWebTokent();
       await signOut(auth);
       window.closeAuthModal();
     };
+
+    // A Firebase SDK kb. óránként automatikusan frissíti az ID tokent —
+    // ilyenkor is frissítjük a launcherbe kiírt másolatot, hogy az sose
+    // fusson lejárt tokennel.
+    onIdTokenChanged(auth, () => { frissitiWebTokent(); });
 
     async function toltiAdminKerelmeket() {
       const list = document.getElementById('admin-kerelmek-list');
@@ -9098,6 +9147,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
             body: JSON.stringify({ email: currentUser.email })
           });
         } catch (e) { console.warn('Auth fiók törlés hiba:', e.message); }
+        await torliWebTokent();
         await signOut(auth);
         window.closeAuthModal();
         alert('✅ A fiókod törölve lett.');
@@ -9656,6 +9706,8 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         } else {
           currentVanRangja = false;
         }
+
+        frissitiWebTokent(); // launcher-híd: token kiírása, ha van truckyNev
       } catch (e) {
         console.warn('Saját állapot frissítési hiba:', e.message);
       }
