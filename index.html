@@ -3379,7 +3379,7 @@ body { font-size: 15px; }
 
         <style>
           #live-map-container {
-            width: 100%; height: 48vh; min-height: 360px; max-height: 520px; border-radius: 14px;
+            width: 100%; height: 68vh; border-radius: 14px;
             overflow: hidden; border: 1px solid var(--border);
             box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             position: relative;
@@ -3387,20 +3387,19 @@ body { font-size: 15px; }
           #live-map { width: 100%; height: 100%; }
           #live-map-legend {
             position: absolute; top: 14px; right: 14px; z-index: 1000;
-            background: rgba(7,13,24,0.94); backdrop-filter: blur(10px);
+            background: rgba(7,13,24,0.88); backdrop-filter: blur(10px);
             border: 1px solid var(--border); border-radius: 12px;
             padding: 12px 16px; min-width: 200px; max-width: 260px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
           }
-          #live-map-legend h4 { font-size: 13px; font-weight: 800; color: var(--orange); margin: 0 0 8px; letter-spacing: 0.08em; text-transform: uppercase; }
-          .live-driver-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; }
+          #live-map-legend h4 { font-size: 12px; font-weight: 700; color: var(--orange); margin: 0 0 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+          .live-driver-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; color: var(--text); cursor: pointer; }
           .live-driver-row:last-child { border-bottom: none; }
-          .live-driver-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+          .live-driver-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
           .live-driver-dot.active { background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,0.3); animation: pulse-green 2s infinite; }
           .live-driver-dot.stale  { background: #f97316; }
           .live-driver-dot.offline { background: #6b7280; }
           @keyframes pulse-green { 0%,100%{box-shadow:0 0 0 3px rgba(74,222,128,0.3)} 50%{box-shadow:0 0 0 6px rgba(74,222,128,0.08)} }
-          #live-map-status { font-size: 12px; font-weight: 600; color: var(--text); margin-top: 10px; text-align: center; }
+          #live-map-status { font-size: 11px; color: var(--muted); margin-top: 10px; text-align: center; }
           #live-map-game-switcher { display: flex; gap: 6px; margin-bottom: 14px; }
           .live-game-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
           .live-game-btn.active { background: var(--orange-dim); border-color: rgba(249,115,22,0.5); color: var(--orange); }
@@ -3409,9 +3408,9 @@ body { font-size: 15px; }
             border: 1px solid var(--border); border-radius: 12px;
             font-size: 13px; display: none;
           }
-          .driver-info-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
-          .driver-info-label { color: var(--text); opacity: 0.85; }
-          .driver-info-value { color: #fff; font-weight: 700; }
+          .driver-info-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
+          .driver-info-label { color: var(--muted); }
+          .driver-info-value { color: var(--text); font-weight: 600; }
           /* Leaflet popup */
           .leaflet-popup-content-wrapper { background: rgba(7,13,24,0.95)!important; border: 1px solid rgba(249,115,22,0.3)!important; border-radius: 10px!important; color: #fff!important; }
           .leaflet-popup-tip { background: rgba(7,13,24,0.95)!important; }
@@ -3426,7 +3425,7 @@ body { font-size: 15px; }
               <button class="live-game-btn active" id="live-btn-ets2" onclick="setLiveTerkepJatek('ets2')">🚛 ETS2</button>
               <button class="live-game-btn" id="live-btn-ats" onclick="setLiveTerkepJatek('ats')">🤠 ATS</button>
             </div>
-            <div style="font-size:13px;color:var(--text);opacity:0.9;line-height:1.6;">
+            <div style="font-size:12px;color:var(--muted);line-height:1.5;">
               A térképen az <strong style="color:var(--orange)">srt-trans.dll</strong> plugint futtató sofőrök jelennek meg valós időben.<br>
               <span style="color:#4ade80;">●</span> Aktív (max 30 mp)&nbsp;&nbsp;
               <span style="color:#f97316;">●</span> Elavult (30 mp–5 perc)&nbsp;&nbsp;
@@ -3459,7 +3458,7 @@ body { font-size: 15px; }
             <div id="live-map-status">Frissítés: —</div>
           </div>
         </div>
-        <div style="margin-top:10px;font-size:12px;color:var(--text);opacity:0.85;text-align:center;">
+        <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">
           Az ETS2/ATS belső koordináta-rendszerből konvertált pozíció. Közelítő pontossággal mutatja a helyzetet.
           Automatikus frissítés: 15 másodpercenként.
         </div>
