@@ -10513,7 +10513,7 @@ function openJobInfo(game, driverName, index) {
     const driverKulcs = (driverName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const jobDatum = j.datum ? new Date(j.datum).getTime() : null;
     html += '<div style="grid-column:1/-1;margin-top:10px;">' +
-      '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ')" ' +
+      '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\')" ' +
       'style="width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
       '🗺️ Útvonal visszajátszása' +
       '</button></div>';
@@ -11907,7 +11907,7 @@ let routeIsPlaying = false;
 let routeGame = 'ets2';
 const FIREBASE_RT_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
 
-async function openRoutePlayback(driverKulcs, game, jobTimestamp) {
+async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo) {
   routeGame = (game === 'ats') ? 'ats' : 'ets2';
   const modal = document.getElementById('route-playback-modal');
   modal.style.display = 'flex';
@@ -11985,9 +11985,9 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp) {
     pts.sort((a, b) => a.idx - b.idx);
     routePoints = pts;
 
-    const from = meta.from || '?';
-    const to   = meta.to   || '?';
-    const cargo = meta.cargo ? ` · ${meta.cargo}` : '';
+    const from = meta.from || fallbackFrom || '?';
+    const to   = meta.to   || fallbackTo   || '?';
+    const cargo = meta.cargo ? ` · ${meta.cargo}` : (fallbackCargo ? ` · ${fallbackCargo}` : '');
     document.getElementById('route-playback-title').textContent = `${from} → ${to}${cargo}`;
     document.getElementById('route-progress-label').textContent = `0 / ${routePoints.length} pont`;
 
