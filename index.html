@@ -9199,7 +9199,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         listEl.innerHTML = lista.map(r => `
           <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-              <div style="font-weight:800;color:#fff;font-size:17px;">${(r.nev||'').replace(/</g,'&lt;')}</div>
+              <div style="font-weight:800;color:var(--text);font-size:17px;">${(r.nev||'').replace(/</g,'&lt;')}</div>
               ${statuszBadge(r.statusz)}
             </div>
             <div id="jelentkezo-view-${r.uid}" style="font-size:13.5px;color:var(--text);line-height:1.9;">
@@ -9212,9 +9212,9 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
             </div>
             <div id="jelentkezo-edit-${r.uid}" style="display:none;margin-top:8px;flex-direction:column;gap:6px;">
               <label style="font-size:12.5px;color:var(--text);">Discord név (pontosan, ahogy Discordon szerepel)</label>
-              <input id="jelentkezo-edit-discord-${r.uid}" value="${escAttr(r.discordNev)}" style="padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;">
+              <input id="jelentkezo-edit-discord-${r.uid}" value="${escAttr(r.discordNev)}" style="padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;">
               <label style="font-size:12.5px;color:var(--text);margin-top:4px;">Trucky felhasználónév</label>
-              <input id="jelentkezo-edit-trucky-${r.uid}" value="${escAttr(r.truckyNev)}" style="padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;">
+              <input id="jelentkezo-edit-trucky-${r.uid}" value="${escAttr(r.truckyNev)}" style="padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;">
               <div style="display:flex;gap:8px;margin-top:6px;">
                 <button onclick="mentiJelentkezoNeveket('${r.uid}')" style="flex:1;padding:8px;background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">💾 Mentés</button>
                 <button onclick="megsemJelentkezoSzerkesztes('${r.uid}')" style="flex:1;padding:8px;background:rgba(148,163,184,0.15);color:#cbd5e1;border:1px solid rgba(148,163,184,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">Mégse</button>
@@ -9295,7 +9295,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         listEl.innerHTML = lista.map((r, i) => `
           <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;">
             <div style="min-width:24px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);">${i+1}.</div>
-            <div style="flex:1;font-size:14px;color:#fff;font-weight:600;">${(r.nev||'').replace(/</g,'&lt;')}</div>
+            <div style="flex:1;font-size:14px;color:var(--text);font-weight:600;">${(r.nev||'').replace(/</g,'&lt;')}</div>
             <div style="font-size:12px;color:var(--muted);">${formazDatum(r.letrehozva)}</div>
           </div>
         `).join('');
@@ -9324,7 +9324,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         listEl.innerHTML = lista.map(([id, u]) => `
           <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;">
             ${admin ? `<button onclick="deleteTruckyTagMember('${id.replace(/'/g,"\\'")}','${(u.truckyName||id).replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" title="Tag törlése" style="position:absolute;top:10px;right:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;">🗑️</button>` : ''}
-            <div style="font-weight:700;color:#fff;font-size:15px;margin-bottom:6px;${admin ? 'padding-right:28px;' : ''}">${(u.truckyName||id).replace(/</g,'&lt;')}</div>
+            <div style="font-weight:700;color:var(--text);font-size:15px;margin-bottom:6px;${admin ? 'padding-right:28px;' : ''}">${(u.truckyName||id).replace(/</g,'&lt;')}</div>
             <div style="font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
                 <span>🛣️ ${szamFormaz(u.totalKm||0)} km összesen</span>
@@ -10513,7 +10513,7 @@ function openJobInfo(game, driverName, index) {
     const driverKulcs = (driverName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const jobDatum = j.datum ? new Date(j.datum).getTime() : null;
     html += '<div style="grid-column:1/-1;margin-top:10px;">' +
-      '<button onclick="openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ')" ' +
+      '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ')" ' +
       'style="width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
       '🗺️ Útvonal visszajátszása' +
       '</button></div>';
