@@ -3401,8 +3401,9 @@ body { font-size: 15px; }
           #live-map-container.fullscreen #live-map-close-btn { display: flex; }
           .city-name-label { pointer-events: none; white-space: nowrap; }
           .city-name-label span {
-            font-size: 11px; font-weight: 700; color: #fff;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.9);
+            font-size: 14px; font-weight: 700; color: #fff;
+            letter-spacing: 0.01em;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 5px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,1);
             opacity: var(--city-label-opacity, 1);
             transition: opacity 0.2s;
           }
@@ -4072,8 +4073,8 @@ body { font-size: 15px; }
     <div class="container-wide" id="jelentkezok-page-content" style="display:none;">
       <p class="section-eyebrow">Admin</p>
       <h2 class="section-title">📋 Jelentkezők</h2>
-      <p id="jelentkezok-page-osszesen" style="color:var(--muted);margin-bottom:24px;"></p>
-      <div id="jelentkezok-page-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;"></div>
+      <p id="jelentkezok-page-osszesen" style="color:var(--text);font-size:14px;margin-bottom:24px;"></p>
+      <div id="jelentkezok-page-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;"></div>
     </div>
     <div id="jelentkezok-page-lock" class="container-wide" style="text-align:center;padding:100px 24px;">
       <div style="font-size:48px;margin-bottom:16px;">🔒</div>
@@ -9134,9 +9135,9 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     }
 
     function statuszBadge(statusz) {
-      if (statusz === 'jovahagyva') return '<span style="font-size:10px;background:rgba(34,197,94,0.15);color:#4ade80;padding:2px 8px;border-radius:999px;font-weight:700;">✅ Jóváhagyva</span>';
-      if (statusz === 'elutasitva') return '<span style="font-size:10px;background:rgba(239,68,68,0.15);color:#f87171;padding:2px 8px;border-radius:999px;font-weight:700;">❌ Elutasítva</span>';
-      return '<span style="font-size:10px;background:rgba(245,158,11,0.15);color:#f59e0b;padding:2px 8px;border-radius:999px;font-weight:700;">⏳ Függőben</span>';
+      if (statusz === 'jovahagyva') return '<span style="font-size:12px;background:rgba(34,197,94,0.15);color:#4ade80;padding:3px 10px;border-radius:999px;font-weight:700;">✅ Jóváhagyva</span>';
+      if (statusz === 'elutasitva') return '<span style="font-size:12px;background:rgba(239,68,68,0.15);color:#f87171;padding:3px 10px;border-radius:999px;font-weight:700;">❌ Elutasítva</span>';
+      return '<span style="font-size:12px;background:rgba(245,158,11,0.15);color:#f59e0b;padding:3px 10px;border-radius:999px;font-weight:700;">⏳ Függőben</span>';
     }
 
     function escAttr(s) {
@@ -9196,12 +9197,12 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
           return;
         }
         listEl.innerHTML = lista.map(r => `
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-              <div style="font-weight:700;color:#fff;font-size:15px;">${(r.nev||'').replace(/</g,'&lt;')}</div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+              <div style="font-weight:800;color:#fff;font-size:17px;">${(r.nev||'').replace(/</g,'&lt;')}</div>
               ${statuszBadge(r.statusz)}
             </div>
-            <div id="jelentkezo-view-${r.uid}" style="font-size:12px;color:var(--muted);line-height:1.7;">
+            <div id="jelentkezo-view-${r.uid}" style="font-size:13.5px;color:var(--text);line-height:1.9;">
               📧 ${(r.email||'').replace(/</g,'&lt;')}<br>
               💬 Discord: <span id="jelentkezo-discord-txt-${r.uid}">${(r.discordNev||'').replace(/</g,'&lt;')}</span><br>
               🚛 Trucky: <span id="jelentkezo-trucky-txt-${r.uid}">${(r.truckyNev||'').replace(/</g,'&lt;')}</span><br>
@@ -9210,17 +9211,17 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
               📅 ${formazDatum(r.letrehozva)}
             </div>
             <div id="jelentkezo-edit-${r.uid}" style="display:none;margin-top:8px;flex-direction:column;gap:6px;">
-              <label style="font-size:11px;color:var(--muted);">Discord név (pontosan, ahogy Discordon szerepel)</label>
-              <input id="jelentkezo-edit-discord-${r.uid}" value="${escAttr(r.discordNev)}" style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;">
-              <label style="font-size:11px;color:var(--muted);margin-top:4px;">Trucky felhasználónév</label>
-              <input id="jelentkezo-edit-trucky-${r.uid}" value="${escAttr(r.truckyNev)}" style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;">
+              <label style="font-size:12.5px;color:var(--text);">Discord név (pontosan, ahogy Discordon szerepel)</label>
+              <input id="jelentkezo-edit-discord-${r.uid}" value="${escAttr(r.discordNev)}" style="padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;">
+              <label style="font-size:12.5px;color:var(--text);margin-top:4px;">Trucky felhasználónév</label>
+              <input id="jelentkezo-edit-trucky-${r.uid}" value="${escAttr(r.truckyNev)}" style="padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;">
               <div style="display:flex;gap:8px;margin-top:6px;">
                 <button onclick="mentiJelentkezoNeveket('${r.uid}')" style="flex:1;padding:8px;background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">💾 Mentés</button>
                 <button onclick="megsemJelentkezoSzerkesztes('${r.uid}')" style="flex:1;padding:8px;background:rgba(148,163,184,0.15);color:#cbd5e1;border:1px solid rgba(148,163,184,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">Mégse</button>
               </div>
               <div id="jelentkezo-edit-statusz-${r.uid}" style="font-size:11px;margin-top:2px;"></div>
             </div>
-            ${r.egyeb ? `<div style="font-size:12px;color:var(--text);margin-top:8px;padding:8px;background:transparent;border-radius:8px;">${r.egyeb.replace(/</g,'&lt;')}</div>` : ''}
+            ${r.egyeb ? `<div style="font-size:13.5px;color:var(--text);line-height:1.7;margin-top:10px;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;">${r.egyeb.replace(/</g,'&lt;')}</div>` : ''}
             <div style="display:flex;gap:8px;margin-top:10px;">
               <button id="jelentkezo-szerkeszt-btn-${r.uid}" onclick="szerkesztJelentkezoNeveket('${r.uid}')" style="flex:1;padding:8px;background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">✏️ Nevek szerkesztése</button>
             </div>
@@ -12203,8 +12204,8 @@ function addCityLabels(map, jatek) {
       icon: L.divIcon({
         className: 'city-name-label',
         html: `<span>${city.name}</span>`,
-        iconSize: [160, 16],
-        iconAnchor: [80, -6],
+        iconSize: [200, 20],
+        iconAnchor: [100, -6],
       }),
       interactive: false,
       keyboard: false,
