@@ -3379,12 +3379,34 @@ body { font-size: 15px; }
 
         <style>
           #live-map-container {
-            width: 100%; height: 68vh; border-radius: 14px;
+            width: 100%; height: 78vh; border-radius: 14px;
             overflow: hidden; border: 1px solid var(--border);
             box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             position: relative;
           }
+          #live-map-container.fullscreen {
+            position: fixed; inset: 0; z-index: 9999;
+            width: 100vw; height: 100dvh; border-radius: 0; border: none;
+          }
           #live-map { width: 100%; height: 100%; }
+          #live-map-fullscreen-btn, #live-map-close-btn {
+            position: absolute; z-index: 1001; top: 14px; left: 60px;
+            width: 34px; height: 34px; border-radius: 8px;
+            background: rgba(7,13,24,0.88); border: 1px solid var(--border);
+            color: #fff; font-size: 16px; display: flex; align-items: center;
+            justify-content: center; cursor: pointer;
+          }
+          #live-map-close-btn { left: 14px; display: none; }
+          #live-map-container.fullscreen #live-map-fullscreen-btn { display: none; }
+          #live-map-container.fullscreen #live-map-close-btn { display: flex; }
+          .city-name-label { pointer-events: none; white-space: nowrap; }
+          .city-name-label span {
+            font-size: 11px; font-weight: 700; color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.9);
+            opacity: var(--city-label-opacity, 1);
+            transition: opacity 0.2s;
+          }
+          .live-driver-marker-icon { transition: transform 4s linear; }
           #live-map-legend {
             position: absolute; top: 14px; right: 14px; z-index: 1000;
             background: rgba(7,13,24,0.88); backdrop-filter: blur(10px);
@@ -3446,6 +3468,8 @@ body { font-size: 15px; }
 
         <!-- Térkép container -->
         <div id="live-map-container">
+          <button id="live-map-fullscreen-btn" onclick="toggleLiveMapFullscreen(true)" title="Teljes képernyő">⛶</button>
+          <button id="live-map-close-btn" onclick="toggleLiveMapFullscreen(false)" title="Bezárás">✕</button>
           <div id="live-map"></div>
           <div id="live-map-no-data">
             <div style="font-size:40px;margin-bottom:12px;">🗺️</div>
@@ -3460,7 +3484,7 @@ body { font-size: 15px; }
         </div>
         <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">
           Az ETS2/ATS belső koordináta-rendszerből konvertált pozíció. Közelítő pontossággal mutatja a helyzetet.
-          Automatikus frissítés: 15 másodpercenként.
+          Automatikus frissítés: 5 másodpercenként.
         </div>
       </div>
       <!-- ── /Élő SRT Térkép tab ── -->
@@ -3482,20 +3506,7 @@ body { font-size: 15px; }
           <a href="https://map.truckersmp.com" style="display: inline-block; padding: 12px 28px; background: #e85d04; color: #fff; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none;">🔗 Megnyitás TruckersMP térképen →</a>
         </div>
       </div>
-      <div class="map-info-grid">
-        <div class="map-info-card">
-          <h4>🌍 Európa</h4>
-          <p>Az alapjátékban 20+ ország és több száz város érhető el Európa-szerte.</p>
-        </div>
-        <div class="map-info-card">
-          <h4>🗺 ProMods</h4>
-          <p>A ProMods kiegészítővel a térkép több mint kétszeresére bővül, részletesebb úthálózattal.</p>
-        </div>
-        <div class="map-info-card">
-          <h4>📍 Útvonalak</h4>
-          <p>Az interaktív térképen tervezheted a konvoj útvonalát és megnézheted a legjobb parkolókat.</p>
-        </div>
-      </div>
+
     </div>
   </div>
 
@@ -12119,6 +12130,97 @@ function gameToLatLng(map, x, z, jatek) {
   return map.unproject([pixelX, pixelY], cfg.maxZoom);
 }
 
+// ETS2 alapjáték városnevei (közismert, nyilvános koordináta-adatbázisból: x/z játékkoordináták).
+// Egyelőre csak ETS2-höz van adatunk, ATS-hez nincs várostáblázat.
+const ETS2_CITIES = [
+  {name:'Aalborg',x:855.258,z:-35995.1},{name:'Aberdeen',x:-38846.7,z:-55270.3},
+  {name:'Amsterdam',x:-18562,z:-11736.2},{name:'Bergen',x:-10371.6,z:-55777.6},
+  {name:'Berlin',x:10183.1,z:-10001.2},{name:'Bern',x:-12730.8,z:20130.1},
+  {name:'Białystok',x:44098.4,z:-15083.4},{name:'Birmingham',x:-45951.1,z:-20423},
+  {name:'Bratislava',x:24823.3,z:14831},{name:'Bremen',x:-4545.41,z:-14326.1},
+  {name:'Brno',x:22273.8,z:8964.95},{name:'Brussel',x:-21576,z:-3235.03},
+  {name:'Budapest',x:32367.8,z:17882.7},{name:'Banská Bystrica',x:32657.6,z:10680.5},
+  {name:'Calais',x:-30363,z:-4985.64},{name:'Cambridge',x:-36822.7,z:-16119.4},
+  {name:'Cardiff',x:-54005.3,z:-14698.4},{name:'Carlisle',x:-45889.2,z:-39573.5},
+  {name:'Debrecen',x:41641.6,z:17483.7},{name:'Dijon',x:-22470,z:16655.5},
+  {name:'Dortmund',x:-8266.59,z:-4718.39},{name:'Dover',x:-33321.9,z:-7884.36},
+  {name:'Dresden',x:12411.8,z:-1606.27},{name:'Duisburg',x:-13113.6,z:-6370.93},
+  {name:'Düsseldorf',x:-13377.2,z:-4399.6},{name:'Edinburgh',x:-44900.7,z:-47219.7},
+  {name:'Erfurt',x:2436.19,z:-1733.77},{name:'Esbjerg',x:-4699.43,z:-27555.9},
+  {name:'Felixstowe',x:-31664.6,z:-13837.2},{name:'Frankfurt am Main',x:-6304.08,z:2732.91},
+  {name:'Frederikshavn',x:2711.7,z:-38141.5},{name:'Gdańsk',x:28343.1,z:-20619.5},
+  {name:'Gedser',x:6271.11,z:-22000.3},{name:'Genève',x:-18099.1,z:23717},
+  {name:'Glasgow',x:-50384.7,z:-48471.6},{name:'Göteborg',x:7235.89,z:-40227.5},
+  {name:'Graz',x:18216.5,z:20552.7},{name:'Grimsby',x:-36117.9,z:-26575.2},
+  {name:'Groningen',x:-12437.6,z:-15468.7},{name:'Hamburg',x:-1666.25,z:-16912.1},
+  {name:'Hannover',x:-1928.93,z:-8916.4},{name:'Helsingborg',x:9405.2,z:-29882.4},
+  {name:'Hirtshals',x:1425.47,z:-38873.3},{name:'Innsbruck',x:2250.09,z:19214.1},
+  {name:'Jönköping',x:14177.3,z:-39575.6},{name:'Kalmar',x:20559.5,z:-33634.5},
+  {name:'Karlskrona',x:17145.6,z:-30862.4},{name:'Kassel',x:-3031.32,z:-3898.7},
+  {name:'Katowice',x:30728.8,z:2458.83},{name:'Kiel',x:188.074,z:-20826.7},
+  {name:'Klagenfurt am Wörthersee',x:13841.3,z:23052.6},{name:'København',x:8100.74,z:-28097.8},
+  {name:'Köln',x:-13150.8,z:-2732.75},{name:'Košice',x:39843.9,z:10494.4},
+  {name:'Kraków',x:34470.3,z:3249.68},{name:'Kristiansand',x:-4638.28,z:-42891.5},
+  {name:'Leipzig',x:7042.06,z:-3160.18},{name:'Liège',x:-17181.5,z:-1231.25},
+  {name:'Lille',x:-26495.9,z:-2483.4},{name:'Linköping',x:18411.7,z:-43092.9},
+  {name:'Linz',x:13665.7,z:13754.6},{name:'Liverpool',x:-48871.7,z:-29091.8},
+  {name:'Łódź',x:32014.5,z:-6143.92},{name:'London',x:-39546.9,z:-11564.2},
+  {name:'Lublin',x:43244.2,z:-4104.96},{name:'Luxembourg',x:-16134.2,z:4382.97},
+  {name:'Lyon',x:-23869.8,z:25892.3},{name:'Magdeburg',x:4601.58,z:-7896.8},
+  {name:'Malmö',x:10744.9,z:-27481.2},{name:'Manchester',x:-45548.7,z:-27815},
+  {name:'Mannheim',x:-7722.87,z:6165.95},{name:'Metz',x:-16294.5,z:7463.71},
+  {name:'Milano',x:-6616.31,z:28982.8},{name:'München',x:3234.12,z:14470},
+  {name:'Newcastle-upon-Tyne',x:-39778,z:-38787.7},{name:'Nürnberg',x:2665.54,z:7237.8},
+  {name:'Nynäshamn',x:25032,z:-46079.8},{name:'Odense',x:1617.69,z:-26700.4},
+  {name:'Olsztyn',x:34758.6,z:-17885.9},{name:'Örebro',x:17087.8,z:-48374.7},
+  {name:'Oslo',x:4390.91,z:-53410.5},{name:'Osnabrück',x:-7702.9,z:-9613.47},
+  {name:'Ostrava',x:28231.9,z:5136.1},{name:'Paris',x:-30494.9,z:6998.41},
+  {name:'Pécs',x:29039.9,z:26311.6},{name:'Plymouth',x:-60041.4,z:-7882.32},
+  {name:'Poznań',x:22863.4,z:-9112.2},{name:'Praha',x:14299.7,z:3978.97},
+  {name:'Reims',x:-24021.9,z:5799.34},{name:'Rostock',x:6490.95,z:-18588.9},
+  {name:'Rotterdam',x:-20156,z:-9135.8},{name:'Salzburg',x:9075.84,z:16564.5},
+  {name:'Sheffield',x:-42688.8,z:-26687.6},{name:'Södertälje',x:23525.2,z:-46319.9},
+  {name:'Southampton',x:-46338.7,z:-7523.25},{name:'Stavanger',x:-10553.7,z:-48126.8},
+  {name:'Stockholm',x:24743.6,z:-47746.1},{name:'Strasbourg',x:-10786.9,z:11198.7},
+  {name:'Stuttgart',x:-4957.84,z:10047},{name:'Swansea',x:-56896,z:-16881.9},
+  {name:'Szczecin',x:15052.7,z:-15049.8},{name:'Szeged',x:36880.7,z:24565.7},
+  {name:'Torino',x:-12697.3,z:30932},{name:'Trelleborg',x:10808.3,z:-25887},
+  {name:'Uppsala',x:24021.5,z:-51634.5},{name:'Västerås',x:20937.7,z:-50468.3},
+  {name:'Växjö',x:16044.4,z:-34835.6},{name:'Venezia',x:5089.88,z:30078.9},
+  {name:'Verona',x:39.1094,z:29453.3},{name:'Warszawa',x:37444.9,z:-9435.84},
+  {name:'Wien',x:21298.3,z:14215.5},{name:'Wrocław',x:23502.9,z:-1950.98},
+  {name:'Zürich',x:-8473.81,z:17968.5},
+];
+
+// Városnév-címkék hozzáadása egy térképhez (jelenleg csak ETS2-nél van adatunk).
+// A címkék áttetszősége a zoom szinttől függ, hogy kis nagyításnál ne legyen zsúfolt.
+function addCityLabels(map, jatek) {
+  if (jatek !== 'ets2') return null;
+  const layer = L.layerGroup();
+  ETS2_CITIES.forEach(city => {
+    const pos = gameToLatLng(map, city.x, city.z, 'ets2');
+    L.marker(pos, {
+      icon: L.divIcon({
+        className: 'city-name-label',
+        html: `<span>${city.name}</span>`,
+        iconSize: [160, 16],
+        iconAnchor: [80, -6],
+      }),
+      interactive: false,
+      keyboard: false,
+    }).addTo(layer);
+  });
+  layer.addTo(map);
+  const updateOpacity = () => {
+    const z = map.getZoom();
+    const opacity = Math.max(0, Math.min(1, (z - 2) / 3));
+    map.getContainer().style.setProperty('--city-label-opacity', opacity);
+  };
+  map.on('zoomend', updateOpacity);
+  updateOpacity();
+  return layer;
+}
+
 let liveMap = null;
 let liveMapInitialized = false;
 let liveMapJatek = 'ets2';
@@ -12127,6 +12229,7 @@ let liveDriverMarkers = {};
 let liveRefreshInterval = null;
 let liveSelectedDriver = null;
 let liveMapFitted = false;
+let liveCityLayer = null;
 
 // Sofőr színek (minden sofőrnek egyedi szín)
 const DRIVER_COLORS = ['#f97316','#3b82f6','#4ade80','#a78bfa','#f43f5e','#06b6d4','#eab308','#ec4899'];
@@ -12166,11 +12269,28 @@ function initLiveTerkep() {
   liveMap.setView(gameToLatLng(liveMap, -20000, -3000, 'ets2'), 3);
   liveMapInitialized = true;
   liveMapFitted = false;
+  liveCityLayer = addCityLabels(liveMap, liveMapJatek);
 
-  // Automatikus frissítés 15 mp-enként
-  liveRefreshInterval = setInterval(refreshLiveDrivers, 15000);
+  // Automatikus frissítés 5 mp-enként (ennyi időnként küld új adatot az srt-trans.dll is)
+  liveRefreshInterval = setInterval(refreshLiveDrivers, 5000);
   refreshLiveDrivers();
 }
+
+function toggleLiveMapFullscreen(forceState) {
+  const container = document.getElementById('live-map-container');
+  if (!container) return;
+  const next = (forceState !== undefined) ? forceState : !container.classList.contains('fullscreen');
+  container.classList.toggle('fullscreen', next);
+  document.body.style.overflow = next ? 'hidden' : '';
+  setTimeout(() => { if (liveMap) liveMap.invalidateSize(); }, 150);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const container = document.getElementById('live-map-container');
+    if (container && container.classList.contains('fullscreen')) toggleLiveMapFullscreen(false);
+  }
+});
 
 function setLiveTerkepJatek(jatek) {
   liveMapJatek = jatek;
@@ -12179,6 +12299,10 @@ function setLiveTerkepJatek(jatek) {
 
   if (liveMapInitialized && liveTileLayer) {
     liveTileLayer.setUrl(jatek === 'ets2' ? ETS2_TILES : ATS_TILES);
+  }
+  if (liveMapInitialized) {
+    if (liveCityLayer) { liveMap.removeLayer(liveCityLayer); liveCityLayer = null; }
+    liveCityLayer = addCityLabels(liveMap, jatek);
   }
   refreshLiveDrivers();
 }
@@ -12270,7 +12394,7 @@ async function refreshLiveDrivers() {
         ${dotClass === 'active' ? 'animation:pulse-marker 2s infinite;' : ''}
       ">🚛</div>`;
 
-      const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [28,28], iconAnchor: [14,14] });
+      const icon = L.divIcon({ html: iconHtml, className: 'live-driver-marker-icon', iconSize: [28,28], iconAnchor: [14,14] });
 
       const popupContent = `
         <div style="min-width:180px;">
