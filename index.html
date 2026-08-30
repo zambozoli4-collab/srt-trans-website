@@ -11892,9 +11892,11 @@ let routePoints = [];
 let routePlayInterval = null;
 let routeCurrentIdx = 0;
 let routeIsPlaying = false;
+let routeGame = 'ets2';
 const FIREBASE_RT_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
 
 async function openRoutePlayback(driverKulcs, game, jobTimestamp) {
+  routeGame = (game === 'ats') ? 'ats' : 'ets2';
   const modal = document.getElementById('route-playback-modal');
   modal.style.display = 'flex';
 
@@ -11913,13 +11915,13 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp) {
     routeMap = L.map('route-map', {
       crs: L.CRS.Simple,
       minZoom: 2, maxZoom: 8,
-      zoom: 5,
-      center: [15.5, 0.5],
+      zoom: 3,
+      center: [0, 0],
       zoomControl: true,
       attributionControl: false,
     });
     L.tileLayer(game === 'ats' ? ATS_TILES : ETS2_TILES, {
-      minZoom: 2, maxZoom: 8, tileSize: 256, noWrap: true,
+      minZoom: 2, maxZoom: 8, tileSize: 512, noWrap: true,
       errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
     }).addTo(routeMap);
     routeMapInit = true;
@@ -11987,7 +11989,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp) {
     if (routePolyline) { routeMap.removeLayer(routePolyline); routePolyline = null; }
 
     // Teljes útvonal halvány vonal (előnézet)
-    const allLatLngs = routePoints.map(p => ets2ToLatLng(p.x, p.z));
+    const allLatLngs = routePoints.map(p => gameToLatLng(routeMap, p.x, p.z, routeGame));
     routePolyline = L.polyline(allLatLngs, { color: 'rgba(249,115,22,0.25)', weight: 3, dashArray: '6 6' }).addTo(routeMap);
 
     // Start/End marker
@@ -12039,7 +12041,7 @@ function startRouteAnimation() {
     }
 
     const pt = routePoints[routeCurrentIdx];
-    const ll = ets2ToLatLng(pt.x, pt.z);
+    const ll = gameToLatLng(routeMap, pt.x, pt.z, routeGame);
 
     routeDrawnLatLngs.push(ll);
     routePolyline.setLatLngs(routeDrawnLatLngs);
@@ -12094,23 +12096,27 @@ function closeRoutePlayback() {
    ETS2 Z: -80000..80000 → Leaflet lat (invertált!)
    ============================================================== */
 
-// ETS2 térkép tile server (nyilvánosan elérhető)
-const ETS2_TILES = 'https://tiles.truckyapp.com/ets2/{z}/{x}/{y}.png';
-const ATS_TILES  = 'https://tiles.truckyapp.com/ats/{z}/{x}/{y}.png';
+// ETS2 térkép tile server (hivatalos Trucky csempeszolgáltatás — a verziómappa
+// (05102019) és a cache-busting "v" paraméter is KÖTELEZŐ, e nélkül 404-et ad)
+const MAP_TILE_VERSION = '05102019';
+const MAP_TILES_TS = Date.now();
+const ETS2_TILES = `https://tiles.truckyapp.com/ets2/${MAP_TILE_VERSION}/{z}/{x}/{y}.png?v=${MAP_TILES_TS}`;
+const ATS_TILES  = `https://tiles.truckyapp.com/ats/${MAP_TILE_VERSION}/{z}/{x}/{y}.png?v=${MAP_TILES_TS}`;
 
-// ETS2 koordináta → Leaflet LatLng konverzió
-function ets2ToLatLng(x, z) {
-  // ETS2 belső koordináta tartomány és leképezés
-  const lat = -z / 500.0 + 15.5;
-  const lng =  x / 500.0 + 0.5;
-  return [lat, lng];
-}
+// Hivatalos, a Trucky saját mapManager.js-éből származó kalibrációs konstansok.
+// A csempeszerver NEM sima lat/lng-t vár, hanem Leaflet CRS.Simple pixel-koordinátát,
+// amit csak map.unproject()-tel szabad kiszámolni (soha nem kézzel felírt képlettel).
+const MAP_CONFIG = {
+  ets2: { pointsPerPixel: 1.609055, multipliers: { x: 70272, y: 76157 }, maxZoom: 8 },
+  ats:  { pointsPerPixel: 1.239899, multipliers: { x: 97373, y: 70186 }, maxZoom: 8 },
+};
 
-// ATS koordináta → Leaflet LatLng (más skálán)
-function atsToLatLng(x, z) {
-  const lat = -z / 650.0 + 15.5;
-  const lng =  x / 650.0 + 0.5;
-  return [lat, lng];
+// ETS2/ATS játékkoordináta (x, z) → Leaflet LatLng, az adott Leaflet map példányhoz kötve
+function gameToLatLng(map, x, z, jatek) {
+  const cfg = MAP_CONFIG[jatek === 'ats' ? 'ats' : 'ets2'];
+  const pixelX = x / cfg.pointsPerPixel + cfg.multipliers.x;
+  const pixelY = z / cfg.pointsPerPixel + cfg.multipliers.y;
+  return map.unproject([pixelX, pixelY], cfg.maxZoom);
 }
 
 let liveMap = null;
@@ -12120,6 +12126,7 @@ let liveTileLayer = null;
 let liveDriverMarkers = {};
 let liveRefreshInterval = null;
 let liveSelectedDriver = null;
+let liveMapFitted = false;
 
 // Sofőr színek (minden sofőrnek egyedi szín)
 const DRIVER_COLORS = ['#f97316','#3b82f6','#4ade80','#a78bfa','#f43f5e','#06b6d4','#eab308','#ec4899'];
@@ -12141,21 +12148,24 @@ function initLiveTerkep() {
     crs: L.CRS.Simple,
     minZoom: 2,
     maxZoom: 8,
-    zoom: 4,
-    center: [15.5, 0.5],
+    zoom: 3,
+    center: [0, 0],
     zoomControl: true,
     attributionControl: false,
   });
 
   liveTileLayer = L.tileLayer(ETS2_TILES, {
     minZoom: 2, maxZoom: 8,
-    tileSize: 256,
+    tileSize: 512,
     noWrap: true,
     errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
   }).addTo(liveMap);
 
-  liveMap.setView([15.5, 0.5], 4);
+  // Kezdő nézet: az ETS2 térkép nagyjából középső régiójára (Németország táján) igazítva,
+  // amíg meg nem érkezik az első élő sofőr-adat (utána automatikusan rááll a sofőrökre).
+  liveMap.setView(gameToLatLng(liveMap, -20000, -3000, 'ets2'), 3);
   liveMapInitialized = true;
+  liveMapFitted = false;
 
   // Automatikus frissítés 15 mp-enként
   liveRefreshInterval = setInterval(refreshLiveDrivers, 15000);
@@ -12174,7 +12184,7 @@ function setLiveTerkepJatek(jatek) {
 }
 
 function toLatLng(x, y, z, jatek) {
-  return jatek === 'ats' ? atsToLatLng(x, z) : ets2ToLatLng(x, z);
+  return gameToLatLng(liveMap, x, z, jatek);
 }
 
 async function refreshLiveDrivers() {
@@ -12305,6 +12315,13 @@ async function refreshLiveDrivers() {
 
     legendList.innerHTML = legendHtml || '<div style="font-size:12px;color:var(--muted);">Nincs adat</div>';
     statusEl.textContent = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
+
+    // Első sikeres adatbetöltéskor ráigazítjuk a nézetet az összes aktív sofőrre
+    if (!liveMapFitted && Object.keys(liveDriverMarkers).length > 0) {
+      const group = L.featureGroup(Object.values(liveDriverMarkers));
+      liveMap.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 7 });
+      liveMapFitted = true;
+    }
 
   } catch(e) {
     console.warn('[Live Térkép] Firebase hiba:', e.message);
