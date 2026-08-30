@@ -3388,6 +3388,10 @@ body { font-size: 15px; }
             position: fixed; inset: 0; z-index: 9999;
             width: 100vw; height: 100dvh; border-radius: 0; border: none;
           }
+          body.live-map-fs-active .srt-modern-topbar,
+          body.live-map-fs-active .site-header {
+            display: none !important;
+          }
           #live-map { width: 100%; height: 100%; }
           #live-map-fullscreen-btn, #live-map-close-btn {
             position: absolute; z-index: 1001; top: 14px; left: 60px;
@@ -12282,6 +12286,7 @@ function toggleLiveMapFullscreen(forceState) {
   if (!container) return;
   const next = (forceState !== undefined) ? forceState : !container.classList.contains('fullscreen');
   container.classList.toggle('fullscreen', next);
+  document.body.classList.toggle('live-map-fs-active', next);
   document.body.style.overflow = next ? 'hidden' : '';
   setTimeout(() => { if (liveMap) liveMap.invalidateSize(); }, 150);
 }
