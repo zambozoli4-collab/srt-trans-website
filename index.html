@@ -11963,6 +11963,10 @@ let routeIsPlaying = false;
 let routeGame = 'ets2';
 const FIREBASE_RT_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
 
+// ÚJ: sebességtúllépés-jelölők az útvonal-visszajátszó térképen
+const TULSEBESSEG_LIMIT_KMH = 100;
+let routeSpeedMarkers = [];
+
 async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo) {
   routeGame = (game === 'ats') ? 'ats' : 'ets2';
   const modal = document.getElementById('route-playback-modal');
@@ -12055,6 +12059,8 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     // Régi rétegek törlése
     if (routeMarker) { routeMap.removeLayer(routeMarker); routeMarker = null; }
     if (routePolyline) { routeMap.removeLayer(routePolyline); routePolyline = null; }
+    routeSpeedMarkers.forEach(m => routeMap.removeLayer(m));
+    routeSpeedMarkers = [];
 
     // Teljes útvonal halvány vonal (előnézet)
     const allLatLngs = routePoints.map(p => gameToLatLng(routeMap, p.x, p.z, routeGame));
@@ -12067,6 +12073,22 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     L.marker(allLatLngs[allLatLngs.length-1], {
       icon: L.divIcon({ html: '<div style="width:14px;height:14px;border-radius:50%;background:#f43f5e;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5);"></div>', className:'', iconSize:[14,14], iconAnchor:[7,7] })
     }).addTo(routeMap).bindPopup(`🔴 Cél: ${to}`);
+
+    // ÚJ: sebességtúllépés jelölése — minden rögzített pontot megjelölünk,
+    // ahol a sofőr TULSEBESSEG_LIMIT_KMH (100 km/h) fölött ment. Kattintva
+    // a pontra kiírja a pontos, aznapi rögzített sebességet.
+    routePoints.forEach((p, i) => {
+      const sebesseg = p.s || 0;
+      if (sebesseg > TULSEBESSEG_LIMIT_KMH) {
+        const m = L.marker(allLatLngs[i], {
+          icon: L.divIcon({
+            html: '<div style="width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.7);"></div>',
+            className: '', iconSize: [11,11], iconAnchor: [5,5]
+          })
+        }).addTo(routeMap).bindPopup(`🚨 Sebességtúllépés: ${Math.round(sebesseg)} km/h`);
+        routeSpeedMarkers.push(m);
+      }
+    });
 
     // Truck marker
     const truckIcon = L.divIcon({
