@@ -12029,18 +12029,30 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       if (jobId === '_meta') return;
       const meta = allRoutes[jobId]?._meta;
       if (meta && meta.startTime) {
-        const diff = Math.abs(meta.startTime - jobTimestamp);
+        // Ha van felvetelIdoMs (indulás ideje), azzal hasonlítunk
+        // Ha csak datum (leadás ideje) van, a startTime-hoz is illesztjük
+        // és a leadástól visszafelé max 4 órát engedünk (hosszú fuvaroknál)
+        const diffStart = jobTimestamp ? Math.abs(meta.startTime - jobTimestamp) : Infinity;
+        const diff = diffStart;
         if (diff < bestDiff) { bestDiff = diff; bestJobId = jobId; }
       } else {
-        // Ha nincs meta, az első útvonalat választjuk
         if (!bestJobId) bestJobId = jobId;
       }
     });
 
-    // Ha a legközelebbi találat is túl messze esik az induláshoz képest (>30 perc),
-    // inkább ne mutassunk semmit — jobb egy egyértelmű hibaüzenet, mint egy
-    // véletlenszerű, más fuvarhoz tartozó útvonal megjelenítése.
-    const MAX_MATCH_DIFF_MS = 30 * 60 * 1000;
+    // Ha jobTimestamp=0 (nincs felvetelIdoMs), válasszuk a legutóbbi útvonalat
+    if (!jobTimestamp || jobTimestamp === 0) {
+      let latestTime = -1;
+      Object.keys(allRoutes).forEach(jobId => {
+        if (jobId === '_meta') return;
+        const meta = allRoutes[jobId]?._meta;
+        const t = meta?.startTime || 0;
+        if (t > latestTime) { latestTime = t; bestJobId = jobId; bestDiff = 0; }
+      });
+    }
+
+    // Ha a legközelebbi találat is túl messze esik (>4 óra), ne mutassunk semmit
+    const MAX_MATCH_DIFF_MS = 4 * 60 * 60 * 1000;
     if (!bestJobId || !allRoutes[bestJobId] || (bestDiff !== Infinity && bestDiff > MAX_MATCH_DIFF_MS)) {
       document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
       return;
