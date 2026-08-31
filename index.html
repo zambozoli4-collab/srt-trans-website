@@ -12017,7 +12017,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     const allRoutes = await resp.json();
 
     if (!allRoutes || typeof allRoutes !== 'object') {
-      document.getElementById('route-playback-title').textContent = '❌ Nincs rögzített útvonal ehhez a fuvarhoz';
+      document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
       return;
     }
 
@@ -12042,7 +12042,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     // véletlenszerű, más fuvarhoz tartozó útvonal megjelenítése.
     const MAX_MATCH_DIFF_MS = 30 * 60 * 1000;
     if (!bestJobId || !allRoutes[bestJobId] || (bestDiff !== Infinity && bestDiff > MAX_MATCH_DIFF_MS)) {
-      document.getElementById('route-playback-title').textContent = '❌ Nem található útvonal ehhez a fuvarhoz';
+      document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
       return;
     }
 
