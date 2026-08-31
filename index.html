@@ -10573,8 +10573,14 @@ function openJobInfo(game, driverName, index) {
     if (j.meGj || j.megjegyzes || j.megjegyzés) html += srtCard('Megjegyzés', srtEsc(j.meGj || j.megjegyzes || j.megjegyzés), true);
 
     // ── ÚTVONAL VISSZAJÁTSZÁS gomb — ha van rögzített útvonal Firebase-ben ──
+    // FONTOS: a rögzített útvonal (_meta.startTime) a fuvar INDULÁSAKOR jön létre,
+    // ezért az egyeztetéshez is az indulási időt (felvetelIdoMs) kell használni, ne
+    // a leadási időt (j.datum) — különben (főleg hosszabb fuvaroknál, vagy ha a
+    // sofőr rögtön új fuvart kezd) egy másik, idegen fuvar útvonala jöhet be.
+    // Régebbi, a javítás előtt rögzített fuvaroknál nincs felvetelIdoMs, ott
+    // marad a régi (közelítő) viselkedés a j.datum alapján.
     const driverKulcs = (driverName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const jobDatum = j.datum ? new Date(j.datum).getTime() : null;
+    const jobDatum = j.felvetelIdoMs || (j.datum ? new Date(j.datum).getTime() : null);
     html += '<div style="grid-column:1/-1;margin-top:10px;">' +
       '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\')" ' +
       'style="width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
@@ -12034,8 +12040,12 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       }
     });
 
-    if (!bestJobId || !allRoutes[bestJobId]) {
-      document.getElementById('route-playback-title').textContent = '❌ Nem található útvonal';
+    // Ha a legközelebbi találat is túl messze esik az induláshoz képest (>30 perc),
+    // inkább ne mutassunk semmit — jobb egy egyértelmű hibaüzenet, mint egy
+    // véletlenszerű, más fuvarhoz tartozó útvonal megjelenítése.
+    const MAX_MATCH_DIFF_MS = 30 * 60 * 1000;
+    if (!bestJobId || !allRoutes[bestJobId] || (bestDiff !== Infinity && bestDiff > MAX_MATCH_DIFF_MS)) {
+      document.getElementById('route-playback-title').textContent = '❌ Nem található útvonal ehhez a fuvarhoz';
       return;
     }
 
