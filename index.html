@@ -5732,7 +5732,7 @@ body { font-size: 15px; }
         html += '<div style="text-align:center;padding:0 4px;overflow:hidden;cursor:pointer" title="Kamion részletei" onclick="openTruckInfo(\'' + String(driverName).replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\',\'' + String(kamion).replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\',\'' + String(srtJobTruckId(j) ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')"><div style="font-size:11px;font-weight:700;color:#60a5fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:underline">' + kamion + '</div><div style="font-size:10px;color:' + fuvarTipusColor + ';white-space:nowrap;margin-top:2px">' + fuvarTipusLabel + '</div></div>';
         html += '<div style="text-align:center;padding:0 4px;overflow:hidden"><div style="font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + String(driverName).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div><div style="font-size:10px;color:var(--muted);white-space:nowrap">Sofőr</div></div>';
         html += '<div style="overflow:hidden;padding:0 8px"><div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + honnan + ' → ' + hova + '</div><div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span class="srt-rakomany-table-icon" aria-hidden="true">' + (typeof window.rakomanyKep === 'function' ? window.rakomanyKep(aru) : '📦') + '</span><span style="overflow:hidden;text-overflow:ellipsis">' + aru + '</span></div></div>';
-        html += '<div class="job-info-single" style="justify-content:center"><button onclick="openJobInfo(\'' + gameForInfo + '\', decodeURIComponent(\'' + encodeURIComponent(driverName) + '\'), ' + realIndex + ')" style="padding:6px 10px;border-radius:7px;background:#3b82f6;color:#fff;border:0;cursor:pointer;font-size:12px;font-weight:700;">ⓘ Infó</button></div>';
+        html += '<div class="job-info-single" style="justify-content:center"><button onclick="openJobInfo(\'' + gameForInfo + '\', decodeURIComponent(\'' + encodeURIComponent(driverName) + '\'), ' + realIndex + ', ' + JSON.stringify(j.datum || '') + ')" style="padding:6px 10px;border-radius:7px;background:#3b82f6;color:#fff;border:0;cursor:pointer;font-size:12px;font-weight:700;">ⓘ Infó</button></div>';
         html += adminBtn;
         html += '</div>';
         return html;
@@ -10521,16 +10521,13 @@ function srtCargoHu(name) {
   return map[key] || raw;
 }
 
-function openJobInfo(game, driverName, index) {
+function openJobInfo(game, driverName, index, datum) {
   try {
     if (!allJobs) return;
-    // FONTOS: "index" a sofőr TELJES, szűretlen fuvarlistájában (allJobs[jobKey(driverName)])
-    // elfoglalt valódi pozíció kell legyen — NEM egy játék/hónap szerint szűrt aldarabban lévő
-    // pozíció. Korábban itt újra leszűrtük a listát játék szerint, ami az eredetileg (hónap
-    // és/vagy játék szerint) szűrt táblázatból kapott index-szel összekombinálva rossz fuvart
-    // eredményezett (pl. az utolsó sor Infó gombja egy teljesen más fuvart nyitott meg).
     const arr = allJobs[jobKey(driverName)] || [];
-    const j = arr[index];
+    // Ha datum is meg van adva, azzal keresünk — megbízhatóbb mint az index
+    let j = datum ? arr.find(x => x.datum === datum) : null;
+    if (!j) j = arr[index];
     if (!j) return;
 
     const title = byId('srt-job-info-title');
