@@ -5719,7 +5719,12 @@ body { font-size: 15px; }
         var maxSeb = j.maxSebesseg ? j.maxSebesseg + ' km/h' : '-';
         var bunt = j.büntFt > 0 ? '-' + formatNum(j.büntFt) + ' Ft' : '-';
         var buntColor = j.büntFt > 0 ? '#f87171' : 'var(--muted)';
-        var adminBtn = isAdminMode() ? '<div style="text-align:center"><button onclick="deleteJob(\'' + driverName.replace(/'/g,"\\'") + '\', ' + i + ')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">🗑️</button></div>' : '';
+        // FONTOS: a táblázat (tablaFuvarok) hónap és/vagy játék szerint szűrt lista lehet,
+        // ezért az "i" pozíció NEM egyezik meg a sofőr teljes (allJobs) fuvarlistájában lévő
+        // valódi indexével. Az Infó / Törlés gomboknak a TELJES, szűretlen listában (osszesFuvar)
+        // elfoglalt valódi indexet kell átadniuk, különben rossz fuvart nyitnak meg / törölnek.
+        var realIndex = osszesFuvar.indexOf(j);
+        var adminBtn = isAdminMode() ? '<div style="text-align:center"><button onclick="deleteJob(\'' + driverName.replace(/'/g,"\\'") + '\', ' + realIndex + ')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">🗑️</button></div>' : '';
         var gameForInfo = srtJobIsATS(j) ? 'ats' : 'ets';
         var html = '';
         html += '<div style="display:grid;grid-template-columns:' + cols + ';gap:0;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;' + rowBg + 'transition:background 0.15s">';
@@ -5727,7 +5732,7 @@ body { font-size: 15px; }
         html += '<div style="text-align:center;padding:0 4px;overflow:hidden;cursor:pointer" title="Kamion részletei" onclick="openTruckInfo(\'' + String(driverName).replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\',\'' + String(kamion).replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\',\'' + String(srtJobTruckId(j) ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')"><div style="font-size:11px;font-weight:700;color:#60a5fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:underline">' + kamion + '</div><div style="font-size:10px;color:' + fuvarTipusColor + ';white-space:nowrap;margin-top:2px">' + fuvarTipusLabel + '</div></div>';
         html += '<div style="text-align:center;padding:0 4px;overflow:hidden"><div style="font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + String(driverName).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div><div style="font-size:10px;color:var(--muted);white-space:nowrap">Sofőr</div></div>';
         html += '<div style="overflow:hidden;padding:0 8px"><div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + honnan + ' → ' + hova + '</div><div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span class="srt-rakomany-table-icon" aria-hidden="true">' + (typeof window.rakomanyKep === 'function' ? window.rakomanyKep(aru) : '📦') + '</span><span style="overflow:hidden;text-overflow:ellipsis">' + aru + '</span></div></div>';
-        html += '<div class="job-info-single" style="justify-content:center"><button onclick="openJobInfo(\'' + gameForInfo + '\', decodeURIComponent(\'' + encodeURIComponent(driverName) + '\'), ' + i + ')" style="padding:6px 10px;border-radius:7px;background:#3b82f6;color:#fff;border:0;cursor:pointer;font-size:12px;font-weight:700;">ⓘ Infó</button></div>';
+        html += '<div class="job-info-single" style="justify-content:center"><button onclick="openJobInfo(\'' + gameForInfo + '\', decodeURIComponent(\'' + encodeURIComponent(driverName) + '\'), ' + realIndex + ')" style="padding:6px 10px;border-radius:7px;background:#3b82f6;color:#fff;border:0;cursor:pointer;font-size:12px;font-weight:700;">ⓘ Infó</button></div>';
         html += adminBtn;
         html += '</div>';
         return html;
@@ -10022,13 +10027,13 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         setTimeout(() => {
           showDriverJobs(driverName);
 
-          // A Fuvarok táblázat indexe a játék szerinti szűrt listához tartozik,
-          // ezért ugyanazt a konkrét fuvarobjektumot keressük meg benne.
+          // Az openJobInfo a sofőr TELJES, szűretlen fuvarlistájában (allJobs[...]) várja az
+          // indexet, ezért ugyanabban a listában keressük meg a konkrét fuvarobjektum valódi
+          // pozícióját (nem egy játék szerint előre leszűrt allisában, mert az más index-eket ad).
           if (targetJob && typeof openJobInfo === 'function') {
             setTimeout(() => {
               const allDriverJobs = (allJobs && allJobs[key(driverName)]) || [];
-              const filtered = allDriverJobs.filter(ets2Job);
-              const targetIndex = filtered.indexOf(targetJob);
+              const targetIndex = allDriverJobs.indexOf(targetJob);
               if (targetIndex >= 0) openJobInfo('ets2', driverName, targetIndex);
             }, 50);
           }
@@ -10519,11 +10524,13 @@ function srtCargoHu(name) {
 function openJobInfo(game, driverName, index) {
   try {
     if (!allJobs) return;
+    // FONTOS: "index" a sofőr TELJES, szűretlen fuvarlistájában (allJobs[jobKey(driverName)])
+    // elfoglalt valódi pozíció kell legyen — NEM egy játék/hónap szerint szűrt aldarabban lévő
+    // pozíció. Korábban itt újra leszűrtük a listát játék szerint, ami az eredetileg (hónap
+    // és/vagy játék szerint) szűrt táblázatból kapott index-szel összekombinálva rossz fuvart
+    // eredményezett (pl. az utolsó sor Infó gombja egy teljesen más fuvart nyitott meg).
     const arr = allJobs[jobKey(driverName)] || [];
-    const jobs = game === 'ats'
-      ? arr.filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats')
-      : arr.filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
-    const j = jobs[index];
+    const j = arr[index];
     if (!j) return;
 
     const title = byId('srt-job-info-title');
