@@ -12027,13 +12027,20 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
 
     Object.keys(allRoutes).forEach(jobId => {
       if (jobId === '_meta') return;
-      const meta = allRoutes[jobId]?._meta;
-      if (meta && meta.startTime) {
-        // Ha van felvetelIdoMs (indulás ideje), azzal hasonlítunk
-        // Ha csak datum (leadás ideje) van, a startTime-hoz is illesztjük
-        // és a leadástól visszafelé max 4 órát engedünk (hosszú fuvaroknál)
-        const diffStart = jobTimestamp ? Math.abs(meta.startTime - jobTimestamp) : Infinity;
-        const diff = diffStart;
+      const route = allRoutes[jobId];
+      const meta = route?._meta;
+      let startTime = meta?.startTime || null;
+
+      // Ha nincs _meta.startTime, az első pont t értékét használjuk
+      if (!startTime) {
+        const pts = Array.isArray(route) ? route : Object.values(route || {});
+        for (const p of pts) {
+          if (p && p.t) { startTime = p.t; break; }
+        }
+      }
+
+      if (startTime) {
+        const diff = jobTimestamp ? Math.abs(startTime - jobTimestamp) : 0;
         if (diff < bestDiff) { bestDiff = diff; bestJobId = jobId; }
       } else {
         if (!bestJobId) bestJobId = jobId;
