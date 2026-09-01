@@ -5395,19 +5395,6 @@ body { font-size: 15px; }
         const isFirst = idx === 0;
         const isLast = idx === drivers.length - 1;
         const avatarKepHtml = driverAvatarHtml(name, 40);
-
-        // Aktív fuvar ellenőrzés
-        const haromOraEzelott = Date.now() - 3 * 60 * 60 * 1000;
-        const aktivBejegyzes = Object.values(aktivFuvarokAdat || {}).find(e =>
-          e && e.truckyNev && e.truckyNev.toLowerCase() === name.toLowerCase() &&
-          e.idopont && new Date(e.idopont).getTime() > haromOraEzelott
-        );
-        const aktivJelzes = aktivBejegyzes
-          ? `<div style="display:flex;align-items:center;gap:4px;margin-top:2px;">
-               <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;flex-shrink:0;"></span>
-               <span style="font-size:10px;color:#22c55e;font-weight:600;">Fuvarban • ${aktivBejegyzes.honnan || '?'} → ${aktivBejegyzes.hova || '?'}</span>
-             </div>`
-          : '';
         const moveButtons = isAdminMode() ? `
             <div style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;" onclick="event.stopPropagation();">
               <button onclick="moveDriver('${nameEsc}', -1)" ${isFirst ? 'disabled' : ''} title="Feljebb"
@@ -5425,7 +5412,6 @@ body { font-size: 15px; }
             <div class="driver-sidebar-name-wrap" style="overflow: hidden; flex:1;">
               <div class="driver-sidebar-name" style="font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</div>
               <div class="driver-sidebar-sub" style="font-size: 11px; color: var(--muted);">${km} km összesen</div>
-              ${aktivJelzes}
             </div>
             ${moveButtons}
             ${isAdminMode() ? `<button onclick="event.stopPropagation(); deleteDriver(this)" data-driver-id="${id.replace(/"/g,'&quot;')}" data-driver-name="${name.replace(/"/g,'&quot;')}" style="flex-shrink:0; padding:4px 7px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; border-radius:6px; cursor:pointer; font-size:12px;">🗑️</button>` : ''}
