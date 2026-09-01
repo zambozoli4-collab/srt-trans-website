@@ -12027,20 +12027,13 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
 
     Object.keys(allRoutes).forEach(jobId => {
       if (jobId === '_meta') return;
-      const route = allRoutes[jobId];
-      const meta = route?._meta;
-      let startTime = meta?.startTime || null;
-
-      // Ha nincs _meta.startTime, az első pont t értékét használjuk
-      if (!startTime) {
-        const pts = Array.isArray(route) ? route : Object.values(route || {});
-        for (const p of pts) {
-          if (p && p.t) { startTime = p.t; break; }
-        }
-      }
-
-      if (startTime) {
-        const diff = jobTimestamp ? Math.abs(startTime - jobTimestamp) : 0;
+      const meta = allRoutes[jobId]?._meta;
+      if (meta && meta.startTime) {
+        // Ha van felvetelIdoMs (indulás ideje), azzal hasonlítunk
+        // Ha csak datum (leadás ideje) van, a startTime-hoz is illesztjük
+        // és a leadástól visszafelé max 4 órát engedünk (hosszú fuvaroknál)
+        const diffStart = jobTimestamp ? Math.abs(meta.startTime - jobTimestamp) : Infinity;
+        const diff = diffStart;
         if (diff < bestDiff) { bestDiff = diff; bestJobId = jobId; }
       } else {
         if (!bestJobId) bestJobId = jobId;
@@ -12052,19 +12045,14 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       let latestTime = -1;
       Object.keys(allRoutes).forEach(jobId => {
         if (jobId === '_meta') return;
-        const route = allRoutes[jobId];
-        const meta = route?._meta;
-        let t = meta?.startTime || 0;
-        if (!t) {
-          const pts = Array.isArray(route) ? route : Object.values(route || {});
-          for (const p of pts) { if (p && p.t) { t = p.t; break; } }
-        }
+        const meta = allRoutes[jobId]?._meta;
+        const t = meta?.startTime || 0;
         if (t > latestTime) { latestTime = t; bestJobId = jobId; bestDiff = 0; }
       });
     }
 
-    // Ha a legközelebbi találat is túl messze esik (>2 óra), ne mutassunk semmit
-    const MAX_MATCH_DIFF_MS = 2 * 60 * 60 * 1000;
+    // Ha a legközelebbi találat is túl messze esik (>4 óra), ne mutassunk semmit
+    const MAX_MATCH_DIFF_MS = 4 * 60 * 60 * 1000;
     if (!bestJobId || !allRoutes[bestJobId] || (bestDiff !== Infinity && bestDiff > MAX_MATCH_DIFF_MS)) {
       document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
       return;
