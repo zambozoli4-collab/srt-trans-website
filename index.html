@@ -8385,10 +8385,14 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       const box = document.getElementById('aktiv-fuvar-box');
       const listEl = document.getElementById('aktiv-fuvar-list');
       if (box && listEl) {
-        const haromOraEzelott = Date.now() - 3 * 60 * 60 * 1000;
+        // JAVÍTVA: 3 óra túl rövid volt — egy hosszabb (pl. 4-6+ órás) távolsági
+        // fuvar simán aktív, de ez a küszöb már eltüntette a dobozból. 20 órára
+        // növelve, hogy csak a valóban "beragadt" (pl. launcher-összeomlás miatt
+        // nem törölt) bejegyzéseket szűrje ki, az aktív fuvarokat ne.
+        const idoAblakEzelott = Date.now() - 20 * 60 * 60 * 1000;
         const lista = Object.values(aktivFuvarokAdat)
-          .filter(e => e.idopont && new Date(e.idopont).getTime() > haromOraEzelott)
-          .filter(e => (e.jatek || 'ETS2') === aktualisJatek)
+          .filter(e => e.idopont && new Date(e.idopont).getTime() > idoAblakEzelott)
+          .filter(e => String(e.jatek || 'ETS2').toLowerCase() === String(aktualisJatek).toLowerCase())
           .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''));
 
         if (lista.length === 0) {
@@ -8448,7 +8452,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         const napjaEzelott = Date.now() - 24 * 60 * 60 * 1000;
         const lista2 = Object.values(legutobbiFuvarokAdat)
           .filter(e => e.idopont && new Date(e.idopont).getTime() > napjaEzelott)
-          .filter(e => (e.jatek || 'ETS2') === aktualisJatek)
+          .filter(e => String(e.jatek || 'ETS2').toLowerCase() === String(aktualisJatek).toLowerCase())
           .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''))
           .slice(0, 10);
 
@@ -12051,8 +12055,22 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       });
     }
 
-    // Ha a legközelebbi találat is túl messze esik (>4 óra), ne mutassunk semmit
-    const MAX_MATCH_DIFF_MS = 4 * 60 * 60 * 1000;
+    // Ha a legközelebbi találat is túl messze esik, ne mutassunk semmit.
+    // JAVÍTVA: 4 óra túl szűk volt hosszabb (távolsági) fuvaroknál, mert az
+    // egyeztetés régi rekordoknál a LEADÁS idejéhez (j.datum) hasonlít, nem az
+    // INDULÁS idejéhez — egy sok órás fuvarnál ez a különbség simán meghaladta
+    // a 4 órát, és a valóban rögzített útvonalat is "nincs launcher"-nek jelezte.
+    const MAX_MATCH_DIFF_MS = 20 * 60 * 60 * 1000; // 4 óra helyett 20 óra
+    const routeJobIds = Object.keys(allRoutes).filter(k => k !== '_meta');
+
+    // Ha csak EGY rögzített útvonal van ennél a sofőrnél, azt használjuk akkor is,
+    // ha az időbélyeg-egyeztetés bizonytalan (pl. régi rekord felvetelIdoMs nélkül) —
+    // nincs mivel összetéveszteni, szóval feleslegesen ne dobjunk hamis hibaüzenetet.
+    if (!bestJobId && routeJobIds.length === 1) {
+      bestJobId = routeJobIds[0];
+      bestDiff = 0;
+    }
+
     if (!bestJobId || !allRoutes[bestJobId] || (bestDiff !== Infinity && bestDiff > MAX_MATCH_DIFF_MS)) {
       document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
       return;
