@@ -11948,8 +11948,12 @@ function srtJobTruckId(j) {
     </div>
     <!-- Térkép -->
     <div id="route-map" style="flex:1;min-height:420px;"></div>
+    <!-- Pozíció (tekerő) sáv -->
+    <div style="padding:12px 20px 0 20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <input id="route-seek-slider" type="range" min="0" max="0" value="0" step="1" style="flex:1;accent-color:var(--orange);" oninput="seekRoute(this.value)">
+    </div>
     <!-- Vezérlő sáv -->
-    <div style="padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;">
+    <div style="padding:10px 20px 14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;">
       <button id="route-play-btn" onclick="toggleRoutePlayback()" style="padding:8px 18px;background:var(--orange);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">▶ Lejátszás</button>
       <input id="route-speed-slider" type="range" min="1" max="10" value="3" style="flex:1;min-width:100px;accent-color:var(--orange);" oninput="document.getElementById('route-speed-label').textContent = this.value + 'x'">
       <span id="route-speed-label" style="font-size:12px;color:var(--muted);min-width:28px;">3x</span>
@@ -11975,6 +11979,7 @@ let routePlayInterval = null;
 let routeCurrentIdx = 0;
 let routeIsPlaying = false;
 let routeGame = 'ets2';
+let routeAllLatLngs = []; // ÚJ: minden pont előre kiszámolt lat/lng-je, a tekeréshez
 const FIREBASE_RT_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
 
 // ÚJ: sebességtúllépés-jelölők az útvonal-visszajátszó térképen
@@ -11989,7 +11994,11 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
   document.getElementById('route-playback-title').textContent = '⏳ Útvonal betöltése...';
   document.getElementById('route-progress-label').textContent = '0 / 0 pont';
   routePoints = [];
+  routeAllLatLngs = [];
   routeCurrentIdx = 0;
+  const seekSliderInit = document.getElementById('route-seek-slider');
+  seekSliderInit.max = 0;
+  seekSliderInit.value = 0;
   stopRouteAnimation();
 
   // Térkép inicializálás
@@ -12108,7 +12117,13 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
 
     // Teljes útvonal halvány vonal (előnézet)
     const allLatLngs = routePoints.map(p => gameToLatLng(routeMap, p.x, p.z, routeGame));
+    routeAllLatLngs = allLatLngs; // ÚJ: eltároljuk a tekerő csúszkához is
     routePolyline = L.polyline(allLatLngs, { color: 'rgba(249,115,22,0.25)', weight: 3, dashArray: '6 6' }).addTo(routeMap);
+
+    // ÚJ: tekerő csúszka beállítása a friss útvonalhoz
+    const seekSlider = document.getElementById('route-seek-slider');
+    seekSlider.max = routePoints.length - 1;
+    seekSlider.value = 0;
 
     // Start/End marker
     L.marker(allLatLngs[0], {
@@ -12185,6 +12200,7 @@ function startRouteAnimation() {
       `${routeCurrentIdx + 1} / ${routePoints.length} pont`;
     document.getElementById('route-speed-cur').textContent =
       (pt.s || 0) + ' km/h';
+    document.getElementById('route-seek-slider').value = routeCurrentIdx;
 
     // Kamera követés — csak ha az ablak közepe közelében van
     if (routeCurrentIdx % 5 === 0) {
@@ -12217,6 +12233,42 @@ function toggleRoutePlayback() {
 function closeRoutePlayback() {
   stopRouteAnimation();
   document.getElementById('route-playback-modal').style.display = 'none';
+}
+
+// ÚJ: kézi tekerés a felvételben — a csúszka húzásakor hívódik
+function seekRoute(value) {
+  if (!routePoints.length || !routeAllLatLngs.length) return;
+
+  // Húzás közben álljon meg az automata lejátszás, hogy ne csapjon
+  // vissza a csúszka a saját pozíciójára
+  if (routeIsPlaying) stopRouteAnimation();
+
+  const idx = Math.max(0, Math.min(routePoints.length - 1, parseInt(value) || 0));
+  routeCurrentIdx = idx;
+  drawRouteUpTo(idx);
+
+  document.getElementById('route-play-btn').textContent =
+    (idx >= routePoints.length - 1) ? '🔄 Újra' : '▶ Folytatás';
+}
+
+// ÚJ: a térkép (vonal + jármű ikon) és a feliratok frissítése egy adott
+// pontig — ezt használja a tekerés, de elméletileg a lejátszás is
+// használhatná ugyanezt (most még a saját, fokozatosan bővülő tömbjével dolgozik)
+function drawRouteUpTo(idx) {
+  const slice = routeAllLatLngs.slice(0, idx + 1);
+  routeDrawnLatLngs = slice;
+  if (routePolyline) routePolyline.setLatLngs(slice);
+
+  const ll = routeAllLatLngs[idx];
+  if (routeMarker && ll) routeMarker.setLatLng(ll);
+  if (routeMap && ll) routeMap.panTo(ll, { animate: true, duration: 0.3 });
+
+  const pt = routePoints[idx];
+  document.getElementById('route-progress-label').textContent =
+    `${idx + 1} / ${routePoints.length} pont`;
+  document.getElementById('route-speed-cur').textContent =
+    ((pt && pt.s) || 0) + ' km/h';
+  document.getElementById('route-seek-slider').value = idx;
 }
 </script>
 
