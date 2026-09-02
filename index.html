@@ -12025,10 +12025,30 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     routeMap.invalidateSize();
   }
 
-  // Firebase routePoints lekérés
+  // Firebase routePoints lekérés — az új (replay) ÉS a régi DB-ből is lekérjük,
+  // majd jobId szerint összefésüljük (nem "vagy-vagy", mert egy sofőrnek lehet
+  // fuvarja MINDKÉT adatbázisban — a régi migráció előttiek, az új utániak).
+  const FIREBASE_RT_URL_LEGACY = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
   try {
-    const resp = await fetch(`${FIREBASE_RT_URL}/routePoints/${driverKulcs}.json`);
-    const allRoutes = await resp.json();
+    let dataNew = null, dataOld = null;
+
+    try {
+      const respNew = await fetch(`${FIREBASE_RT_URL}/routePoints/${driverKulcs}.json`);
+      const j = await respNew.json();
+      if (j && typeof j === 'object') dataNew = j;
+    } catch(e) { /* új DB nem elérhető, megyünk a régivel */ }
+
+    try {
+      const respOld = await fetch(`${FIREBASE_RT_URL_LEGACY}/routePoints/${driverKulcs}.json`);
+      const j = await respOld.json();
+      if (j && typeof j === 'object') dataOld = j;
+    } catch(e) { /* régi DB nem elérhető */ }
+
+    // Összefésülés jobId szerint — ütközés esetén az új DB verziója nyer
+    let allRoutes = null;
+    if (dataOld || dataNew) {
+      allRoutes = { ...(dataOld || {}), ...(dataNew || {}) };
+    }
 
     if (!allRoutes || typeof allRoutes !== 'object') {
       document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
