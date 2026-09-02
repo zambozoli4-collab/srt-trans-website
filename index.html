@@ -4697,7 +4697,7 @@ body { font-size: 15px; }
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:rgba(127,127,127,0.08);border-radius:8px;padding:8px 12px;font-size:13px;">
                     <span style="font-size:16px;">${pdCargoIcon(sz.rakomany)}</span>
                     <span style="color:var(--text);font-weight:600;min-width:120px;">${pdEsc(sz.sofor || 'Ismeretlen')}</span>
-                    <span style="color:var(--text);opacity:.85;">${pdEsc(sz.rakomany || '—')}</span>
+                    <span style="color:var(--text);opacity:.85;">${pdEsc(sz.rakomany || (r.direction === 'from' ? sz.honnan : r.direction === 'to' ? sz.hova : (sz.honnan || sz.hova || '—')))}</span>
                     <span style="color:var(--muted);margin-left:auto;white-space:nowrap;">
                       ${pdFlag(sz.honnan)}${pdEsc(sz.honnan || '?')} → ${pdFlag(sz.hova)}${pdEsc(sz.hova || '?')}
                     </span>
