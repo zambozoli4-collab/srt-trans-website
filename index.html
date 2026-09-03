@@ -5415,6 +5415,18 @@ body { font-size: 15px; }
         el.addEventListener('mouseenter', () => el.style.background = 'rgba(255,255,255,0.05)');
         el.addEventListener('mouseleave', () => { if (!el.classList.contains('active')) el.style.background = ''; });
       });
+
+      // JAVÍTVA: eddig a "srt_ets_driver" sessionStorage kulcsot csak írtuk,
+      // sosem olvastuk vissza — frissítés (F5) után mindig a sofőrlistára
+      // esett vissza. Most: ha volt korábban kiválasztott sofőr ebben a
+      // böngészőmunkamenetben, és még mindig létezik a listában, automatikusan
+      // visszanyitjuk a részleteit.
+      if (!currentDriver) {
+        const savedDriver = sessionStorage.getItem('srt_ets_driver');
+        if (savedDriver && drivers.some(([, u]) => (u.truckyName || '') === savedDriver)) {
+          showDriverJobs(savedDriver);
+        }
+      }
     }
 
     async function moveDriver(name, direction) {
@@ -5460,9 +5472,13 @@ body { font-size: 15px; }
       }
     }
 
-    let aktivJatekSzuro = 'osszes';
-    let aktivHonapOffset = 0;
-    let honapAktiv = false; // false = "Összes hónap" (minden fuvar látszik), true = az aktivHonapOffset szerinti hónapra szűrve
+    // JAVÍTVA: alapértelmezetten ETS2 + aktuális hónap legyen kijelölve (nem "Összes"),
+    // és a választás frissítés után is maradjon meg (sessionStorage-ből visszaolvasva).
+    let aktivJatekSzuro = sessionStorage.getItem('srt_jatek_szuro') || 'ets2';
+    let aktivHonapOffset = parseInt(sessionStorage.getItem('srt_honap_offset') || '0', 10) || 0;
+    let honapAktiv = sessionStorage.getItem('srt_honap_aktiv') !== null
+      ? sessionStorage.getItem('srt_honap_aktiv') === '1'
+      : true; // alapértelmezett: aktuális hónapra szűrve, nem "Összes hónap"
     const HONAP_NEVEK = ['Január','Február','Március','Április','Május','Június','Július','Augusztus','Szeptember','Október','November','December'];
 
     function aktivHonapAdatok() {
@@ -5475,17 +5491,22 @@ body { font-size: 15px; }
     window.lepHonap = function(delta) {
       aktivHonapOffset += delta;
       honapAktiv = true;
+      sessionStorage.setItem('srt_honap_offset', String(aktivHonapOffset));
+      sessionStorage.setItem('srt_honap_aktiv', '1');
       if (currentDriver) showDriverJobs(currentDriver);
     };
 
     window.mutassOsszesHonapot = function() {
       honapAktiv = false;
       aktivHonapOffset = 0;
+      sessionStorage.setItem('srt_honap_offset', '0');
+      sessionStorage.setItem('srt_honap_aktiv', '0');
       if (currentDriver) showDriverJobs(currentDriver);
     };
 
     window.valtJatekSzuro = function(szuro) {
       aktivJatekSzuro = szuro;
+      sessionStorage.setItem('srt_jatek_szuro', szuro);
       if (currentDriver) showDriverJobs(currentDriver);
     };
 
@@ -12048,19 +12069,28 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       return;
     }
 
-    // Megkeressük a jobTimestamp-hoz legközelebb eső útvonalat
+    // Megkeressük a jobTimestamp-hoz legközelebb eső útvonalat.
+    // JAVÍTVA: a korábbi 20 órás ablak túl tág volt — ha egy fuvarhoz nem volt
+    // rögzített útvonal (pl. mert nem lépte át a sebességküszöböt, vagy tényleg
+    // nem volt launcher), a kód a legközelebbi IDŐBEN lévő MÁSIK fuvar útvonalát
+    // nyitotta meg helyette, ami egy teljesen más fuvart mutatott vissza.
+    // Mostantól: szigorúbb időablak (30 perc — indulási idő szerint ennyinél
+    // sosem térhet el egy valós egyezés), ÉS ha van honnan/hova adatunk a
+    // fuvarról, azt is ellenőrizzük — csak akkor fogadjuk el a találatot, ha
+    // legalább az egyik egyezik. Enélkül inkább mutatjuk a "nincs rögzítve"
+    // üzenetet, mint egy rossz fuvar útvonalát.
     let bestJobId = null;
     let bestDiff = Infinity;
+
+    const normCity = s => (s || '').toString().toLowerCase().trim();
+    const fbFrom = normCity(fallbackFrom);
+    const fbTo   = normCity(fallbackTo);
 
     Object.keys(allRoutes).forEach(jobId => {
       if (jobId === '_meta') return;
       const meta = allRoutes[jobId]?._meta;
       if (meta && meta.startTime) {
-        // Ha van felvetelIdoMs (indulás ideje), azzal hasonlítunk
-        // Ha csak datum (leadás ideje) van, a startTime-hoz is illesztjük
-        // és a leadástól visszafelé max 4 órát engedünk (hosszú fuvaroknál)
-        const diffStart = jobTimestamp ? Math.abs(meta.startTime - jobTimestamp) : Infinity;
-        const diff = diffStart;
+        const diff = jobTimestamp ? Math.abs(meta.startTime - jobTimestamp) : Infinity;
         if (diff < bestDiff) { bestDiff = diff; bestJobId = jobId; }
       } else {
         if (!bestJobId) bestJobId = jobId;
@@ -12078,12 +12108,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       });
     }
 
-    // Ha a legközelebbi találat is túl messze esik, ne mutassunk semmit.
-    // JAVÍTVA: 4 óra túl szűk volt hosszabb (távolsági) fuvaroknál, mert az
-    // egyeztetés régi rekordoknál a LEADÁS idejéhez (j.datum) hasonlít, nem az
-    // INDULÁS idejéhez — egy sok órás fuvarnál ez a különbség simán meghaladta
-    // a 4 órát, és a valóban rögzített útvonalat is "nincs launcher"-nek jelezte.
-    const MAX_MATCH_DIFF_MS = 20 * 60 * 60 * 1000; // 4 óra helyett 20 óra
+    const MAX_MATCH_DIFF_MS = 30 * 60 * 1000; // 30 perc
     const routeJobIds = Object.keys(allRoutes).filter(k => k !== '_meta');
 
     // Ha csak EGY rögzített útvonal van ennél a sofőrnél, azt használjuk akkor is,
@@ -12099,8 +12124,34 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       return;
     }
 
+    // Másodlagos ellenőrzés: ha van honnan/hova infónk a fuvarról, és a talált
+    // rekord metája MINDKETTŐben eltér, ne fogadjuk el a találatot (kivéve ha
+    // ez az egyetlen rögzített útvonal — akkor nincs mivel összetéveszteni).
+    if (routeJobIds.length > 1) {
+      const bm = allRoutes[bestJobId]?._meta;
+      if (bm && (fbFrom || fbTo)) {
+        const metaFrom = normCity(bm.from);
+        const metaTo = normCity(bm.to);
+        const fromOk = !fbFrom || !metaFrom || metaFrom === fbFrom;
+        const toOk   = !fbTo   || !metaTo   || metaTo === fbTo;
+        if (!fromOk && !toOk) {
+          document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
+          return;
+        }
+      }
+    }
+
     const routeData = allRoutes[bestJobId];
     const meta = routeData._meta || {};
+
+    // Ha a fuvar sosem lépte át a sebességküszöböt, csak egy "skipped" jelző
+    // lett elmentve, teljes útvonal nélkül — ezt külön üzenettel jelezzük,
+    // nem próbálunk (üres) útvonalat lejátszani.
+    if (meta.skipped) {
+      document.getElementById('route-playback-title').textContent =
+        `🐢 Nem lépte át a 100 km/h sebességet (max ${Math.round(meta.maxSpeedKmh || 0)} km/h) — gyors hajtás nem történt, útvonal nem lett rögzítve`;
+      return;
+    }
 
     // Pontok összegyűjtése és rendezése index szerint
     const pts = [];
