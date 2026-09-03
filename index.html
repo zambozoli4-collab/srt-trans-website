@@ -3491,7 +3491,7 @@ body { font-size: 15px; }
         </div>
         <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">
           Az ETS2/ATS belső koordináta-rendszerből konvertált pozíció. Közelítő pontossággal mutatja a helyzetet.
-          Automatikus frissítés: 5 másodpercenként.
+          Automatikus frissítés: 1 másodpercenként.
         </div>
       </div>
       <!-- ── /Élő SRT Térkép tab ── -->
@@ -12538,7 +12538,7 @@ function initLiveTerkep() {
   });
 
   // Automatikus frissítés 5 mp-enként (ennyi időnként küld új adatot az srt-trans.dll is)
-  liveRefreshInterval = setInterval(refreshLiveDrivers, 5000);
+  liveRefreshInterval = setInterval(refreshLiveDrivers, 1000);
   refreshLiveDrivers();
 }
 
