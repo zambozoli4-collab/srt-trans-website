@@ -3486,6 +3486,7 @@ body { font-size: 15px; }
             <h4>🔴 Élő Sofőrök</h4>
             <div id="live-legend-list"><div style="font-size:12px;color:var(--muted);">Töltés...</div></div>
             <div id="live-map-status">Frissítés: —</div>
+            <button id="live-map-follow-btn" onclick="liveMapKovetes()" title="Sofőr követése" style="margin-top:8px;width:100%;padding:6px 10px;border-radius:8px;border:1px solid rgba(249,115,22,0.4);background:rgba(249,115,22,0.12);color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;display:none;">📍 Sofőr követése</button>
           </div>
         </div>
         <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">
@@ -12477,6 +12478,7 @@ let liveRefreshInterval = null;
 let liveSelectedDriver = null;
 let liveMapFitted = false;
 let liveCityLayer = null;
+let liveMapUserMoved = false;  // igaz, ha a felhasználó manuálisan mozgatta a térképet
 
 // Sofőr színek (minden sofőrnek egyedi szín)
 const DRIVER_COLORS = ['#f97316','#3b82f6','#4ade80','#a78bfa','#f43f5e','#06b6d4','#eab308','#ec4899'];
@@ -12516,7 +12518,24 @@ function initLiveTerkep() {
   liveMap.setView(gameToLatLng(liveMap, -20000, -3000, 'ets2'), 3);
   liveMapInitialized = true;
   liveMapFitted = false;
+  liveMapUserMoved = false;
   liveCityLayer = addCityLabels(liveMap, liveMapJatek);
+
+  // Ha a felhasználó manuálisan mozgatja/zoomolja a térképet, letiltjuk az auto-követést
+  liveMap.on('dragstart', () => {
+    liveMapUserMoved = true;
+    const btn = document.getElementById('live-map-follow-btn');
+    if (btn) btn.style.display = 'block';
+  });
+  liveMap.on('zoomstart', (e) => {
+    // Csak akkor jelezzük user-mozgásnak, ha valóban a felhasználó zoomol
+    // (nem a programból hívott setView/fitBounds során)
+    if (e.hard) {
+      liveMapUserMoved = true;
+      const btn = document.getElementById('live-map-follow-btn');
+      if (btn) btn.style.display = 'block';
+    }
+  });
 
   // Automatikus frissítés 5 mp-enként (ennyi időnként küld új adatot az srt-trans.dll is)
   liveRefreshInterval = setInterval(refreshLiveDrivers, 5000);
@@ -12688,11 +12707,32 @@ async function refreshLiveDrivers() {
     legendList.innerHTML = legendHtml || '<div style="font-size:12px;color:var(--muted);">Nincs adat</div>';
     statusEl.textContent = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
 
+    const markerKeys = Object.keys(liveDriverMarkers);
+
     // Első sikeres adatbetöltéskor ráigazítjuk a nézetet az összes aktív sofőrre
-    if (!liveMapFitted && Object.keys(liveDriverMarkers).length > 0) {
-      const group = L.featureGroup(Object.values(liveDriverMarkers));
-      liveMap.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 7 });
+    if (!liveMapFitted && markerKeys.length > 0) {
+      if (markerKeys.length === 1) {
+        // Egyetlen sofőr: egyből rá zoom, ne legyen túl kicsi a nézet
+        liveMap.setView(liveDriverMarkers[markerKeys[0]].getLatLng(), 6, { animate: false });
+      } else {
+        const group = L.featureGroup(Object.values(liveDriverMarkers));
+        liveMap.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 7 });
+      }
       liveMapFitted = true;
+      liveMapUserMoved = false;
+      return;
+    }
+
+    // Folyamatos auto-követés: ha a felhasználó nem mozgatta a térképet kézzel,
+    // kövessük az aktív (legfrissebb) sofőrt minden frissítésnél
+    if (liveMapFitted && !liveMapUserMoved && markerKeys.length > 0) {
+      // Ha van kiválasztott sofőr, azt kövessük; különben az egyetlen/legfrissebb sofőrt
+      const followKey = (liveSelectedDriver && liveDriverMarkers[liveSelectedDriver])
+        ? liveSelectedDriver
+        : markerKeys[0];
+      if (liveDriverMarkers[followKey]) {
+        liveMap.panTo(liveDriverMarkers[followKey].getLatLng(), { animate: true, duration: 0.8 });
+      }
     }
 
   } catch(e) {
@@ -12719,6 +12759,23 @@ function focusLiveDriver(key) {
   if (marker && liveMap) {
     liveMap.setView(marker.getLatLng(), 6, { animate: true });
     marker.openPopup();
+  }
+}
+
+function liveMapKovetes() {
+  // Visszakapcsolja az auto-követést — a térkép ismét a sofőrt fogja követni
+  liveMapUserMoved = false;
+  const btn = document.getElementById('live-map-follow-btn');
+  if (btn) btn.style.display = 'none';
+  // Azonnal ráigazítás a sofőrre
+  const markerKeys = Object.keys(liveDriverMarkers);
+  if (markerKeys.length > 0) {
+    const followKey = (liveSelectedDriver && liveDriverMarkers[liveSelectedDriver])
+      ? liveSelectedDriver
+      : markerKeys[0];
+    if (liveDriverMarkers[followKey]) {
+      liveMap.setView(liveDriverMarkers[followKey].getLatLng(), liveMap.getZoom(), { animate: true });
+    }
   }
 }
 
