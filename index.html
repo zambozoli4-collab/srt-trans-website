@@ -4643,6 +4643,7 @@ body { font-size: 15px; }
       // Felső összesítő sáv (Total deliveries / Total distance / Current reward)
       const osszesFuvar = d.osszesFuvar ?? d.sorok.reduce((s, r) => s + (r.szallitasok?.length || 0), 0);
       const osszesTav = d.osszesTav ?? d.sorok.reduce((s, r) => s + (r.szallitasok || []).reduce((s2, sz) => s2 + (typeof sz.km === 'number' ? sz.km : 0), 0), 0);
+      const osszesJutalom = d.osszesJutalom ?? 0;
       const summaryHtml = `
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px;">
           <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
@@ -4652,6 +4653,10 @@ body { font-size: 15px; }
           <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
             <div style="font-size:22px;font-weight:800;color:var(--text);">${pdFormatMoney(osszesTav)} km</div>
             <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;">🚚 Összes megtett táv</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#22c55e;">${pdFormatMoney(osszesJutalom)} 🪙</div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;">💰 Eddigi jutalom</div>
           </div>
         </div>`;
 
@@ -4675,6 +4680,8 @@ body { font-size: 15px; }
 
         const extraCols = [];
         if (!pdIsMissing(r.minTav)) extraCols.push(`<div style="text-align:center;min-width:90px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Min. táv</div><div style="color:var(--text);font-weight:600;">${pdEsc(r.minTav)}</div></div>`);
+        if (!pdIsMissing(r.jutalom)) extraCols.push(`<div style="text-align:center;min-width:80px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Jutalom</div><div style="color:#22c55e;font-weight:700;">${pdFormatMoney(r.jutalom)} 🪙</div></div>`);
+        if (!pdIsMissing(r.veszteseg)) extraCols.push(`<div style="text-align:center;min-width:80px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Veszteség</div><div style="color:#f87171;font-weight:700;">${pdFormatMoney(r.veszteseg)} 🪙</div></div>`);
 
         const detailHtml = expanded ? `
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
