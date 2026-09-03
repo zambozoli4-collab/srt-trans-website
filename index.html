@@ -12600,17 +12600,18 @@ async function refreshLiveDrivers() {
     const STALE_LIMIT = 5 * 60 * 1000;   // 5 perc = elavult
     const DEAD_LIMIT  = 30 * 60 * 1000;  // 30 perc = teljesen régi, ne mutassuk
 
-    // Szűrés: csak az aktuális játékhoz tartozó sofőrök
-    // + kizárjuk a teljesen régi (30 percnél régebbi vagy frissitve nélküli) adatokat
+    // Szűrés: csak az aktuális játékhoz tartozó, érvényes sofőr-bejegyzések
+    // Kizárjuk: nincs position, nincs player név, gyökérszintű mezők (nincs truck alstruktura)
     const drivers = Object.entries(allData)
       .map(([key, d]) => ({ key, ...d }))
       .filter(d => {
-        if (!d.position) return false;
-        // Kizárjuk a position nélküli, üres kulcsú, vagy type nélküli bejegyzéseket
-        if (!d.type || !d.player) return false;
-        // Kizárjuk a 30 percnél régebbi adatokat (frissitve nélküliek is kiesnek)
-        const frissitve = d.frissitve ? new Date(d.frissitve).getTime() : 0;
-        if (frissitve === 0 || (most - frissitve) > DEAD_LIMIT) return false;
+        if (!d.position || !d.truck) return false;         // nincs pozíció vagy truck adat
+        if (!d.player || d.player === '') return false;    // nincs játékos név (gyökérszintű bejegyzés)
+        // Ha van frissitve, és 30 percnél régebbi → kizárjuk
+        if (d.frissitve) {
+          const frissitve = new Date(d.frissitve).getTime();
+          if ((most - frissitve) > DEAD_LIMIT) return false;
+        }
         const gameMatch = liveMapJatek === 'ets2'
           ? (!d.game || d.game.toLowerCase() !== 'ats')
           : (d.game && d.game.toLowerCase() === 'ats');
@@ -12625,6 +12626,13 @@ async function refreshLiveDrivers() {
       liveDriverMarkers = {};
       return;
     }
+
+    // Legfrissebb adat elöl — ha van frissitve, az alapján rendezzük
+    drivers.sort((a, b) => {
+      const ta = a.frissitve ? new Date(a.frissitve).getTime() : 0;
+      const tb = b.frissitve ? new Date(b.frissitve).getTime() : 0;
+      return tb - ta;  // csökkenő: legfrissebb első
+    });
 
     noDataEl.style.display = 'none';
     let legendHtml = '';
@@ -12718,9 +12726,10 @@ async function refreshLiveDrivers() {
 
     // Első sikeres adatbetöltéskor ráigazítjuk a nézetet az összes aktív sofőrre
     if (!liveMapFitted && markerKeys.length > 0) {
-      if (markerKeys.length === 1) {
-        // Egyetlen sofőr: egyből rá zoom, ne legyen túl kicsi a nézet
-        liveMap.setView(liveDriverMarkers[markerKeys[0]].getLatLng(), 6, { animate: false });
+      // A legfrissebb sofőrre zoomolunk (drivers[0] a sort után)
+      const firstKey = drivers.length > 0 ? drivers[0].key : markerKeys[0];
+      if (drivers.length === 1 || !liveDriverMarkers[firstKey]) {
+        liveMap.setView(liveDriverMarkers[firstKey || markerKeys[0]].getLatLng(), 6, { animate: false });
       } else {
         const group = L.featureGroup(Object.values(liveDriverMarkers));
         liveMap.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 7 });
@@ -12731,12 +12740,12 @@ async function refreshLiveDrivers() {
     }
 
     // Folyamatos auto-követés: ha a felhasználó nem mozgatta a térképet kézzel,
-    // kövessük az aktív (legfrissebb) sofőrt minden frissítésnél
-    if (liveMapFitted && !liveMapUserMoved && markerKeys.length > 0) {
-      // Ha van kiválasztott sofőr, azt kövessük; különben az egyetlen/legfrissebb sofőrt
+    // kövessük a legfrissebb aktív sofőrt minden frissítésnél
+    if (liveMapFitted && !liveMapUserMoved && drivers.length > 0) {
+      // Ha van kiválasztott sofőr, azt kövessük; különben a legfrissebb sofőrt (drivers[0])
       const followKey = (liveSelectedDriver && liveDriverMarkers[liveSelectedDriver])
         ? liveSelectedDriver
-        : markerKeys[0];
+        : drivers[0].key;
       if (liveDriverMarkers[followKey]) {
         liveMap.panTo(liveDriverMarkers[followKey].getLatLng(), { animate: true, duration: 0.8 });
       }
