@@ -10603,7 +10603,7 @@ function openJobInfo(game, driverName, index, datum) {
     const driverKulcs = (driverName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const jobDatum = j.felvetelIdoMs || (j.datum ? new Date(j.datum).getTime() : null);
     html += '<div style="grid-column:1/-1;margin-top:10px;">' +
-      '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\')" ' +
+      '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\', ' + (j.maxSebesseg || 0) + ')" ' +
       'style="width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
       '🗺️ Útvonal visszajátszása' +
       '</button></div>';
@@ -12006,9 +12006,19 @@ const FIREBASE_RT_URL = 'https://srt-trans-reply-default-rtdb.europe-west1.fireb
 const TULSEBESSEG_LIMIT_KMH = 100;
 let routeSpeedMarkers = [];
 
-async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo) {
+async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo, fuvarMaxSebesseg) {
   routeGame = (game === 'ats') ? 'ats' : 'ets2';
   const modal = document.getElementById('route-playback-modal');
+  modal.style.display = 'flex';
+
+  // Ha a fuvar max sebessége 100 km/h alatt volt, rögtön mutatjuk az üzenetet
+  if (fuvarMaxSebesseg > 0 && fuvarMaxSebesseg < 100) {
+    document.getElementById('route-playback-title').textContent =
+      `🐢 Nem lépte át a 100 km/h sebességet (max ${Math.round(fuvarMaxSebesseg)} km/h) — gyors hajtás nem történt, útvonal nem lett rögzítve`;
+    document.getElementById('route-progress-label').textContent = '0 / 0 pont';
+    routePoints = []; routeAllLatLngs = []; routeCurrentIdx = 0;
+    return;
+  }
   modal.style.display = 'flex';
 
   document.getElementById('route-playback-title').textContent = '⏳ Útvonal betöltése...';
@@ -12113,7 +12123,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       });
     }
 
-    const MAX_MATCH_DIFF_MS = 30 * 60 * 1000; // 30 perc
+    const MAX_MATCH_DIFF_MS = 2 * 60 * 60 * 1000; // 2 óra
     const routeJobIds = Object.keys(allRoutes).filter(k => k !== '_meta');
 
     // Ha csak EGY rögzített útvonal van ennél a sofőrnél, azt használjuk akkor is,
@@ -12125,7 +12135,19 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     }
 
     if (!bestJobId || !allRoutes[bestJobId] || (bestDiff !== Infinity && bestDiff > MAX_MATCH_DIFF_MS)) {
-      document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
+      // Mielőtt "nincs launcher" üzenetet mutatunk, nézzük meg van-e skipped meta
+      // valamelyik közeli rekordban — ha igen, az azt jelenti launcher futott, csak
+      // nem volt 100 km/h feletti sebesség
+      let skippedMeta = null;
+      Object.values(allRoutes).forEach(r => {
+        if (r._meta && r._meta.skipped) skippedMeta = r._meta;
+      });
+      if (skippedMeta) {
+        document.getElementById('route-playback-title').textContent =
+          `🐢 Nem lépte át a 100 km/h sebességet (max ${Math.round(skippedMeta.maxSpeedKmh || 0)} km/h) — gyors hajtás nem történt, útvonal nem lett rögzítve`;
+      } else {
+        document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
+      }
       return;
     }
 
@@ -12140,7 +12162,16 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
         const fromOk = !fbFrom || !metaFrom || metaFrom === fbFrom;
         const toOk   = !fbTo   || !metaTo   || metaTo === fbTo;
         if (!fromOk && !toOk) {
-          document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
+          let skippedMeta2 = null;
+          Object.values(allRoutes).forEach(r => {
+            if (r._meta && r._meta.skipped) skippedMeta2 = r._meta;
+          });
+          if (skippedMeta2) {
+            document.getElementById('route-playback-title').textContent =
+              `🐢 Nem lépte át a 100 km/h sebességet (max ${Math.round(skippedMeta2.maxSpeedKmh || 0)} km/h) — gyors hajtás nem történt, útvonal nem lett rögzítve`;
+          } else {
+            document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
+          }
           return;
         }
       }
