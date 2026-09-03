@@ -12596,14 +12596,21 @@ async function refreshLiveDrivers() {
     }
 
     const most = Date.now();
-    const AKTIV_LIMIT = 30 * 1000;   // 30 mp = aktív
-    const STALE_LIMIT = 5 * 60 * 1000; // 5 perc = elavult
+    const AKTIV_LIMIT = 30 * 1000;        // 30 mp = aktív
+    const STALE_LIMIT = 5 * 60 * 1000;   // 5 perc = elavult
+    const DEAD_LIMIT  = 30 * 60 * 1000;  // 30 perc = teljesen régi, ne mutassuk
 
     // Szűrés: csak az aktuális játékhoz tartozó sofőrök
+    // + kizárjuk a teljesen régi (30 percnél régebbi vagy frissitve nélküli) adatokat
     const drivers = Object.entries(allData)
       .map(([key, d]) => ({ key, ...d }))
       .filter(d => {
         if (!d.position) return false;
+        // Kizárjuk a position nélküli, üres kulcsú, vagy type nélküli bejegyzéseket
+        if (!d.type || !d.player) return false;
+        // Kizárjuk a 30 percnél régebbi adatokat (frissitve nélküliek is kiesnek)
+        const frissitve = d.frissitve ? new Date(d.frissitve).getTime() : 0;
+        if (frissitve === 0 || (most - frissitve) > DEAD_LIMIT) return false;
         const gameMatch = liveMapJatek === 'ets2'
           ? (!d.game || d.game.toLowerCase() !== 'ats')
           : (d.game && d.game.toLowerCase() === 'ats');
