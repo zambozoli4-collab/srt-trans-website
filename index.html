@@ -4421,7 +4421,9 @@ body { font-size: 15px; }
     let allJobs = null;
 
     function jobKey(name) {
-      return (name || '').replace(/[.#$\[\]]/g, '_');
+      // Szóköz és Firebase-ban tiltott karakterek (.#$/[]) → _ , hogy a kulcs
+      // egyezzen a bot firebaseJobKulcs() függvényével (pl. "Batki Márk" → "Batki_Márk")
+      return (name || '').replace(/[.#$\/\[\]\s]/g, '_');
     }
 
     async function loadJsonBin(force = false) {
@@ -9859,7 +9861,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
   const esc = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const num = (v) => Number(v || 0).toLocaleString('hu-HU');
   const km = (v) => `${num(Math.round(Number(v || 0)))} km`;
-  const key = (name) => String(name || '').replace(/[.#$\[\]]/g, '_');
+  const key = (name) => String(name || '').replace(/[.#$\/\[\]\s]/g, '_');
 
   function ets2Job(j) {
     return j && j.gameType !== 'ats' && j.fuvarTipus !== 'ats';
@@ -12613,8 +12615,8 @@ async function refreshLiveDrivers() {
           if ((most - frissitve) > DEAD_LIMIT) return false;
         }
         const gameMatch = liveMapJatek === 'ets2'
-          ? (!d.game || d.game.toLowerCase() !== 'ats')
-          : (d.game && d.game.toLowerCase() === 'ats');
+          ? (!d.game || d.game.toLowerCase() !== 'ats') && (!d.jatek || d.jatek.toUpperCase() !== 'ATS')
+          : (d.game && d.game.toLowerCase() === 'ats') || (d.jatek && d.jatek.toUpperCase() === 'ATS');
         return gameMatch;
       });
 
