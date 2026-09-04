@@ -8781,7 +8781,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
 
     window.elrejtTruckyEsemeny = async function(kulcs) {
       try {
-        await fetch(`${DB_URL}/elrejtettErtesitesek/${adminAzonosito()}/${kulcs}.json`, {
+        await fetch(`${DB_URL}/elrejtettErtesitesek/${adminAzonosito()}/${kulcs}.json${await regAuthQS()}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(true)
