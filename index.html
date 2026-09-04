@@ -9908,7 +9908,12 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
   const esc = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const num = (v) => Number(v || 0).toLocaleString('hu-HU');
   const km = (v) => `${num(Math.round(Number(v || 0)))} km`;
-  const key = (name) => String(name || '').replace(/[.#$\/\[\]\s]/g, '_');
+  // FONTOS: ugyanaz a szabály, mint a jobKey()-nél fentebb — a szóközt és az
+  // ékezeteket NEM cseréljük le, mert a bot a fuvarokat a sofőr NYERS nevével
+  // ("Batki Márk") menti a Firebase-be. Ha itt a szóközt is aláhúzásra
+  // cserélnénk, a kulcs ("Batki_Márk") nem egyezne a valós Firebase-kulccsal,
+  // és az adott sofőr fuvarjai nem jelennének meg a Napi áttekintésben.
+  const key = (name) => String(name || '').replace(/[.#$\[\]]/g, '_');
 
   function ets2Job(j) {
     return j && j.gameType !== 'ats' && j.fuvarTipus !== 'ats';
