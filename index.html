@@ -96,26 +96,26 @@
     .btn-dl.blue { background: var(--blue); }
     .btn-dl:hover { opacity: 0.85; }
 
-    /* Névnap buborék a kezdőlapon */
+    /* Névnap buborék a kezdőlapon — a hero (kamionos) kép keretein belül marad */
     .nevnap-bubble {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      z-index: 200;
-      max-width: 300px;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 5;
+      max-width: 280px;
       background: var(--card);
       border: 1px solid rgba(249,115,22,0.35);
       border-radius: 16px;
-      padding: 16px 18px;
+      padding: 14px 16px;
       display: flex;
       align-items: flex-start;
-      gap: 12px;
+      gap: 10px;
       box-shadow: 0 12px 32px rgba(0,0,0,0.45);
       backdrop-filter: blur(10px);
       animation: nevnap-in 0.35s ease;
     }
-    .nevnap-bubble-icon { font-size: 26px; line-height: 1; flex-shrink: 0; }
-    .nevnap-bubble-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+    .nevnap-bubble-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
+    .nevnap-bubble-text { font-size: 12.5px; color: var(--text); line-height: 1.5; }
     .nevnap-bubble-text strong { color: var(--orange); }
     .nevnap-bubble-close {
       position: absolute;
@@ -124,18 +124,18 @@
       background: none;
       border: none;
       color: var(--muted);
-      font-size: 15px;
+      font-size: 14px;
       cursor: pointer;
       line-height: 1;
       padding: 4px;
     }
     .nevnap-bubble-close:hover { color: #fff; }
     @keyframes nevnap-in {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(-8px); }
       to { opacity: 1; transform: translateY(0); }
     }
     @media (max-width: 560px) {
-      .nevnap-bubble { left: 16px; right: 16px; bottom: 16px; max-width: none; }
+      .nevnap-bubble { max-width: calc(100% - 32px); top: 12px; right: 12px; left: 12px; }
     }
 
     /* Módok oldal: a tartalom középre igazítása – csak ezen az oldalon */
@@ -3216,12 +3216,12 @@ body { font-size: 15px; }
   </div>
 
   <div class="page active" id="page-home">
-    <div id="nevnap-bubble" class="nevnap-bubble" style="display:none;">
-      <button type="button" class="nevnap-bubble-close" onclick="nevnapBuborekBezar()" aria-label="Bezárás">✕</button>
-      <div class="nevnap-bubble-icon">🎉</div>
-      <div class="nevnap-bubble-text" id="nevnap-bubble-text"></div>
-    </div>
     <section class="hero">
+      <div id="nevnap-bubble" class="nevnap-bubble" style="display:none;">
+        <button type="button" class="nevnap-bubble-close" onclick="nevnapBuborekBezar()" aria-label="Bezárás">✕</button>
+        <div class="nevnap-bubble-icon">🎉</div>
+        <div class="nevnap-bubble-text" id="nevnap-bubble-text"></div>
+      </div>
       <div class="hero-bg" id="bg-home"></div>
       <div class="hero-content">
         <p class="hero-eyebrow" data-edit="home_eyebrow">Euro Truck Simulator 2 · Magyar konvoj</p>
@@ -13299,10 +13299,8 @@ const NEVNAPOK = {
 function nevnapBuborekBezar() {
   const bub = document.getElementById('nevnap-bubble');
   if (bub) bub.style.display = 'none';
-  try {
-    const ma = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD, helyi idő szerint
-    localStorage.setItem('nevnap_bezarva', ma);
-  } catch (e) {}
+  // Csak az aktuális megtekintésre tűnik el — frissítéskor vagy legközelebbi
+  // látogatáskor újra megjelenik, amíg aznap van névnap.
 }
 
 function nevnapBuborekInit() {
@@ -13314,12 +13312,6 @@ function nevnapBuborekInit() {
   const kulcs = `${ma.getMonth() + 1}-${ma.getDate()}`;
   const nevek = NEVNAPOK[kulcs];
   if (!nevek) return; // nincs bejegyzett névnap erre a napra
-
-  try {
-    const bezarvaDatum = localStorage.getItem('nevnap_bezarva');
-    const maDatum = ma.toLocaleDateString('sv-SE');
-    if (bezarvaDatum === maDatum) return; // ma már bezárta
-  } catch (e) {}
 
   const nevSor = nevek.split(',').join(' és ');
   szoveg.innerHTML = `Ma <strong>${nevSor}</strong> névnapja van!<br>Boldog névnapot, ${nevSor}! 🎊`;
