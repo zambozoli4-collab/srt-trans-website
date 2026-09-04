@@ -4469,9 +4469,14 @@ body { font-size: 15px; }
     let allJobs = null;
 
     function jobKey(name) {
-      // Szóköz és Firebase-ban tiltott karakterek (.#$/[]) → _ , hogy a kulcs
-      // egyezzen a bot firebaseJobKulcs() függvényével (pl. "Batki Márk" → "Batki_Márk")
-      return (name || '').replace(/[.#$\/\[\]\s]/g, '_');
+      // FONTOS: a bot a jobHistory-t a sofőr NYERS nevével menti (szóközzel,
+      // ékezetekkel együtt, pl. "Batki Márk") — a Firebase Realtime Database
+      // ezt engedi, csak a .#$[] karaktereket tiltja. Ez a függvény csak
+      // ezeket a ténylegesen tiltott karaktereket cseréli le, a szóközt NEM —
+      // ha a szóközt is aláhúzásra cserélnénk, a kulcs ("Batki_Márk") többé
+      // nem egyezne a Firebase-ben ténylegesen tárolt kulccsal
+      // ("Batki Márk"), és a sofőr fuvarjai eltűnnének a profiljáról.
+      return (name || '').replace(/[.#$\[\]]/g, '_');
     }
 
     async function loadJsonBin(force = false) {
