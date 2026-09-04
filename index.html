@@ -8238,7 +8238,14 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       renderPiacLista('piac-ats-list', p?.ats);
     }, (hiba) => console.warn('Piaci trendek figyelési hiba:', hiba.message));
 
+    // FONTOS: ez a <script type="module"> blokk saját, elszigetelt scope-ban fut —
+    // egy itt "let"-tel deklarált változó NEM válik globálissá, más (nem modul)
+    // <script> blokkok nem látják. A "Futó fuvarok" (Vállalkozás áttekintése panel)
+    // ezt az adatot egy külön, sima <script>-ből (#srt-modern-dashboard-script)
+    // próbálja olvasni, ezért window-ra is ki kell tenni, különben ott mindig
+    // "undefined"-nak látszik és a Futó fuvarok mindig 0-t mutat.
     let aktivFuvarokAdat = {};
+    window.aktivFuvarokAdat = aktivFuvarokAdat;
     let legutobbiFuvarokAdat = {};
 
     function aktualisJatekFul() {
@@ -8578,6 +8585,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
 
     onValue(ref(db, 'aktivFuvarok'), (snapshot) => {
       aktivFuvarokAdat = snapshot.val() || {};
+      window.aktivFuvarokAdat = aktivFuvarokAdat;
       window.frissitiFuvarWidgeteket();
     }, (hiba) => console.warn('Aktív fuvarok figyelési hiba:', hiba.message));
     // A "Fuvarban: X perce" érték percenként frissüljön akkor is, ha nincs új Firebase esemény.
@@ -10013,7 +10021,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       totalJobs += jobs.length || Number(u && (u.totalJobs || u.osszesFuvar) || 0);
     });
 
-    const activeSource = (typeof aktivFuvarokAdat !== 'undefined' && aktivFuvarokAdat) ? aktivFuvarokAdat : {};
+    const activeSource = (window.aktivFuvarokAdat && typeof window.aktivFuvarokAdat === 'object') ? window.aktivFuvarokAdat : {};
     const activeJobs = Object.values(activeSource).filter(e => {
       const game = String(e && (e.jatek || e.gameType) || 'ETS2').toLowerCase();
       return game !== 'ats';
