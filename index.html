@@ -12191,7 +12191,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       });
       if (skippedMeta) {
         document.getElementById('route-playback-title').textContent =
-          `🐢 Nem lépte át a 100 km/h sebességet (max ${Math.round(skippedMeta.maxSpeedKmh || 0)} km/h) — gyors hajtás nem történt, útvonal nem lett rögzítve`;
+          `🐢 Nem lépte át a sebességküszöböt (max ${Math.round(skippedMeta.maxSpeedKmh || 0)} km/h) — gyors hajtás nem történt, útvonal nem lett rögzítve`;
       } else {
         document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
       }
