@@ -5271,17 +5271,26 @@ body { font-size: 15px; }
       if (!adminMode) return;
       if (!confirm(`Biztosan törlöd a ${reversedIdx + 1}. fuvart?`)) return;
       const jobs = allJobs[jobKey(driverName)] || [];
-      jobs.splice(reversedIdx, 1);
-      allJobs[jobKey(driverName)] = jobs;
+      const torlendoJob = jobs[reversedIdx];
+      // FONTOS: a törlésnek a boton (Railway) kell átmennie, NEM közvetlenül
+      // Firebase-be írva — a bot saját memóriában tartja a jobHistory-t, és
+      // a következő saját mentésekor felülírná a jobs ágat a (törlés előtti)
+      // saját másolatával, ami visszahozná a törölt fuvart frissítés után.
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
+        const res = await fetch(UPLOAD_API.replace('/upload', '/torol-fuvar'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': UPLOAD_SECRET },
+          body: JSON.stringify({ soforNev: driverName, index: reversedIdx, datum: torlendoJob?.datum })
         });
+        if (!res.ok) {
+          const e = await res.json().catch(() => ({}));
+          throw new Error(e?.error || 'Törlési hiba');
+        }
+        jobs.splice(reversedIdx, 1);
+        allJobs[jobKey(driverName)] = jobs;
         showDriverJobs(driverName);
       } catch(e) {
-        alert('Hiba a törlés során!');
+        alert('Hiba a törlés során: ' + e.message);
       }
     }
 
