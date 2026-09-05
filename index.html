@@ -3500,7 +3500,7 @@ body { font-size: 15px; }
         </div>
         <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">
           Az ETS2/ATS belső koordináta-rendszerből konvertált pozíció. Közelítő pontossággal mutatja a helyzetet.
-          Automatikus frissítés: 5 másodpercenként.
+          Automatikus frissítés: másodpercenként.
         </div>
       </div>
       <!-- ── /Élő SRT Térkép tab ── -->
@@ -12005,8 +12005,18 @@ let routeAllLatLngs = []; // ÚJ: minden pont előre kiszámolt lat/lng-je, a te
 // az új helyen frissül, ezért itt is oda kell mutatni.
 const FIREBASE_RT_URL = 'https://srt-trans-reply-default-rtdb.europe-west1.firebasedatabase.app';
 
-// ÚJ: sebességtúllépés-jelölők az útvonal-visszajátszó térképen
-const TULSEBESSEG_LIMIT_KMH = 100;
+// ÚJ: sebességtúllépés-jelölők az útvonal-visszajátszó térképen — JAVÍTVA:
+// játékonként eltérő a limit (ugyanaz, mint amit a launcher használ az
+// útvonal rögzítésének eldöntésénél, lásd MainForm.cs
+// ROUTE_SEBESSEG_KUSZOB_ETS2_KMH / ROUTE_SEBESSEG_KUSZOB_ATS_KMH) — eddig ez
+// a weboldalon mindkét játéknál egységesen 100 km/h volt, ami ATS-nél
+// (130 km/h fölötti autópálya-sebességek is simán normálisak) rengeteg
+// hamis "sebességtúllépés"-jelölőt rakott volna ki.
+const TULSEBESSEG_LIMIT_ETS2_KMH = 100;
+const TULSEBESSEG_LIMIT_ATS_KMH  = 130;
+function tulsebessegLimit(game) {
+  return game === 'ats' ? TULSEBESSEG_LIMIT_ATS_KMH : TULSEBESSEG_LIMIT_ETS2_KMH;
+}
 let routeSpeedMarkers = [];
 
 async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo) {
@@ -12111,6 +12121,22 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     const routeData = allRoutes[bestJobId];
     const meta = routeData._meta || {};
 
+    // ÚJ: a launcher "route_point_skip" jelzést küld (nincs rögzített
+    // pontlista, csak ez a _meta), ha a fuvar teljes ideje alatt a sebesség
+    // sosem lépte át a játékonkénti limitet (100 km/h ETS2-nél, 130 km/h
+    // ATS-nél — lásd MainForm.cs ROUTE_SEBESSEG_KUSZOB_*). Eddig ezt a
+    // weboldal nem különböztette meg az "üres útvonal"/"nincs launcher"
+    // esettől, holott ez valójában jó hír: nem volt gyors hajtás.
+    if (meta.skipped) {
+      const fromS = meta.from || fallbackFrom || '?';
+      const toS   = meta.to   || fallbackTo   || '?';
+      const limitS = tulsebessegLimit((meta.game || routeGame || '').toLowerCase() === 'ats' ? 'ats' : 'ets2');
+      document.getElementById('route-playback-title').textContent = `✅ ${fromS} → ${toS} — nem volt gyors hajtás`;
+      document.getElementById('route-progress-label').textContent =
+        `Legnagyobb sebesség: ${Math.round(meta.maxSpeedKmh || 0)} km/h (limit: ${limitS} km/h)`;
+      return;
+    }
+
     // Pontok összegyűjtése és rendezése index szerint
     const pts = [];
     Object.entries(routeData).forEach(([key, val]) => {
@@ -12159,9 +12185,10 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     // ÚJ: sebességtúllépés jelölése — minden rögzített pontot megjelölünk,
     // ahol a sofőr TULSEBESSEG_LIMIT_KMH (100 km/h) fölött ment. Kattintva
     // a pontra kiírja a pontos, aznapi rögzített sebességet.
+    const sebessegLimit = tulsebessegLimit(routeGame);
     routePoints.forEach((p, i) => {
       const sebesseg = p.s || 0;
-      if (sebesseg > TULSEBESSEG_LIMIT_KMH) {
+      if (sebesseg > sebessegLimit) {
         const m = L.marker(allLatLngs[i], {
           icon: L.divIcon({
             html: '<div style="width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.7);"></div>',
@@ -12521,8 +12548,11 @@ function initLiveTerkep() {
     frissitKovetesGombot();
   });
 
-  // Automatikus frissítés 5 mp-enként (ennyi időnként küld új adatot az srt-trans.dll is)
-  liveRefreshInterval = setInterval(refreshLiveDrivers, 5000);
+  // Automatikus frissítés 1 mp-enként — a DLL is másodpercenként frissíti a
+  // pozíciót (SEND_INTERVAL_SEC=1 a srt-trans.cpp-ben), tehát ennél gyakoribb
+  // lekérdezésnek nem lenne értelme, de ritkábbnál (a korábbi 5 mp-nél)
+  // pontatlanabbul, "ugrálva" követte a térkép a mozgó sofőrt.
+  liveRefreshInterval = setInterval(refreshLiveDrivers, 1000);
   refreshLiveDrivers();
 }
 
