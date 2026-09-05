@@ -11998,7 +11998,12 @@ let routeCurrentIdx = 0;
 let routeIsPlaying = false;
 let routeGame = 'ets2';
 let routeAllLatLngs = []; // ÚJ: minden pont előre kiszámolt lat/lng-je, a tekeréshez
-const FIREBASE_RT_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
+// JAVÍTVA: az útvonal-visszajátszás (routePoints) és az élő térkép (liveTelemetry)
+// adatai egy KÜLÖN Firebase projektbe költöztek (srt-trans-reply) — a fő
+// "srtdata" üzleti adatok (aktivFuvarok, cegRanglista, stb.) továbbra is a
+// régi "srt-trans-c52a7" projektben maradnak, ez a két ág viszont már csak
+// az új helyen frissül, ezért itt is oda kell mutatni.
+const FIREBASE_RT_URL = 'https://srt-trans-reply-default-rtdb.europe-west1.firebasedatabase.app';
 
 // ÚJ: sebességtúllépés-jelölők az útvonal-visszajátszó térképen
 const TULSEBESSEG_LIMIT_KMH = 100;
@@ -12560,7 +12565,11 @@ function toLatLng(x, y, z, jatek) {
 async function refreshLiveDrivers() {
   if (!liveMapInitialized) return;
   try {
-    const FIREBASE_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
+    // JAVÍTVA: a liveTelemetry adatok külön Firebase projektbe (srt-trans-reply)
+    // költöztek — a régi "srt-trans-c52a7" projektben ez az ág már nem
+    // frissül, ezért a térkép örökre "Nincs adat"-ot mutatott, holott a bot
+    // valójában folyamatosan küldte az adatot, csak máshová.
+    const FIREBASE_URL = 'https://srt-trans-reply-default-rtdb.europe-west1.firebasedatabase.app';
     const resp = await fetch(`${FIREBASE_URL}/liveTelemetry.json`);
     const allData = await resp.json();
 
