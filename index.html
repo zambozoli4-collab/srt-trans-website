@@ -12376,13 +12376,48 @@ const ETS2_CITIES = [
   {name:'Zürich',x:-8473.81,z:17968.5},
 ];
 
-// Városnév-címkék hozzáadása egy térképhez (jelenleg csak ETS2-nél van adatunk).
+// ATS alapjáték városnevei (Kalifornia + Nevada — ugyanabból a nyilvános
+// koordináta-adatbázisból, mint az ETS2_CITIES, ellenőrizve: a benne lévő
+// ETS2 koordináták (pl. Berlin, Budapest, Amsterdam) bájtra egyeznek a fenti
+// ETS2_CITIES listával, tehát ugyanaz a koordináta-verzió/epocha, mint amit
+// ez az oldal már használ).
+// FONTOS KORLÁTOZÁS: az ATS térkép több alkalommal jelentősen átalakult a
+// később hozzáadott DLC-államokkal (Arizona, Oregon, Utah, Colorado, stb.) —
+// az ezekhez elérhető nyilvános koordináták egy RÉGEBBI, eltérő léptékű/
+// átdolgozott térkép-verzióból származnak (nem konvertálhatók egyszerű
+// szorzással az jelenlegi koordináta-rendszerbe, mert nem egyenletes
+// átméretezés történt, hanem az útvonalak/városok tényleges áthelyezése is).
+// Rossz koordinátával feltenni egy városnevet ROSSZABB, mint egyáltalán nem
+// kiírni — ezért egyelőre csak ezt a 30, megbízhatóan ellenőrzött várost
+// tartalmazza a lista. Ha a többi állam városaihoz is van megbízható,
+// ellenőrzött koordinátád, ez a lista bővíthető.
+const ATS_CITIES = [
+  {name:'Bakersfield',x:-52261.9,z:20598.8},{name:'Barstow',x:-47300.4,z:21963.2},
+  {name:'Carlsbad',x:-49106.5,z:27008},{name:'Carson City',x:-51957.3,z:8904.93},
+  {name:'Elko',x:-45027.1,z:2043.13},{name:'Ely',x:-43077.7,z:7074.14},
+  {name:'El Centro',x:-41183.4,z:29223.9},{name:'Eureka',x:-68616.5,z:3021.09},
+  {name:'Fresno',x:-54802.6,z:16248.6},{name:'Hornbrook',x:-63040.5,z:-2368.46},
+  {name:'Huron',x:-56245.7,z:18908.2},{name:'Jackpot',x:-41684.1,z:-1865.5},
+  {name:'Las Vegas',x:-41596.9,z:17626.8},{name:'Los Angeles',x:-52693.3,z:24704.3},
+  {name:'Oakdale',x:-56869.8,z:14073.5},{name:'Oakland',x:-58786.3,z:14301.8},
+  {name:'Oxnard',x:-56628.7,z:21492.7},{name:'Pioche',x:-40938.4,z:10214.7},
+  {name:'Primm',x:-43011.8,z:20256.2},{name:'Redding',x:-61340,z:2201.14},
+  {name:'Reno',x:-55425.1,z:5836.53},{name:'Sacramento',x:-59012.1,z:10440.7},
+  {name:'Santa Cruz',x:-58791.1,z:18772.1},{name:'San Diego',x:-46897.8,z:29857.3},
+  {name:'San Francisco',x:-60374.2,z:13271},{name:'San Rafael',x:-61918.1,z:10079.6},
+  {name:'Stockton',x:-57824.6,z:12037.9},{name:'Tonopah',x:-48104.3,z:12496.8},
+  {name:'Truckee',x:-56640.5,z:8566.73},{name:'Winnemucca',x:-50540.7,z:1847.23},
+];
+
+// Városnév-címkék hozzáadása egy térképhez — ETS2-nél teljes alapjáték-
+// lista, ATS-nél a fent leírt korlátozással (csak Kalifornia + Nevada).
 // A címkék áttetszősége a zoom szinttől függ, hogy kis nagyításnál ne legyen zsúfolt.
 function addCityLabels(map, jatek) {
-  if (jatek !== 'ets2') return null;
+  const cities = jatek === 'ats' ? ATS_CITIES : (jatek === 'ets2' ? ETS2_CITIES : null);
+  if (!cities) return null;
   const layer = L.layerGroup();
-  ETS2_CITIES.forEach(city => {
-    const pos = gameToLatLng(map, city.x, city.z, 'ets2');
+  cities.forEach(city => {
+    const pos = gameToLatLng(map, city.x, city.z, jatek);
     L.marker(pos, {
       icon: L.divIcon({
         className: 'city-name-label',
