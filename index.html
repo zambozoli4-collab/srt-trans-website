@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.5, maximum-scale=5, user-scalable=yes" />
   <title>SRT TRANS KFT.</title>
-  <link rel="icon" type="image/png" href="favicon.png">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -95,48 +94,6 @@
     .btn-dl { display: inline-flex; align-items: center; gap: 8px; background: var(--orange); color: #fff; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 8px; text-decoration: none; margin-top: 4px; transition: opacity 0.2s; width: fit-content; }
     .btn-dl.blue { background: var(--blue); }
     .btn-dl:hover { opacity: 0.85; }
-
-    /* Névnap buborék a kezdőlapon — a hero (kamionos) kép keretein belül marad */
-    .nevnap-bubble {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      z-index: 5;
-      max-width: 280px;
-      background: var(--card);
-      border: 1px solid rgba(249,115,22,0.35);
-      border-radius: 16px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.45);
-      backdrop-filter: blur(10px);
-      animation: nevnap-in 0.35s ease;
-    }
-    .nevnap-bubble-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
-    .nevnap-bubble-text { font-size: 12.5px; color: var(--text); line-height: 1.5; }
-    .nevnap-bubble-text strong { color: var(--orange); }
-    .nevnap-bubble-close {
-      position: absolute;
-      top: 6px;
-      right: 8px;
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 14px;
-      cursor: pointer;
-      line-height: 1;
-      padding: 4px;
-    }
-    .nevnap-bubble-close:hover { color: #fff; }
-    @keyframes nevnap-in {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @media (max-width: 560px) {
-      .nevnap-bubble { max-width: calc(100% - 32px); top: 12px; right: 12px; left: 12px; }
-    }
 
     /* Módok oldal: a tartalom középre igazítása – csak ezen az oldalon */
     #page-modok #modok-content {
@@ -3171,7 +3128,6 @@ body { font-size: 15px; }
       <button class="nav-btn" id="nav-terkep" onclick="showPage('terkep')"><span>🗺 Térkép</span></button>
       <button class="nav-btn" id="nav-kepek" onclick="showPage('kepek')"><span>🎬 Média</span></button>
       <button class="nav-btn" id="nav-piac" onclick="showPage('piac')" style="position:relative;"><span>📊 Piac</span><span id="piac-nav-dot" style="display:none;position:absolute;top:8px;right:10px;width:9px;height:9px;background:var(--orange);border-radius:50%;box-shadow:0 0 0 2px var(--bg,#0b0b0f);"></span></button>
-      <button class="nav-btn" id="nav-pickupdivizio" onclick="showPage('pickupdivizio')" style="position:relative;"><span>📦 Pickup Division</span><span id="pickupdivizio-nav-dot" style="display:none;position:absolute;top:8px;right:10px;width:9px;height:9px;background:var(--orange);border-radius:50%;box-shadow:0 0 0 2px var(--bg,#0b0b0f);"></span></button>
       <button class="nav-btn" id="nav-kozosseg" onclick="showPage('kozosseg')"><span>💬 Közösség</span></button>
       <button class="nav-btn" id="nav-csapat" onclick="showPage('csapat')"><span>👥 Vezetők</span></button>
     </nav>
@@ -3208,7 +3164,6 @@ body { font-size: 15px; }
     <button class="nav-btn" id="mob-nav-terkep" onclick="showPage('terkep');closeMobileNav()">🗺 Térkép</button>
     <button class="nav-btn" id="mob-nav-kepek" onclick="showPage('kepek');closeMobileNav()">🎬 Média</button>
     <button class="nav-btn" id="mob-nav-piac" onclick="showPage('piac');closeMobileNav()" style="position:relative;">📊 Piac<span id="piac-nav-dot-mob" style="display:none;position:absolute;top:6px;right:14px;width:9px;height:9px;background:var(--orange);border-radius:50%;"></span></button>
-    <button class="nav-btn" id="mob-nav-pickupdivizio" onclick="showPage('pickupdivizio');closeMobileNav()" style="position:relative;">📦 Pickup Division<span id="pickupdivizio-nav-dot-mob" style="display:none;position:absolute;top:6px;right:14px;width:9px;height:9px;background:var(--orange);border-radius:50%;"></span></button>
     <button class="nav-btn" id="mob-nav-kozosseg" onclick="showPage('kozosseg');closeMobileNav()">💬 Közösség</button>
     <button class="nav-btn" id="mob-nav-csapat" onclick="showPage('csapat');closeMobileNav()">👥 Vezetők</button>
     <a id="mobile-trucky-download" class="btn-trucky trucky-dl-btn" href="https://truckyapp.com/client-download" target="_blank" style="display:none;">⬇ Trucky letöltés</a>
@@ -3217,11 +3172,6 @@ body { font-size: 15px; }
 
   <div class="page active" id="page-home">
     <section class="hero">
-      <div id="nevnap-bubble" class="nevnap-bubble" style="display:none;">
-        <button type="button" class="nevnap-bubble-close" onclick="nevnapBuborekBezar()" aria-label="Bezárás">✕</button>
-        <div class="nevnap-bubble-icon">🎉</div>
-        <div class="nevnap-bubble-text" id="nevnap-bubble-text"></div>
-      </div>
       <div class="hero-bg" id="bg-home"></div>
       <div class="hero-content">
         <p class="hero-eyebrow" data-edit="home_eyebrow">Euro Truck Simulator 2 · Magyar konvoj</p>
@@ -3259,7 +3209,8 @@ body { font-size: 15px; }
               <button type="button" onclick="lepNapiAttekintesNap(-1)" style="width:28px;height:28px;border-radius:6px;background:var(--srt-panel);border:1px solid var(--srt-border);color:var(--srt-blue-dark);cursor:pointer;font-size:13px;">◀</button>
               <span id="srt-daily-date-label" style="font-weight:700;color:#333;font-size:13px;min-width:110px;text-align:center;"></span>
               <button type="button" onclick="lepNapiAttekintesNap(1)" style="width:28px;height:28px;border-radius:6px;background:var(--srt-panel);border:1px solid var(--srt-border);color:var(--srt-blue-dark);cursor:pointer;font-size:13px;">▶</button>
-              <input type="date" id="srt-daily-date-picker" onchange="valasztNapiAttekintesDatum(this.value)" style="padding:5px 10px;border-radius:6px;background:var(--srt-panel);border:1px solid var(--srt-border);color:var(--srt-blue-dark);cursor:pointer;font-size:12px;font-weight:700;">
+              <button type="button" onclick="lepNapiAttekintesHonap(-1)" style="padding:6px 12px;border-radius:6px;background:var(--srt-panel);border:1px solid var(--srt-border);color:var(--srt-blue-dark);cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;">◀ Hónap</button>
+              <button type="button" onclick="lepNapiAttekintesHonap(1)" style="padding:6px 12px;border-radius:6px;background:var(--srt-panel);border:1px solid var(--srt-border);color:var(--srt-blue-dark);cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;">Hónap ▶</button>
               <button type="button" onclick="resetNapiAttekintesNap()" style="padding:6px 12px;border-radius:6px;background:var(--srt-blue-dark);border:1px solid var(--srt-blue-dark);color:#fff;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;">Ma</button>
             </div>
           </div>
@@ -3296,8 +3247,7 @@ body { font-size: 15px; }
           <div class="srt-dash-title">Trucky kliens</div>
           <a class="srt-dash-primary" href="https://truckyapp.com/client-download" target="_blank" rel="noreferrer">⬇ Trucky kliens letöltése</a>
           <a id="srt-pickup-client-download" class="srt-dash-secondary" href="https://www.dropbox.com/s/2ugg2vw01j2yap4/PICKUP.zip?dl=1" target="_blank" rel="noreferrer">⬇ Pickup kliens letöltése</a>
-          <a id="dl-srt-launcher-home" class="srt-dash-secondary" href="javascript:void(0)" onclick="openAuthModal(); return false;" style="background:linear-gradient(135deg,rgba(37,99,235,0.18),rgba(37,99,235,0.08));border-color:rgba(37,99,235,0.35);color:#93c5fd;">⬇ SRT-Trans Launcher letöltése</a>
-          <p class="srt-dash-note">Trucky a konvojokhoz és szerverkövetéshez, Pickup a saját fuvarrendszerhez, Launcher a fuvarrögzítéshez.</p>
+          <p class="srt-dash-note">Trucky a konvojokhoz és szerverkövetéshez, Pickup a saját fuvarrendszerhez.</p>
         </div>
 
         <div class="srt-dash-panel">
@@ -3371,13 +3321,6 @@ body { font-size: 15px; }
       <div id="tab-alkalmazasok" class="tab-panel">
         <div class="mod-grid">
           <div class="mod-card">
-            <div class="mod-card-icon blue">🖥️</div>
-            <span class="mod-card-tag tag-required">Kötelező</span>
-            <h3>SRT-Trans Launcher</h3>
-            <p>Az SRT TRANS KFT. saját pluginja ETS2 és ATS játékhoz. Automatikusan rögzíti a fuvarjaidat a weboldalra — Trucky nélkül is működik! Telepítés után csak add meg a nevedet és játssz.</p>
-            <a class="btn-dl" id="dl-srt-launcher" href="javascript:void(0)" onclick="openAuthModal(); return false;">⬇ Letöltés</a>
-          </div>
-          <div class="mod-card">
             <div class="mod-card-icon blue">🚐</div>
             <span class="mod-card-tag tag-extra">App</span>
             <h3>Pickup csomag</h3>
@@ -3417,132 +3360,7 @@ body { font-size: 15px; }
       <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab(this, 'tab-trucky-map')">🚛 Trucky Világ Térkép</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-tmp-map')">🗺 TruckersMP Térkép</button>
-        <button class="tab-btn" onclick="switchTab(this, 'tab-live-map'); initLiveTerkep()">🔴 Élő SRT Térkép</button>
       </div>
-
-      <!-- ── ÚJ: Élő SRT Térkép tab ── -->
-      <div id="tab-live-map" class="tab-panel">
-        <!-- Leaflet CSS -->
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-        <style>
-          #live-map-container {
-            width: 100%; height: 78vh; border-radius: 14px;
-            overflow: hidden; border: 1px solid var(--border);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-            position: relative;
-          }
-          #live-map-container.fullscreen {
-            position: fixed; inset: 0; z-index: 9999;
-            width: 100vw; height: 100dvh; border-radius: 0; border: none;
-          }
-          body.live-map-fs-active .srt-modern-topbar,
-          body.live-map-fs-active .site-header {
-            display: none !important;
-          }
-          #live-map { width: 100%; height: 100%; }
-          #live-map-fullscreen-btn, #live-map-close-btn {
-            position: absolute; z-index: 1001; top: 14px; left: 60px;
-            width: 34px; height: 34px; border-radius: 8px;
-            background: rgba(7,13,24,0.88); border: 1px solid var(--border);
-            color: #fff; font-size: 16px; display: flex; align-items: center;
-            justify-content: center; cursor: pointer;
-          }
-          #live-map-close-btn { left: 14px; display: none; }
-          #live-map-container.fullscreen #live-map-fullscreen-btn { display: none; }
-          #live-map-container.fullscreen #live-map-close-btn { display: flex; }
-          .city-name-label { pointer-events: none; white-space: nowrap; }
-          .city-name-label span {
-            font-size: 14px; font-weight: 700; color: #fff;
-            letter-spacing: 0.01em;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 5px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,1);
-            opacity: var(--city-label-opacity, 1);
-            transition: opacity 0.2s;
-          }
-          .live-driver-marker-icon { transition: transform 4s linear; }
-          #live-map-legend {
-            position: absolute; top: 14px; right: 14px; z-index: 1000;
-            background: rgba(15,23,42,0.97); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
-            padding: 12px 16px; min-width: 200px; max-width: 260px;
-            color: #e8f0fc;
-          }
-          #live-map-legend h4 { font-size: 12px; font-weight: 700; color: #f97316; margin: 0 0 8px; letter-spacing: 0.1em; text-transform: uppercase; }
-          .live-driver-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; color: #e8f0fc; cursor: pointer; }
-          .live-driver-row:last-child { border-bottom: none; }
-          .live-driver-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-          .live-driver-dot.active { background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,0.3); animation: pulse-green 2s infinite; }
-          .live-driver-dot.stale  { background: #f97316; }
-          .live-driver-dot.offline { background: #6b7280; }
-          @keyframes pulse-green { 0%,100%{box-shadow:0 0 0 3px rgba(74,222,128,0.3)} 50%{box-shadow:0 0 0 6px rgba(74,222,128,0.08)} }
-          #live-map-status { font-size: 11px; color: #9ca3af; margin-top: 10px; text-align: center; }
-          #live-map-game-switcher { display: flex; gap: 6px; margin-bottom: 14px; }
-          .live-game-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-          .live-game-btn.active { background: var(--orange-dim); border-color: rgba(249,115,22,0.5); color: var(--orange); }
-          #live-map-driver-info {
-            margin-top: 14px; padding: 12px; background: var(--card);
-            border: 1px solid var(--border); border-radius: 12px;
-            font-size: 13px; display: none;
-          }
-          .driver-info-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; }
-          .driver-info-label { color: var(--muted); }
-          .driver-info-value { color: var(--text); font-weight: 600; }
-          /* Leaflet popup */
-          .leaflet-popup-content-wrapper { background: rgba(7,13,24,0.95)!important; border: 1px solid rgba(249,115,22,0.3)!important; border-radius: 10px!important; color: #fff!important; }
-          .leaflet-popup-tip { background: rgba(7,13,24,0.95)!important; }
-          .leaflet-popup-content { color: #e8f0fc!important; font-size: 13px!important; line-height: 1.6!important; }
-          #live-map-no-data { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(7,13,24,0.7); z-index: 500; border-radius: 14px; }
-        </style>
-
-        <!-- Játék választó + Sofőr info panel -->
-        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
-          <div style="flex:1;min-width:220px;">
-            <div id="live-map-game-switcher">
-              <button class="live-game-btn active" id="live-btn-ets2" onclick="setLiveTerkepJatek('ets2')">🚛 ETS2</button>
-              <button class="live-game-btn" id="live-btn-ats" onclick="setLiveTerkepJatek('ats')">🤠 ATS</button>
-            </div>
-            <div style="font-size:12px;color:var(--muted);line-height:1.5;">
-              A térképen az <strong style="color:var(--orange)">srt-trans.dll</strong> plugint futtató sofőrök jelennek meg valós időben.<br>
-              <span style="color:#4ade80;">●</span> Aktív (max 30 mp)&nbsp;&nbsp;
-              <span style="color:#f97316;">●</span> Elavult (30 mp–5 perc)&nbsp;&nbsp;
-              <span style="color:#6b7280;">●</span> Offline
-            </div>
-          </div>
-          <div id="live-map-driver-info" style="flex:1;min-width:220px;">
-            <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px;" id="live-info-nev">—</div>
-            <div class="driver-info-row"><span class="driver-info-label">⚡ Sebesség</span><span class="driver-info-value" id="live-info-speed">—</span></div>
-            <div class="driver-info-row"><span class="driver-info-label">⛽ Üzemanyag</span><span class="driver-info-value" id="live-info-fuel">—</span></div>
-            <div class="driver-info-row"><span class="driver-info-label">📦 Rakomány</span><span class="driver-info-value" id="live-info-cargo">—</span></div>
-            <div class="driver-info-row"><span class="driver-info-label">🎯 Cél</span><span class="driver-info-value" id="live-info-dest">—</span></div>
-            <div class="driver-info-row"><span class="driver-info-label">📏 Hátralévő</span><span class="driver-info-value" id="live-info-navdist">—</span></div>
-            <div class="driver-info-row"><span class="driver-info-label">🚛 Jármű</span><span class="driver-info-value" id="live-info-truck">—</span></div>
-            <div class="driver-info-row"><span class="driver-info-label">🔧 Kopás</span><span class="driver-info-value" id="live-info-wear">—</span></div>
-          </div>
-        </div>
-
-        <!-- Térkép container -->
-        <div id="live-map-container">
-          <button id="live-map-fullscreen-btn" onclick="toggleLiveMapFullscreen(true)" title="Teljes képernyő">⛶</button>
-          <button id="live-map-close-btn" onclick="toggleLiveMapFullscreen(false)" title="Bezárás">✕</button>
-          <div id="live-map"></div>
-          <div id="live-map-no-data">
-            <div style="font-size:40px;margin-bottom:12px;">🗺️</div>
-            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px;">Nincs aktív sofőr</div>
-            <div style="font-size:13px;color:var(--muted);text-align:center;max-width:300px;">Jelenleg egyetlen sofőr sem futtatja az srt-trans.dll plugint, vagy nincs aktív Firebase adat.</div>
-          </div>
-          <div id="live-map-legend">
-            <h4 style="color:#f97316!important;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 8px;">🔴 Élő Sofőrök</h4>
-            <div id="live-legend-list"><div style="font-size:12px;color:#9ca3af;">Töltés...</div></div>
-            <div id="live-map-status" style="font-size:11px;color:#9ca3af;margin-top:10px;text-align:center;">Frissítés: —</div>
-            <button id="live-map-follow-btn" onclick="liveMapKovetes()" title="Sofőr követése" style="margin-top:8px;width:100%;padding:6px 10px;border-radius:8px;border:1px solid rgba(249,115,22,0.4);background:rgba(249,115,22,0.12);color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;display:none;">📍 Sofőr követése</button>
-          </div>
-        </div>
-        <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center;">
-          Az ETS2/ATS belső koordináta-rendszerből konvertált pozíció. Közelítő pontossággal mutatja a helyzetet.
-          Automatikus frissítés: 1 másodpercenként.
-        </div>
-      </div>
-      <!-- ── /Élő SRT Térkép tab ── -->
       <div id="tab-trucky-map" class="tab-panel active">
         <div style="position: relative;">
           <div class="map-wrap" style="height: 70vh;">
@@ -3561,7 +3379,20 @@ body { font-size: 15px; }
           <a href="https://map.truckersmp.com" style="display: inline-block; padding: 12px 28px; background: #e85d04; color: #fff; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none;">🔗 Megnyitás TruckersMP térképen →</a>
         </div>
       </div>
-
+      <div class="map-info-grid">
+        <div class="map-info-card">
+          <h4>🌍 Európa</h4>
+          <p>Az alapjátékban 20+ ország és több száz város érhető el Európa-szerte.</p>
+        </div>
+        <div class="map-info-card">
+          <h4>🗺 ProMods</h4>
+          <p>A ProMods kiegészítővel a térkép több mint kétszeresére bővül, részletesebb úthálózattal.</p>
+        </div>
+        <div class="map-info-card">
+          <h4>📍 Útvonalak</h4>
+          <p>Az interaktív térképen tervezheted a konvoj útvonalát és megnézheted a legjobb parkolókat.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -4028,11 +3859,11 @@ body { font-size: 15px; }
     <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-piac" data-for="page-piac"></div>
     <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-piac"></div>
     <div class="container-wide">
-      <!-- Bot.py-ból (Claude vision) érkező Pickup divízió-kontraktus: mindig a Piac oldal tetején jelenik meg, rákattintva a részletes "Pickup Division" oldalra visz. -->
-      <div id="pickup-divizio-banner" onclick="showPage('pickupdivizio')" style="display:none;align-items:center;gap:14px;padding:12px 18px;background:linear-gradient(135deg, rgba(249,115,22,0.18), rgba(249,115,22,0.06));border:1px solid rgba(249,115,22,0.4);border-radius:12px;margin-bottom:20px;cursor:pointer;">
-        <div id="pickup-divizio-banner-icon" style="width:56px;height:56px;border-radius:10px;flex-shrink:0;background:rgba(249,115,22,0.16);display:flex;align-items:center;justify-content:center;font-size:26px;">📦</div>
+      <!-- Discordról érkező Pickup kép: mindig a Piac oldal tetején jelenik meg. -->
+      <div id="pickup-divizio-banner" style="display:none;align-items:center;gap:14px;padding:12px 18px;background:linear-gradient(135deg, rgba(249,115,22,0.18), rgba(249,115,22,0.06));border:1px solid rgba(249,115,22,0.4);border-radius:12px;margin-bottom:20px;">
+        <img id="pickup-divizio-banner-img" src="" alt="Pickup" onclick="openLightbox([{url:this.src, nev:'Pickup'}], 0)" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;cursor:pointer;">
         <div>
-          <div id="pickup-divizio-banner-title" style="font-weight:700;color:var(--orange);font-size:14px;">📦 Új Pickup divízió</div>
+          <div style="font-weight:700;color:var(--orange);font-size:14px;">📦 Új Pickup kép</div>
           <div id="pickup-divizio-banner-text" style="color:var(--text);font-size:14px;"></div>
         </div>
       </div>
@@ -4092,18 +3923,6 @@ body { font-size: 15px; }
     </div>
   </div>
 
-  <div class="page" id="page-pickupdivizio" style="position:relative;">
-    <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-pickupdivizio" data-for="page-pickupdivizio"></div>
-    <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-pickupdivizio"></div>
-    <div class="container-wide">
-      <p class="section-eyebrow">Discord kép alapján, automatikusan</p>
-      <h2 class="section-title">📦 Pickup Division</h2>
-      <div id="pickupdivizio-content">
-        <div style="text-align:center;padding:60px 20px;color:var(--text);opacity:.65;">⏳ Betöltés...</div>
-      </div>
-    </div>
-  </div>
-
   <div class="page" id="page-tagoklista" style="position:relative;">
     <div style="position:fixed;inset:0;z-index:-1;background-image:url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1920&q=80');background-size:cover;background-position:center center;background-repeat:no-repeat;pointer-events:none;display:none;" class="page-bg" id="bg-tagoklista" data-for="page-tagoklista"></div>
     <div style="position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(7,13,24,0.35) 0%,rgba(7,13,24,0.45) 60%,rgba(7,13,24,0.75) 100%);pointer-events:none;display:none;" class="page-bg-overlay" data-for="page-tagoklista"></div>
@@ -4127,8 +3946,8 @@ body { font-size: 15px; }
     <div class="container-wide" id="jelentkezok-page-content" style="display:none;">
       <p class="section-eyebrow">Admin</p>
       <h2 class="section-title">📋 Jelentkezők</h2>
-      <p id="jelentkezok-page-osszesen" style="color:var(--text);font-size:14px;margin-bottom:24px;"></p>
-      <div id="jelentkezok-page-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;"></div>
+      <p id="jelentkezok-page-osszesen" style="color:var(--muted);margin-bottom:24px;"></p>
+      <div id="jelentkezok-page-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;"></div>
     </div>
     <div id="jelentkezok-page-lock" class="container-wide" style="text-align:center;padding:100px 24px;">
       <div style="font-size:48px;margin-bottom:16px;">🔒</div>
@@ -4341,11 +4160,6 @@ body { font-size: 15px; }
           <input type="text" id="reg-trucky-nev" placeholder="Trucky Név (Trucky felhasználóneved) *" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;" />
         </div>
         <p style="font-size:11px;color:var(--muted);margin:-6px 0 10px;">A pontosan ugyanaz a Trucky felhasználónév kell, amivel a <a href="https://hub.truckyapp.com/users" target="_blank" style="color:var(--orange);">hub.truckyapp.com</a>-on regisztrálsz — így tudja a bot automatikusan összekötni a Discord és a Trucky fiókodat.</p>
-        <div style="position:relative;margin-bottom:6px;">
-          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">🖥️</span>
-          <input type="text" id="reg-srt-nev" placeholder="SRT-Trans játékon belüli név (opcionális)" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(249,115,22,0.25);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;" />
-        </div>
-        <p style="font-size:11px;color:var(--muted);margin:-2px 0 14px;">Ha telepíted az <strong style="color:var(--orange);">srt-trans.dll</strong> plugint, ide írd a játékon belüli profil neved. Ez alapján köti össze a bot a fuvaraidat a fiókodhoz. Ha ugyanaz mint a Trucky neved, hagyd üresen.</p>
         <div style="position:relative;margin-bottom:10px;">
           <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.65;pointer-events:none;">🎂</span>
           <input type="number" id="reg-eletkor" placeholder="Életkor *" min="1" max="120" style="width:100%;padding:12px 12px 12px 38px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(7,13,24,0.5);color:#fff;font-size:14px;box-sizing:border-box;" />
@@ -4469,13 +4283,6 @@ body { font-size: 15px; }
     let allJobs = null;
 
     function jobKey(name) {
-      // FONTOS: a bot a jobHistory-t a sofőr NYERS nevével menti (szóközzel,
-      // ékezetekkel együtt, pl. "Batki Márk") — a Firebase Realtime Database
-      // ezt engedi, csak a .#$[] karaktereket tiltja. Ez a függvény csak
-      // ezeket a ténylegesen tiltott karaktereket cseréli le, a szóközt NEM —
-      // ha a szóközt is aláhúzásra cserélnénk, a kulcs ("Batki_Márk") többé
-      // nem egyezne a Firebase-ben ténylegesen tárolt kulccsal
-      // ("Batki Márk"), és a sofőr fuvarjai eltűnnének a profiljáról.
       return (name || '').replace(/[.#$\[\]]/g, '_');
     }
 
@@ -4501,13 +4308,6 @@ body { font-size: 15px; }
         avatarBetolt();
         bgBetolt();
         renderPickupDivizioBanner();
-        // Ha az oldal frissítéskor pont a Pickup Division fülön nyílik meg
-        // (URL hash alapján), a showPage() még az adatbetöltés befejezése
-        // ELŐTT lefuttatja renderPickupDivizioPage()-t, ezért üres állapotot
-        // mutat. Itt, az adat tényleges megérkezése után újra kirajzoljuk,
-        // ha épp ez az aktív oldal - így nem kell átkattintani Piacra és
-        // vissza ahhoz, hogy megjelenjen.
-        if (document.getElementById('page-pickupdivizio')?.classList.contains('active')) renderPickupDivizioPage();
         return true;
       } catch (e) {
         if (allData === null) allData = {};
@@ -4519,296 +4319,27 @@ body { font-size: 15px; }
       }
     }
 
-    // A divízió-adat mostantól a bot.py-ból (Claude vision-nal kiolvasott,
-    // strukturált JSON: divizioNev, szerzodesSzam, sorok[] stb.) érkezik,
-    // nem egy nyers képernyőkép-URL-ből — lásd _pickupDivizio a Firebase-ben.
-    function pdEsc(v) {
-      return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
-
     function renderPickupDivizioBanner() {
       const banner = document.getElementById('pickup-divizio-banner');
       const dot = document.getElementById('piac-nav-dot');
       const dotMob = document.getElementById('piac-nav-dot-mob');
-      const dot2 = document.getElementById('pickupdivizio-nav-dot');
-      const dot2Mob = document.getElementById('pickupdivizio-nav-dot-mob');
       const d = allData?._pickupDivizio;
-      const aktiv = !!(d && d.lejar && Date.now() <= d.lejar && Array.isArray(d.sorok) && d.sorok.length);
+      const aktiv = d && Date.now() <= d.lejar;
 
-      [dot, dotMob, dot2, dot2Mob].forEach(el => { if (el) el.style.display = aktiv ? 'block' : 'none'; });
+      if (dot) dot.style.display = aktiv ? 'block' : 'none';
+      if (dotMob) dotMob.style.display = aktiv ? 'block' : 'none';
 
       if (!banner) return;
       if (!aktiv) {
         banner.style.display = 'none';
         return;
       }
-      const kesz = d.sorok.filter(r => r.aktualis >= r.cel).length;
-      const teljesitve = kesz === d.sorok.length;
-      document.getElementById('pickup-divizio-banner-icon').textContent = teljesitve ? '✅' : '📦';
-      document.getElementById('pickup-divizio-banner-title').textContent = `📦 ${d.divizioNev || ''} divízió${!pdIsMissing(d.szerzodesSzam) ? ' #' + d.szerzodesSzam : ''}`;
-      document.getElementById('pickup-divizio-banner-text').textContent = teljesitve
-        ? 'Teljesítve! Kattints a részletekért.'
-        : `${kesz}/${d.sorok.length} sor kész — kattints a részletekért.`;
+      document.getElementById('pickup-divizio-banner-img').src = d.kep;
+      document.getElementById('pickup-divizio-banner-text').textContent = d.uzenet;
       banner.style.display = 'flex';
     }
 
-    // Melyik TASKS-sorok vannak épp lenyitva (index szerint) - a weboldal
-    // saját, kliens-oldali állapota, nem jön a Firebase-ből.
-    const _pdExpandedRows = new Set();
-
-    window.pdToggleRow = function(idx) {
-      if (_pdExpandedRows.has(idx)) _pdExpandedRows.delete(idx);
-      else _pdExpandedRows.add(idx);
-      renderPickupDivizioPage();
-    };
-
-    function pdIsMissing(v) {
-      // Néha a képfelismerő AI a hiányzó értéket a "null" SZÖVEGKÉNT adja
-      // vissza (idézőjelek közé írva) valódi JSON null helyett - ezt itt
-      // kiszűrjük, hogy ne írjuk ki csúnyán a "null" szót a weboldalon.
-      if (v === null || v === undefined || v === '') return true;
-      const s = String(v).trim().toLowerCase();
-      return s === 'null' || s === 'undefined' || s === 'n/a';
-    }
-
-    function pdFormatMoney(v) {
-      const n = (typeof v === 'number') ? v : parseInt(String(v ?? '').replace(/[^\d-]/g, ''), 10);
-      if (!Number.isFinite(n)) return pdEsc(v);
-      return n.toLocaleString('hu-HU');
-    }
-
-    // Város -> ország (ISO 3166-1 alpha-2) hozzárendelés az ETS2/ATS-ben
-    // leggyakrabban előforduló városnevekhez (angol és becézett/magyar
-    // alakok is), hogy a szállítási sorokban zászlót tudjunk mutatni.
-    // Nem teljes lista - ismeretlen városnál egyszerűen nincs zászló.
-    const PD_CITY_COUNTRY = {
-      // Németország
-      'berlin':'DE','hamburg':'DE','munich':'DE','münchen':'DE','cologne':'DE','köln':'DE',
-      'frankfurt':'DE','stuttgart':'DE','dortmund':'DE','essen':'DE','leipzig':'DE','bremen':'DE',
-      'dresden':'DE','hannover':'DE','nuremberg':'DE','nürnberg':'DE','duisburg':'DE','kiel':'DE',
-      'karlsruhe':'DE','mannheim':'DE','rostock':'DE','erfurt':'DE','magdeburg':'DE','aachen':'DE',
-      // Franciaország
-      'paris':'FR','marseille':'FR','lyon':'FR','calais':'FR','lille':'FR','strasbourg':'FR',
-      'bordeaux':'FR','toulouse':'FR','nantes':'FR','reims':'FR','le havre':'FR','metz':'FR',
-      'dijon':'FR','nice':'FR','rouen':'FR','brest':'FR','clermont-ferrand':'FR',
-      // Benelux
-      'brussels':'BE','antwerp':'BE','liège':'BE','ghent':'BE','bruges':'BE','charleroi':'BE',
-      'amsterdam':'NL','rotterdam':'NL','the hague':'NL','eindhoven':'NL','utrecht':'NL','groningen':'NL',
-      'luxembourg':'LU',
-      // UK
-      'london':'GB','manchester':'GB','birmingham':'GB','glasgow':'GB','edinburgh':'GB',
-      'liverpool':'GB','dover':'GB','southampton':'GB','cardiff':'GB','belfast':'GB',
-      // Olaszország
-      'rome':'IT','roma':'IT','milan':'IT','milano':'IT','naples':'IT','napoli':'IT','turin':'IT',
-      'torino':'IT','bologna':'IT','florence':'IT','firenze':'IT','venice':'IT','venezia':'IT',
-      'genoa':'IT','genova':'IT','palermo':'IT','bari':'IT','verona':'IT',
-      // Lengyelország
-      'warsaw':'PL','warszawa':'PL','krakow':'PL','kraków':'PL','gdansk':'PL','gdańsk':'PL',
-      'wroclaw':'PL','wrocław':'PL','poznan':'PL','poznań':'PL','lodz':'PL','łódź':'PL','szczecin':'PL',
-      // Cseh / Szlovák
-      'prague':'CZ','praha':'CZ','brno':'CZ','ostrava':'CZ','plzen':'CZ','plzeň':'CZ',
-      'bratislava':'SK','kosice':'SK','košice':'SK',
-      // Ausztria / Svájc
-      'vienna':'AT','wien':'AT','graz':'AT','linz':'AT','salzburg':'AT','innsbruck':'AT',
-      'zurich':'CH','zürich':'CH','geneva':'CH','genève':'CH','bern':'CH','basel':'CH',
-      // Magyarország
-      'budapest':'HU','debrecen':'HU','szeged':'HU','miskolc':'HU','pecs':'HU','pécs':'HU','gyor':'HU','győr':'HU',
-      // Szlovénia / Horvátország
-      'ljubljana':'SI','maribor':'SI','zagreb':'HR','split':'HR','rijeka':'HR',
-      // Balti államok
-      'tallinn':'EE','tartu':'EE','riga':'LV','vilnius':'LT','kaunas':'LT','klaipeda':'LT','klaipėda':'LT',
-      // Skandinávia
-      'stockholm':'SE','gothenburg':'SE','göteborg':'SE','malmo':'SE','malmö':'SE',
-      'oslo':'NO','bergen':'NO','trondheim':'NO',
-      'copenhagen':'DK','københavn':'DK','aarhus':'DK','odense':'DK',
-      'helsinki':'FI','turku':'FI','tampere':'FI',
-      // Ibéria
-      'madrid':'ES','barcelona':'ES','valencia':'ES','seville':'ES','sevilla':'ES','bilbao':'ES','zaragoza':'ES',
-      'lisbon':'PT','lisboa':'PT','porto':'PT',
-      // Balkán / Fekete-tenger
-      'bucharest':'RO','bucuresti':'RO','bucurești':'RO','cluj-napoca':'RO','timisoara':'RO','timișoara':'RO',
-      'sofia':'BG','plovdiv':'BG','varna':'BG',
-      'istanbul':'TR','ankara':'TR','izmir':'TR',
-      'belgrade':'RS','beograd':'RS','novi sad':'RS',
-      'sarajevo':'BA','tirana':'AL','skopje':'MK','podgorica':'ME',
-      // USA (ATS) - egységesen amerikai zászló
-      'los angeles':'US','san francisco':'US','las vegas':'US','phoenix':'US','denver':'US',
-      'seattle':'US','portland':'US','sacramento':'US','san diego':'US','salt lake city':'US',
-      'oklahoma city':'US','dallas':'US','houston':'US','el paso':'US','albuquerque':'US',
-      'new orleans':'US','wichita':'US','tucson':'US','boise':'US','fargo':'US','cheyenne':'US',
-    };
-
-    function pdFlag(city) {
-      if (!city) return '';
-      const key = String(city).trim().toLowerCase();
-      const iso = PD_CITY_COUNTRY[key];
-      if (!iso) return '';
-      return String.fromCodePoint(...[...iso].map(c => 127397 + c.charCodeAt(0))) + ' ';
-    }
-
-    // Rakomány-szöveg alapján (kulcsszó-egyezés) visszaad egy szemléltető
-    // emoji-t a szállítás típusához. Nem pontos kategorizálás, csak vizuális
-    // segítség - ismeretlen/egyéb rakománynál egy általános doboz ikon jön.
-    function pdCargoIcon(rakomany) {
-      const s = String(rakomany || '').toLowerCase();
-      if (!s) return '📦';
-      const has = (...arr) => arr.some(k => s.includes(k));
-      if (has('üzemanyag', 'gázolaj', 'benzin', 'dízel', 'nyersolaj', 'kőolaj')) return '⛽';
-      if (has('dinamit', 'robbanó', 'lőszer')) return '💥';
-      if (has('biológiailag veszélyes', 'veszélyes hulladék')) return '☣️';
-      if (has('sav', 'lúg', 'klór', 'cianid', 'arzén', 'vegyi', 'ammónia', 'acetilén')) return '🧪';
-      if (has('búza', 'árpa', 'kukorica', 'gabona', 'vetőmag', 'bab', 'karfiol')) return '🌾';
-      if (has('élő állat', 'marha', 'sertés', 'csirke ')) return '🐄';
-      if (has('sör', 'bor', 'ital', 'víz', 'üdítő', 'kávé', 'tea', 'jeges')) return '🥤';
-      if (has('hús', 'hal', 'tej', 'sajt', 'túró', 'tojás', 'kolbász', 'sonka', 'szalonna',
-              'zsír', 'méz', 'joghurt', 'kaviár', 'konzerv', 'tészta', 'cukorka', 'keksz',
-              'perec', 'liszt', 'cukor', 'fűszer', 'étel', 'gyümölcs', 'zöldség')) return '🍽️';
-      if (has('tűzifa', 'rönk', 'deszka', 'fűrészpor', 'bútor')) return '🪵';
-      if (has('papír', 'karton', 'könyv')) return '📄';
-      if (has('textil', 'gyapot', 'gyapjú', 'bőr', 'ruha')) return '🧵';
-      if (has('acél', 'vas', 'alumínium', 'réz', 'fém', 'betonvas', 'gerenda')) return '🔩';
-      if (has('gép', 'motor', 'traktor', 'kombájn', 'generátor', 'szerszám', 'targonca',
-              'daru', 'kotrógép', 'buldózer', 'szélturbina', 'transzformátor', 'kábel', 'vezeték')) return '⚙️';
-      if (has('autó', 'jármű', 'motorkerékpár', 'lakóautó', 'kamion')) return '🚗';
-      if (has('beton', 'tégla', 'cement', 'homok', 'kavics', 'gipsz', 'mészkő', 'márvány',
-              'gránit', 'ablak', 'ajtó', 'szigetelő', 'létra')) return '🧱';
-      if (has('számítógép', 'processzor', 'nyomtató', 'fénymásoló', 'légkondicionáló',
-              'hűtő', 'mosógép', 'szárítógép', 'mosogatógép')) return '🔌';
-      if (has('orvosi', 'gyógyszer', 'kórházi')) return '💊';
-      if (has('hulladék', 'szemét', 'trágya')) return '🗑️';
-      if (has('postai', 'légiposta')) return '📬';
-      return '📦';
-    }
-
-    function renderPickupDivizioPage() {
-      const el = document.getElementById('pickupdivizio-content');
-      if (!el) return;
-      const d = allData?._pickupDivizio;
-      const aktiv = !!(d && d.lejar && Date.now() <= d.lejar && Array.isArray(d.sorok) && d.sorok.length);
-
-      if (!aktiv) {
-        el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text);opacity:.65;">📦 Jelenleg nincs aktív Pickup divízió-kontraktus.<br>Amint valaki felteszi az új divízió képernyőképét a Discordra, itt fog megjelenni.</div>';
-        return;
-      }
-
-      const remainMs = Math.max(0, d.lejar - Date.now());
-      const remainDays = Math.floor(remainMs / (24 * 3600 * 1000));
-      const remainHours = Math.floor((remainMs % (24 * 3600 * 1000)) / (3600 * 1000));
-      const teljesitve = d.sorok.every(r => r.aktualis >= r.cel);
-
-      // Felső összesítő sáv (Total deliveries / Total distance / Current reward)
-      const osszesFuvar = d.osszesFuvar ?? d.sorok.reduce((s, r) => s + (r.szallitasok?.length || 0), 0);
-      const osszesTav = d.osszesTav ?? d.sorok.reduce((s, r) => s + (r.szallitasok || []).reduce((s2, sz) => s2 + (typeof sz.km === 'number' ? sz.km : 0), 0), 0);
-      const osszesJutalom = d.osszesJutalom ?? 0;
-      const summaryHtml = `
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px;">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
-            <div style="font-size:22px;font-weight:800;color:var(--text);">${pdEsc(osszesFuvar)}</div>
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;">📦 Összes szállítás</div>
-          </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;">
-            <div style="font-size:22px;font-weight:800;color:var(--text);">${pdFormatMoney(osszesTav)} km</div>
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;">🚚 Összes megtett táv</div>
-          </div>
-        </div>`;
-
-      const rowsHtml = d.sorok.map((r, idx) => {
-        const pct = Math.max(0, Math.min(100, Math.round((r.aktualis / Math.max(1, r.cel)) * 100)));
-        const rKesz = r.aktualis >= r.cel;
-        const badgeColor = rKesz ? '#22c55e' : (r.aktualis > 0 ? '#f59e0b' : 'var(--muted)');
-        const expanded = _pdExpandedRows.has(idx);
-        const szallitasok = r.szallitasok || [];
-
-        // Per-sofőr összesítés ehhez a sorhoz (ki hány szállítást és hány
-        // km-t teljesített ebből a sorból)
-        const perSofor = {};
-        for (const sz of szallitasok) {
-          const nev = sz.sofor || 'Ismeretlen';
-          if (!perSofor[nev]) perSofor[nev] = { db: 0, km: 0 };
-          perSofor[nev].db += 1;
-          if (typeof sz.km === 'number') perSofor[nev].km += sz.km;
-        }
-        const soforSorok = Object.entries(perSofor).sort((a, b) => b[1].db - a[1].db);
-
-        const extraCols = [];
-        if (!pdIsMissing(r.minTav)) extraCols.push(`<div style="text-align:center;min-width:90px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Min. táv</div><div style="color:var(--text);font-weight:600;">${pdEsc(r.minTav)}</div></div>`);
-
-        const detailHtml = expanded ? `
-          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-            ${soforSorok.length ? `
-              <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px 16px;align-items:center;">
-                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);">👤 Sofőr</div>
-                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;">📦 Szállítás</div>
-                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;">🚚 Megtett táv</div>
-                ${soforSorok.map(([nev, s]) => `
-                  <div style="color:var(--text);font-weight:600;">${pdEsc(nev)}</div>
-                  <div style="color:var(--orange);font-weight:700;text-align:right;">${pdEsc(s.db)}</div>
-                  <div style="color:var(--text);text-align:right;">${pdFormatMoney(s.km)} km</div>
-                `).join('')}
-              </div>
-            ` : `<div style="color:var(--text);opacity:.6;font-size:13px;">Ehhez a sorhoz még nem érkezett leadott fuvar.</div>`}
-            ${szallitasok.length ? `
-              <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">
-                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px;">🧾 Szállítások részletesen</div>
-                ${szallitasok.map(sz => `
-                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:rgba(127,127,127,0.08);border-radius:8px;padding:8px 12px;font-size:13px;">
-                    <span style="font-size:16px;">${pdCargoIcon(sz.rakomany)}</span>
-                    <span style="color:var(--text);font-weight:600;min-width:120px;">${pdEsc(sz.sofor || 'Ismeretlen')}</span>
-                    <span style="color:var(--text);opacity:.85;">${pdEsc(sz.rakomany || '—')}</span>
-                    <span style="color:var(--muted);margin-left:auto;white-space:nowrap;">
-                      ${pdFlag(sz.honnan)}${pdEsc(sz.honnan || '?')} → ${pdFlag(sz.hova)}${pdEsc(sz.hova || '?')}
-                    </span>
-                    ${typeof sz.km === 'number' ? `<span style="color:var(--text);white-space:nowrap;">${pdFormatMoney(sz.km)} km</span>` : ''}
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-          </div>
-        ` : '';
-
-        return `
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-              <div style="font-weight:600;color:${rKesz ? '#22c55e' : 'var(--text)'};flex:1;min-width:180px;">${rKesz ? '✅' : '🔸'} ${pdEsc(r.leiras)}</div>
-              <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
-                <div style="text-align:center;min-width:56px;">
-                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Szállítás</div>
-                  <div style="font-weight:700;color:${badgeColor};background:${badgeColor}22;border-radius:8px;padding:2px 10px;white-space:nowrap;">${pdEsc(r.aktualis)}/${pdEsc(r.cel)}</div>
-                </div>
-                ${extraCols.join('')}
-                <button type="button" onclick="pdToggleRow(${idx})" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:rgba(127,127,127,0.12);color:var(--text);cursor:pointer;font-size:13px;flex-shrink:0;">${expanded ? '▲' : '▼'}</button>
-              </div>
-            </div>
-            <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:6px;overflow:hidden;margin-top:10px;">
-              <div style="height:100%;width:${pct}%;background:${rKesz ? '#22c55e' : 'var(--orange)'};border-radius:6px;transition:width .4s;"></div>
-            </div>
-            ${detailHtml}
-          </div>`;
-      }).join('');
-
-      el.innerHTML = `
-        <div style="background:linear-gradient(135deg, rgba(249,115,22,0.16), rgba(249,115,22,0.04));border:1px solid rgba(249,115,22,0.35);border-radius:16px;padding:22px 24px;margin-bottom:24px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
-            <div>
-              <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);font-weight:700;margin-bottom:6px;">Aktív Pickup divízió</div>
-              <h3 style="font-size:24px;color:var(--text);margin:0;">${pdEsc(d.divizioNev)} divízió${!pdIsMissing(d.szerzodesSzam) ? ' #' + pdEsc(d.szerzodesSzam) : ''}</h3>
-              ${d.uzenet ? `<div style="color:var(--text);opacity:.85;margin-top:6px;">${pdEsc(d.uzenet)}</div>` : ''}
-            </div>
-            <div style="text-align:right;">
-              ${teljesitve
-                ? '<div style="font-weight:700;color:#22c55e;font-size:15px;">✅ Teljesítve!</div>'
-                : `<div style="font-weight:700;color:var(--text);font-size:15px;">⏰ ${remainDays} nap ${remainHours} óra</div><div style="color:var(--text);opacity:.7;font-size:12px;">van hátra</div>`
-              }
-            </div>
-          </div>
-        </div>
-        ${summaryHtml}
-        <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);font-weight:700;margin-bottom:12px;">📋 Feladatok</div>
-        <div>${rowsHtml}</div>
-      `;
-    }
-
-    // A divízió-adat ellenőrzése SAJÁT, kis méretű lekéréssel történik
+    // A divízió-banner ellenőrzése SAJÁT, kis méretű lekéréssel történik
     // (csak a '_pickupDivizio' rész-ágat kéri le a Firebase-től, NEM a teljes
     // srtdata.json-t) — így ez a percenkénti/gyakori ellenőrzés nem terheli
     // feleslegesen a letöltési kvótát. Csak akkor esik vissza a teljes
@@ -4820,7 +4351,6 @@ body { font-size: 15px; }
         const d = await res.json();
         if (allData) allData._pickupDivizio = d || null;
         renderPickupDivizioBanner();
-        if (document.getElementById('page-pickupdivizio')?.classList.contains('active')) renderPickupDivizioPage();
       } catch (e) {
         console.warn('Divízió-banner ellenőrzési hiba:', e);
       }
@@ -5271,26 +4801,17 @@ body { font-size: 15px; }
       if (!adminMode) return;
       if (!confirm(`Biztosan törlöd a ${reversedIdx + 1}. fuvart?`)) return;
       const jobs = allJobs[jobKey(driverName)] || [];
-      const torlendoJob = jobs[reversedIdx];
-      // FONTOS: a törlésnek a boton (Railway) kell átmennie, NEM közvetlenül
-      // Firebase-be írva — a bot saját memóriában tartja a jobHistory-t, és
-      // a következő saját mentésekor felülírná a jobs ágat a (törlés előtti)
-      // saját másolatával, ami visszahozná a törölt fuvart frissítés után.
+      jobs.splice(reversedIdx, 1);
+      allJobs[jobKey(driverName)] = jobs;
       try {
-        const res = await fetch(UPLOAD_API.replace('/upload', '/torol-fuvar'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': UPLOAD_SECRET },
-          body: JSON.stringify({ soforNev: driverName, index: reversedIdx, datum: torlendoJob?.datum })
+        await fetch(`${FIREBASE_URL}/srtdata.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: allData, jobs: allJobs })
         });
-        if (!res.ok) {
-          const e = await res.json().catch(() => ({}));
-          throw new Error(e?.error || 'Törlési hiba');
-        }
-        jobs.splice(reversedIdx, 1);
-        allJobs[jobKey(driverName)] = jobs;
         showDriverJobs(driverName);
       } catch(e) {
-        alert('Hiba a törlés során: ' + e.message);
+        alert('Hiba a törlés során!');
       }
     }
 
@@ -5481,18 +5002,6 @@ body { font-size: 15px; }
         el.addEventListener('mouseenter', () => el.style.background = 'rgba(255,255,255,0.05)');
         el.addEventListener('mouseleave', () => { if (!el.classList.contains('active')) el.style.background = ''; });
       });
-
-      // JAVÍTVA: eddig a "srt_ets_driver" sessionStorage kulcsot csak írtuk,
-      // sosem olvastuk vissza — frissítés (F5) után mindig a sofőrlistára
-      // esett vissza. Most: ha volt korábban kiválasztott sofőr ebben a
-      // böngészőmunkamenetben, és még mindig létezik a listában, automatikusan
-      // visszanyitjuk a részleteit.
-      if (!currentDriver) {
-        const savedDriver = sessionStorage.getItem('srt_ets_driver');
-        if (savedDriver && drivers.some(([, u]) => (u.truckyName || '') === savedDriver)) {
-          showDriverJobs(savedDriver);
-        }
-      }
     }
 
     async function moveDriver(name, direction) {
@@ -5538,13 +5047,9 @@ body { font-size: 15px; }
       }
     }
 
-    // JAVÍTVA: alapértelmezetten ETS2 + aktuális hónap legyen kijelölve (nem "Összes"),
-    // és a választás frissítés után is maradjon meg (sessionStorage-ből visszaolvasva).
-    let aktivJatekSzuro = sessionStorage.getItem('srt_jatek_szuro') || 'ets2';
-    let aktivHonapOffset = parseInt(sessionStorage.getItem('srt_honap_offset') || '0', 10) || 0;
-    let honapAktiv = sessionStorage.getItem('srt_honap_aktiv') !== null
-      ? sessionStorage.getItem('srt_honap_aktiv') === '1'
-      : true; // alapértelmezett: aktuális hónapra szűrve, nem "Összes hónap"
+    let aktivJatekSzuro = 'osszes';
+    let aktivHonapOffset = 0;
+    let honapAktiv = false; // false = "Összes hónap" (minden fuvar látszik), true = az aktivHonapOffset szerinti hónapra szűrve
     const HONAP_NEVEK = ['Január','Február','Március','Április','Május','Június','Július','Augusztus','Szeptember','Október','November','December'];
 
     function aktivHonapAdatok() {
@@ -5557,22 +5062,17 @@ body { font-size: 15px; }
     window.lepHonap = function(delta) {
       aktivHonapOffset += delta;
       honapAktiv = true;
-      sessionStorage.setItem('srt_honap_offset', String(aktivHonapOffset));
-      sessionStorage.setItem('srt_honap_aktiv', '1');
       if (currentDriver) showDriverJobs(currentDriver);
     };
 
     window.mutassOsszesHonapot = function() {
       honapAktiv = false;
       aktivHonapOffset = 0;
-      sessionStorage.setItem('srt_honap_offset', '0');
-      sessionStorage.setItem('srt_honap_aktiv', '0');
       if (currentDriver) showDriverJobs(currentDriver);
     };
 
     window.valtJatekSzuro = function(szuro) {
       aktivJatekSzuro = szuro;
-      sessionStorage.setItem('srt_jatek_szuro', szuro);
       if (currentDriver) showDriverJobs(currentDriver);
     };
 
@@ -5800,12 +5300,7 @@ body { font-size: 15px; }
         var maxSeb = j.maxSebesseg ? j.maxSebesseg + ' km/h' : '-';
         var bunt = j.büntFt > 0 ? '-' + formatNum(j.büntFt) + ' Ft' : '-';
         var buntColor = j.büntFt > 0 ? '#f87171' : 'var(--muted)';
-        // FONTOS: a táblázat (tablaFuvarok) hónap és/vagy játék szerint szűrt lista lehet,
-        // ezért az "i" pozíció NEM egyezik meg a sofőr teljes (allJobs) fuvarlistájában lévő
-        // valódi indexével. Az Infó / Törlés gomboknak a TELJES, szűretlen listában (osszesFuvar)
-        // elfoglalt valódi indexet kell átadniuk, különben rossz fuvart nyitnak meg / törölnek.
-        var realIndex = osszesFuvar.indexOf(j);
-        var adminBtn = isAdminMode() ? '<div style="text-align:center"><button onclick="deleteJob(\'' + driverName.replace(/'/g,"\\'") + '\', ' + realIndex + ')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">🗑️</button></div>' : '';
+        var adminBtn = isAdminMode() ? '<div style="text-align:center"><button onclick="deleteJob(\'' + driverName.replace(/'/g,"\\'") + '\', ' + i + ')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px">🗑️</button></div>' : '';
         var gameForInfo = srtJobIsATS(j) ? 'ats' : 'ets';
         var html = '';
         html += '<div style="display:grid;grid-template-columns:' + cols + ';gap:0;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center;' + rowBg + 'transition:background 0.15s">';
@@ -5813,7 +5308,7 @@ body { font-size: 15px; }
         html += '<div style="text-align:center;padding:0 4px;overflow:hidden;cursor:pointer" title="Kamion részletei" onclick="openTruckInfo(\'' + String(driverName).replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\',\'' + String(kamion).replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\',\'' + String(srtJobTruckId(j) ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')"><div style="font-size:11px;font-weight:700;color:#60a5fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:underline">' + kamion + '</div><div style="font-size:10px;color:' + fuvarTipusColor + ';white-space:nowrap;margin-top:2px">' + fuvarTipusLabel + '</div></div>';
         html += '<div style="text-align:center;padding:0 4px;overflow:hidden"><div style="font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + String(driverName).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div><div style="font-size:10px;color:var(--muted);white-space:nowrap">Sofőr</div></div>';
         html += '<div style="overflow:hidden;padding:0 8px"><div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + honnan + ' → ' + hova + '</div><div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span class="srt-rakomany-table-icon" aria-hidden="true">' + (typeof window.rakomanyKep === 'function' ? window.rakomanyKep(aru) : '📦') + '</span><span style="overflow:hidden;text-overflow:ellipsis">' + aru + '</span></div></div>';
-        html += '<div class="job-info-single" style="justify-content:center"><button onclick="openJobInfo(\'' + gameForInfo + '\', decodeURIComponent(\'' + encodeURIComponent(driverName) + '\'), ' + realIndex + ', decodeURIComponent(\'' + encodeURIComponent(j.datum || '') + '\'))" style="padding:6px 10px;border-radius:7px;background:#3b82f6;color:#fff;border:0;cursor:pointer;font-size:12px;font-weight:700;">ⓘ Infó</button></div>';
+        html += '<div class="job-info-single" style="justify-content:center"><button onclick="openJobInfo(\'' + gameForInfo + '\', decodeURIComponent(\'' + encodeURIComponent(driverName) + '\'), ' + i + ')" style="padding:6px 10px;border-radius:7px;background:#3b82f6;color:#fff;border:0;cursor:pointer;font-size:12px;font-weight:700;">ⓘ Infó</button></div>';
         html += adminBtn;
         html += '</div>';
         return html;
@@ -5943,7 +5438,6 @@ body { font-size: 15px; }
       else { loadJsonBin(false).then(() => { avatarBetolt(); bgBetolt(); }); }
       if (name === 'fuvarok') { renderDrivers(); renderStatisztika(); }
       if (name === 'kepek') renderMedia();
-      if (name === 'pickupdivizio') renderPickupDivizioPage();
       if (name === 'jelentkezok' && window.toltiJelentkezoket) window.toltiJelentkezoket();
       if (name === 'truckytagok' && window.toltiTruckyTagokat) window.toltiTruckyTagokat();
       if (name === 'tagoklista' && window.toltiTagokListajat) window.toltiTagokListajat();
@@ -7712,7 +7206,6 @@ body { font-size: 15px; }
       signInWithEmailAndPassword,
       updateProfile,
       onAuthStateChanged,
-      onIdTokenChanged,
       signOut,
       sendPasswordResetEmail,
       setPersistence,
@@ -7722,9 +7215,7 @@ body { font-size: 15px; }
     import {
       getDatabase,
       ref,
-      onValue,
-      set,
-      remove
+      onValue
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
@@ -7752,50 +7243,6 @@ body { font-size: 15px; }
         return `?auth=${token}`;
       } catch (e) {
         return '';
-      }
-    }
-
-    // ================== Launcher token-híd (webToken) ==================
-    // A desktop launcher (srt-trans.exe) a sofőr nevét (truckyNev) használja
-    // kulcsként a Firebase-adatok olvasásához (ugyanígy a liveTelemetry és a
-    // truckyEsemenyek ágaknál is) — ugyanezt a kulcsképzést használjuk itt,
-    // hogy a launcher a saját maga generált kulcsával rá tudjon találni a
-    // weboldalon bejelentkezett felhasználó tokenjére, kattintás nélkül.
-    function nevKulcsSzamit(nev) {
-      return (nev || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    }
-
-    async function frissitiWebTokent() {
-      try {
-        const user = currentUser || (await new Promise(resolve => {
-          const unsub = auth.onAuthStateChanged(u => { unsub(); resolve(u); });
-        }));
-        if (!user) return;
-        const truckyNev = window.srtCurrentRecord && window.srtCurrentRecord.truckyNev;
-        const kulcs = nevKulcsSzamit(truckyNev);
-        if (!kulcs) return; // nincs még kitöltve a Trucky név a profilon
-        const token = await user.getIdToken(true);
-        await set(ref(db, `webToken/${kulcs}`), {
-          token,
-          email: user.email || null,
-          frissitve: new Date().toISOString(),
-        });
-        webTokenKulcs = kulcs;
-        console.log('[webToken] Sikeresen kiírva:', kulcs);
-      } catch (e) {
-        console.warn('Web token frissítési hiba:', e.message);
-      }
-    }
-    window.frissitiWebTokent = frissitiWebTokent;
-
-    async function torliWebTokent() {
-      const kulcs = webTokenKulcs;
-      webTokenKulcs = null;
-      if (!kulcs) return;
-      try {
-        await remove(ref(db, `webToken/${kulcs}`));
-      } catch (e) {
-        // kijelentkezéskor csendben elnyeljük — a token pár óra után úgyis lejár
       }
     }
 
@@ -7832,7 +7279,6 @@ body { font-size: 15px; }
     }
 
     let currentUser = null;
-    let webTokenKulcs = null; // a launcherbe kiírt webToken bejegyzés kulcsa (sofőrnév alapján)
     let currentStatusz = null;
     let currentVanRangja = false;
     let gateEllenorzesKesz = false;
@@ -7860,9 +7306,6 @@ body { font-size: 15px; }
 
     window.isFirebaseFullAdmin = function() {
       return !!(currentUser && isFullAdminUser());
-    };
-    window.isDeputyUser = function() {
-      return !!(currentUser && isDeputyUser());
     };
 
     window.openAuthModal = function() {
@@ -7946,7 +7389,7 @@ body { font-size: 15px; }
 
       const bellWrap = document.getElementById('bell-wrap');
       if (bellWrap) {
-        bellWrap.style.display = (fullAdmin || deputy) ? 'block' : 'none';
+        bellWrap.style.display = fullAdmin ? 'block' : 'none';
         if (deputy) bellFigyelokIndítasa();
       }
 
@@ -7992,7 +7435,7 @@ body { font-size: 15px; }
     }
 
     function frissitiAdminOldalZarat() {
-      const jogosult = isFullAdminUser() || isDeputyUser();
+      const jogosult = isFullAdminUser();
       const jJogosult = isAdminUser() || isDeputyUser();
       const tagJogosult = !!currentUser;
       const jPage = document.getElementById('jelentkezok-page-content');
@@ -8252,14 +7695,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       renderPiacLista('piac-ats-list', p?.ats);
     }, (hiba) => console.warn('Piaci trendek figyelési hiba:', hiba.message));
 
-    // FONTOS: ez a <script type="module"> blokk saját, elszigetelt scope-ban fut —
-    // egy itt "let"-tel deklarált változó NEM válik globálissá, más (nem modul)
-    // <script> blokkok nem látják. A "Futó fuvarok" (Vállalkozás áttekintése panel)
-    // ezt az adatot egy külön, sima <script>-ből (#srt-modern-dashboard-script)
-    // próbálja olvasni, ezért window-ra is ki kell tenni, különben ott mindig
-    // "undefined"-nak látszik és a Futó fuvarok mindig 0-t mutat.
     let aktivFuvarokAdat = {};
-    window.aktivFuvarokAdat = aktivFuvarokAdat;
     let legutobbiFuvarokAdat = {};
 
     function aktualisJatekFul() {
@@ -8478,14 +7914,10 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       const box = document.getElementById('aktiv-fuvar-box');
       const listEl = document.getElementById('aktiv-fuvar-list');
       if (box && listEl) {
-        // JAVÍTVA: 3 óra túl rövid volt — egy hosszabb (pl. 4-6+ órás) távolsági
-        // fuvar simán aktív, de ez a küszöb már eltüntette a dobozból. 20 órára
-        // növelve, hogy csak a valóban "beragadt" (pl. launcher-összeomlás miatt
-        // nem törölt) bejegyzéseket szűrje ki, az aktív fuvarokat ne.
-        const idoAblakEzelott = Date.now() - 20 * 60 * 60 * 1000;
+        const haromOraEzelott = Date.now() - 3 * 60 * 60 * 1000;
         const lista = Object.values(aktivFuvarokAdat)
-          .filter(e => e.idopont && new Date(e.idopont).getTime() > idoAblakEzelott)
-          .filter(e => String(e.jatek || 'ETS2').toLowerCase() === String(aktualisJatek).toLowerCase())
+          .filter(e => e.idopont && new Date(e.idopont).getTime() > haromOraEzelott)
+          .filter(e => (e.jatek || 'ETS2') === aktualisJatek)
           .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''));
 
         if (lista.length === 0) {
@@ -8496,8 +7928,15 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
             const startedAt = e.felvételIdeje || e.datumFormazva || e.idopont || '';
             const elapsedMin = fuvarIdoPerc(startedAt);
             const cargo = e.aru || '-';
-            const distance = e.km != null && Number.isFinite(Number(e.km))
-              ? Math.round(Number(e.km)) + ' km' : '-';
+            // JAVÍTVA: a "km" mező felvétel után néhány percig még 0 lehet,
+            // amíg a launcher meg nem kapja a játék motorjától az érvényes
+            // navigációs távot (lásd OLVASS_EL.txt) — ilyenkor NEM "0 km"-t
+            // mutatunk (ami úgy tűnne, mintha a fuvarnak tényleg ne lenne
+            // hossza), hanem egy jelzést, hogy még számolódik. Amint a
+            // launcher elküldi a korrigált értéket, ez a lista automatikusan
+            // frissül (élő Firebase-figyelés), és a valós táv jelenik meg.
+            const distance = e.km != null && Number.isFinite(Number(e.km)) && Number(e.km) > 0
+              ? Math.round(Number(e.km)) + ' km' : 'táv számolása…';
             const tonna = e.tonna != null && e.tonna !== '' ? `${escFuvar(e.tonna)} t` : null;
             const route = e.honnan && e.hova
               ? `${escFuvar(e.honnan)} → ${escFuvar(e.hova)}` : '-';
@@ -8545,7 +7984,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         const napjaEzelott = Date.now() - 24 * 60 * 60 * 1000;
         const lista2 = Object.values(legutobbiFuvarokAdat)
           .filter(e => e.idopont && new Date(e.idopont).getTime() > napjaEzelott)
-          .filter(e => String(e.jatek || 'ETS2').toLowerCase() === String(aktualisJatek).toLowerCase())
+          .filter(e => (e.jatek || 'ETS2') === aktualisJatek)
           .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''))
           .slice(0, 10);
 
@@ -8599,7 +8038,6 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
 
     onValue(ref(db, 'aktivFuvarok'), (snapshot) => {
       aktivFuvarokAdat = snapshot.val() || {};
-      window.aktivFuvarokAdat = aktivFuvarokAdat;
       window.frissitiFuvarWidgeteket();
     }, (hiba) => console.warn('Aktív fuvarok figyelési hiba:', hiba.message));
     // A "Fuvarban: X perce" érték percenként frissüljön akkor is, ha nincs új Firebase esemény.
@@ -8808,7 +8246,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
 
     window.elrejtTruckyEsemeny = async function(kulcs) {
       try {
-        await fetch(`${DB_URL}/elrejtettErtesitesek/${adminAzonosito()}/${kulcs}.json${await regAuthQS()}`, {
+        await fetch(`${DB_URL}/elrejtettErtesitesek/${adminAzonosito()}/${kulcs}.json`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(true)
@@ -8929,7 +8367,6 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       const jelszoMeg = document.getElementById('reg-jelszo-megerosites').value;
       const discordNev = document.getElementById('reg-discord').value.trim();
       const truckyNev = document.getElementById('reg-trucky-nev').value.trim();
-      const srtNev = document.getElementById('reg-srt-nev').value.trim();
       const eletkor = document.getElementById('reg-eletkor').value.trim();
       const steam = document.getElementById('reg-steam').value.trim();
       const ets2Eredeti = document.querySelector('input[name="reg-ets2-eredeti"]:checked')?.value || '';
@@ -8970,9 +8407,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         const ismertFoadmin = ismertFoadminDiscordNev(discordNev);
 
         const regisztracio = {
-          nev, email, discordNev, truckyNev,
-          srtNev: srtNev || truckyNev,
-          eletkor, steam,
+          nev, email, discordNev, truckyNev, eletkor, steam,
           ets2Eredeti, otaJatszol, masVtc, masVtcMelyik, voltMarTagja, egyeb,
           marIsmertSofor: marIsmert,
           statusz: ismertAdmin ? 'jovahagyva' : 'fuggoben',
@@ -9063,15 +8498,9 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     };
 
     window.kijelentkezik = async function() {
-      await torliWebTokent();
       await signOut(auth);
       window.closeAuthModal();
     };
-
-    // A Firebase SDK kb. óránként automatikusan frissíti az ID tokent —
-    // ilyenkor is frissítjük a launcherbe kiírt másolatot, hogy az sose
-    // fusson lejárt tokennel.
-    onIdTokenChanged(auth, () => { frissitiWebTokent(); });
 
     async function toltiAdminKerelmeket() {
       const list = document.getElementById('admin-kerelmek-list');
@@ -9250,7 +8679,6 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
             body: JSON.stringify({ email: currentUser.email })
           });
         } catch (e) { console.warn('Auth fiók törlés hiba:', e.message); }
-        await torliWebTokent();
         await signOut(auth);
         window.closeAuthModal();
         alert('✅ A fiókod törölve lett.');
@@ -9292,9 +8720,9 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     }
 
     function statuszBadge(statusz) {
-      if (statusz === 'jovahagyva') return '<span style="font-size:12px;background:rgba(34,197,94,0.15);color:#4ade80;padding:3px 10px;border-radius:999px;font-weight:700;">✅ Jóváhagyva</span>';
-      if (statusz === 'elutasitva') return '<span style="font-size:12px;background:rgba(239,68,68,0.15);color:#f87171;padding:3px 10px;border-radius:999px;font-weight:700;">❌ Elutasítva</span>';
-      return '<span style="font-size:12px;background:rgba(245,158,11,0.15);color:#f59e0b;padding:3px 10px;border-radius:999px;font-weight:700;">⏳ Függőben</span>';
+      if (statusz === 'jovahagyva') return '<span style="font-size:10px;background:rgba(34,197,94,0.15);color:#4ade80;padding:2px 8px;border-radius:999px;font-weight:700;">✅ Jóváhagyva</span>';
+      if (statusz === 'elutasitva') return '<span style="font-size:10px;background:rgba(239,68,68,0.15);color:#f87171;padding:2px 8px;border-radius:999px;font-weight:700;">❌ Elutasítva</span>';
+      return '<span style="font-size:10px;background:rgba(245,158,11,0.15);color:#f59e0b;padding:2px 8px;border-radius:999px;font-weight:700;">⏳ Függőben</span>';
     }
 
     function escAttr(s) {
@@ -9354,12 +8782,12 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
           return;
         }
         listEl.innerHTML = lista.map(r => `
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-              <div style="font-weight:800;color:var(--text);font-size:17px;">${(r.nev||'').replace(/</g,'&lt;')}</div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+              <div style="font-weight:700;color:#fff;font-size:15px;">${(r.nev||'').replace(/</g,'&lt;')}</div>
               ${statuszBadge(r.statusz)}
             </div>
-            <div id="jelentkezo-view-${r.uid}" style="font-size:13.5px;color:var(--text);line-height:1.9;">
+            <div id="jelentkezo-view-${r.uid}" style="font-size:12px;color:var(--muted);line-height:1.7;">
               📧 ${(r.email||'').replace(/</g,'&lt;')}<br>
               💬 Discord: <span id="jelentkezo-discord-txt-${r.uid}">${(r.discordNev||'').replace(/</g,'&lt;')}</span><br>
               🚛 Trucky: <span id="jelentkezo-trucky-txt-${r.uid}">${(r.truckyNev||'').replace(/</g,'&lt;')}</span><br>
@@ -9368,17 +8796,17 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
               📅 ${formazDatum(r.letrehozva)}
             </div>
             <div id="jelentkezo-edit-${r.uid}" style="display:none;margin-top:8px;flex-direction:column;gap:6px;">
-              <label style="font-size:12.5px;color:var(--text);">Discord név (pontosan, ahogy Discordon szerepel)</label>
-              <input id="jelentkezo-edit-discord-${r.uid}" value="${escAttr(r.discordNev)}" style="padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;">
-              <label style="font-size:12.5px;color:var(--text);margin-top:4px;">Trucky felhasználónév</label>
-              <input id="jelentkezo-edit-trucky-${r.uid}" value="${escAttr(r.truckyNev)}" style="padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;">
+              <label style="font-size:11px;color:var(--muted);">Discord név (pontosan, ahogy Discordon szerepel)</label>
+              <input id="jelentkezo-edit-discord-${r.uid}" value="${escAttr(r.discordNev)}" style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;">
+              <label style="font-size:11px;color:var(--muted);margin-top:4px;">Trucky felhasználónév</label>
+              <input id="jelentkezo-edit-trucky-${r.uid}" value="${escAttr(r.truckyNev)}" style="padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;">
               <div style="display:flex;gap:8px;margin-top:6px;">
                 <button onclick="mentiJelentkezoNeveket('${r.uid}')" style="flex:1;padding:8px;background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">💾 Mentés</button>
                 <button onclick="megsemJelentkezoSzerkesztes('${r.uid}')" style="flex:1;padding:8px;background:rgba(148,163,184,0.15);color:#cbd5e1;border:1px solid rgba(148,163,184,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">Mégse</button>
               </div>
               <div id="jelentkezo-edit-statusz-${r.uid}" style="font-size:11px;margin-top:2px;"></div>
             </div>
-            ${r.egyeb ? `<div style="font-size:13.5px;color:var(--text);line-height:1.7;margin-top:10px;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;">${r.egyeb.replace(/</g,'&lt;')}</div>` : ''}
+            ${r.egyeb ? `<div style="font-size:12px;color:var(--text);margin-top:8px;padding:8px;background:transparent;border-radius:8px;">${r.egyeb.replace(/</g,'&lt;')}</div>` : ''}
             <div style="display:flex;gap:8px;margin-top:10px;">
               <button id="jelentkezo-szerkeszt-btn-${r.uid}" onclick="szerkesztJelentkezoNeveket('${r.uid}')" style="flex:1;padding:8px;background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">✏️ Nevek szerkesztése</button>
             </div>
@@ -9452,7 +8880,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         listEl.innerHTML = lista.map((r, i) => `
           <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;">
             <div style="min-width:24px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);">${i+1}.</div>
-            <div style="flex:1;font-size:14px;color:var(--text);font-weight:600;">${(r.nev||'').replace(/</g,'&lt;')}</div>
+            <div style="flex:1;font-size:14px;color:#fff;font-weight:600;">${(r.nev||'').replace(/</g,'&lt;')}</div>
             <div style="font-size:12px;color:var(--muted);">${formazDatum(r.letrehozva)}</div>
           </div>
         `).join('');
@@ -9481,7 +8909,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         listEl.innerHTML = lista.map(([id, u]) => `
           <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;">
             ${admin ? `<button onclick="deleteTruckyTagMember('${id.replace(/'/g,"\\'")}','${(u.truckyName||id).replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" title="Tag törlése" style="position:absolute;top:10px;right:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;">🗑️</button>` : ''}
-            <div style="font-weight:700;color:var(--text);font-size:15px;margin-bottom:6px;${admin ? 'padding-right:28px;' : ''}">${(u.truckyName||id).replace(/</g,'&lt;')}</div>
+            <div style="font-weight:700;color:#fff;font-size:15px;margin-bottom:6px;${admin ? 'padding-right:28px;' : ''}">${(u.truckyName||id).replace(/</g,'&lt;')}</div>
             <div style="font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px;">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
                 <span>🛣️ ${szamFormaz(u.totalKm||0)} km összesen</span>
@@ -9587,32 +9015,29 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       // (Firebase token ellenőrzéssel) keresztül, streamelve történik —
       // lásd letoltiVedettModot() lentebb.
       const vedettLetoltesek = [
-        { id: 'dl-konvoj-modok',        modId: 'konvoj',       rangKell: true  },
-        { id: 'dl-nem-kotelezo-modok',   modId: 'nem-kotelezo', rangKell: true  },
-        { id: 'dl-promods',              modId: 'promods',      rangKell: true  },
-        { id: 'dl-dlc',                  modId: 'dlc',          rangKell: true  },
-        { id: 'dl-festes-logo',          modId: 'festes-logo',  rangKell: true  },
-        { id: 'dl-srt-launcher',         modId: 'srt-launcher', rangKell: false },
-        { id: 'dl-srt-launcher-home',    modId: 'srt-launcher', rangKell: false },
+        { id: 'dl-konvoj-modok', modId: 'konvoj' },
+        { id: 'dl-nem-kotelezo-modok', modId: 'nem-kotelezo' },
+        { id: 'dl-promods', modId: 'promods' },
+        { id: 'dl-dlc', modId: 'dlc' },
+        { id: 'dl-festes-logo', modId: 'festes-logo' },
       ];
-      vedettLetoltesek.forEach(({ id, modId, rangKell }) => {
+      vedettLetoltesek.forEach(({ id, modId }) => {
         const el = document.getElementById(id);
         if (!el) return;
-        // Rang nélküli letöltés: csak bejelentkezés kell
-        // Ranghoz kötött letöltés: SRT rang vagy admin kell
-        const jogosultELetoltesre = rangKell ? jogosult : !!currentUser;
-        if (jogosultELetoltesre) {
+        if (bejelentkezve) {
           el.href = 'javascript:void(0)';
           el.removeAttribute('target');
           el.setAttribute('onclick', `letoltiVedettModot('${modId}', this); return false;`);
           el.textContent = '⬇ Letöltés';
           el.style.opacity = '';
+          el.style.cursor = 'pointer';
         } else {
           el.href = 'javascript:void(0)';
           el.removeAttribute('target');
           el.setAttribute('onclick', 'openAuthModal(); return false;');
-          el.textContent = rangKell ? '🔒 Letöltés' : '⬇ Letöltés';
-          el.style.opacity = '';
+          el.textContent = '⬇ Letöltés';
+          el.style.opacity = '0.7';
+          el.style.cursor = 'pointer';
         }
       });
     };
@@ -9809,8 +9234,6 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         } else {
           currentVanRangja = false;
         }
-
-        frissitiWebTokent(); // launcher-híd: token kiírása, ha van truckyNev
       } catch (e) {
         console.warn('Saját állapot frissítési hiba:', e.message);
       }
@@ -9848,7 +9271,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     });
 
     window.megnyitUzenetKuldo = function() {
-      if (!isAdminUser() && !isDeputyUser()) return;
+      if (!isAdminUser()) return;
       document.getElementById('uzenet-modal').style.display = 'flex';
       renderUzenetCimzettLista(osszesTagAdat.length ? osszesTagAdat : []);
       if (!osszesTagAdat.length) toltiOsszesTagot().then(() => renderUzenetCimzettLista(osszesTagAdat));
@@ -9930,11 +9353,6 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
   const esc = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const num = (v) => Number(v || 0).toLocaleString('hu-HU');
   const km = (v) => `${num(Math.round(Number(v || 0)))} km`;
-  // FONTOS: ugyanaz a szabály, mint a jobKey()-nél fentebb — a szóközt és az
-  // ékezeteket NEM cseréljük le, mert a bot a fuvarokat a sofőr NYERS nevével
-  // ("Batki Márk") menti a Firebase-be. Ha itt a szóközt is aláhúzásra
-  // cserélnénk, a kulcs ("Batki_Márk") nem egyezne a valós Firebase-kulccsal,
-  // és az adott sofőr fuvarjai nem jelennének meg a Napi áttekintésben.
   const key = (name) => String(name || '').replace(/[.#$\[\]]/g, '_');
 
   function ets2Job(j) {
@@ -9967,11 +9385,10 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     renderDaily();
   };
 
-  window.valasztNapiAttekintesDatum = function(value) {
-    if (!value) return;
-    const [y, m, day] = value.split('-').map(Number);
-    if (!y || !m || !day) return;
-    srtDailyOverviewDate = new Date(y, m - 1, day);
+  window.lepNapiAttekintesHonap = function(delta) {
+    const d = new Date(srtDailyOverviewDate);
+    d.setMonth(d.getMonth() + delta);
+    srtDailyOverviewDate = d;
     renderDaily();
   };
 
@@ -10035,7 +9452,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       totalJobs += jobs.length || Number(u && (u.totalJobs || u.osszesFuvar) || 0);
     });
 
-    const activeSource = (window.aktivFuvarokAdat && typeof window.aktivFuvarokAdat === 'object') ? window.aktivFuvarokAdat : {};
+    const activeSource = (typeof aktivFuvarokAdat !== 'undefined' && aktivFuvarokAdat) ? aktivFuvarokAdat : {};
     const activeJobs = Object.values(activeSource).filter(e => {
       const game = String(e && (e.jatek || e.gameType) || 'ETS2').toLowerCase();
       return game !== 'ats';
@@ -10066,14 +9483,6 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       labelEl.textContent = isToday ? 'Ma' : srtDailyOverviewDate.toLocaleDateString('hu-HU', { year:'numeric', month:'2-digit', day:'2-digit' });
     }
 
-    const pickerEl = document.getElementById('srt-daily-date-picker');
-    if (pickerEl) {
-      const y = srtDailyOverviewDate.getFullYear();
-      const m = String(srtDailyOverviewDate.getMonth() + 1).padStart(2, '0');
-      const d = String(srtDailyOverviewDate.getDate()).padStart(2, '0');
-      pickerEl.value = `${y}-${m}-${d}`;
-    }
-
     const entries = Object.entries(allData || {})
       .filter(([id]) => !String(id).startsWith('_'))
       .map(([id, u]) => ({ id, u: u || {}, name: (u && u.truckyName) || id }))
@@ -10101,11 +9510,11 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       return;
     }
 
-    el.innerHTML = entries.map((d, i) => {
+    el.innerHTML = entries.map(d => {
       const distance = d.jobs.reduce((s,j) => s + Number(j.km || 0), 0);
       const count = d.jobs.length;
       return `<div class="srt-daily-row">
-        <strong>${i + 1}. ${esc(d.name)}</strong>
+        <strong>${esc(d.name)}</strong>
         <span>${km(distance)}</span>
         <span>${num(count)}</span>
         <button type="button" class="srt-daily-view-btn" data-driver-name="${esc(d.name)}">Megtekintés →</button>
@@ -10130,13 +9539,13 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         setTimeout(() => {
           showDriverJobs(driverName);
 
-          // Az openJobInfo a sofőr TELJES, szűretlen fuvarlistájában (allJobs[...]) várja az
-          // indexet, ezért ugyanabban a listában keressük meg a konkrét fuvarobjektum valódi
-          // pozícióját (nem egy játék szerint előre leszűrt allisában, mert az más index-eket ad).
+          // A Fuvarok táblázat indexe a játék szerinti szűrt listához tartozik,
+          // ezért ugyanazt a konkrét fuvarobjektumot keressük meg benne.
           if (targetJob && typeof openJobInfo === 'function') {
             setTimeout(() => {
               const allDriverJobs = (allJobs && allJobs[key(driverName)]) || [];
-              const targetIndex = allDriverJobs.indexOf(targetJob);
+              const filtered = allDriverJobs.filter(ets2Job);
+              const targetIndex = filtered.indexOf(targetJob);
               if (targetIndex >= 0) openJobInfo('ets2', driverName, targetIndex);
             }, 50);
           }
@@ -10624,13 +10033,14 @@ function srtCargoHu(name) {
   return map[key] || raw;
 }
 
-function openJobInfo(game, driverName, index, datum) {
+function openJobInfo(game, driverName, index) {
   try {
     if (!allJobs) return;
     const arr = allJobs[jobKey(driverName)] || [];
-    // Ha datum is meg van adva, azzal keresünk — megbízhatóbb mint az index
-    let j = datum ? arr.find(x => x.datum === datum) : null;
-    if (!j) j = arr[index];
+    const jobs = game === 'ats'
+      ? arr.filter(j => j.fuvarTipus === 'ats' || j.gameType === 'ats')
+      : arr.filter(j => j.gameType !== 'ats' && j.fuvarTipus !== 'ats');
+    const j = jobs[index];
     if (!j) return;
 
     const title = byId('srt-job-info-title');
@@ -10671,21 +10081,6 @@ function openJobInfo(game, driverName, index, datum) {
     }
     if (j.feltolto) html += srtCard('Rögzítette', srtEsc(j.feltolto));
     if (j.meGj || j.megjegyzes || j.megjegyzés) html += srtCard('Megjegyzés', srtEsc(j.meGj || j.megjegyzes || j.megjegyzés), true);
-
-    // ── ÚTVONAL VISSZAJÁTSZÁS gomb — ha van rögzített útvonal Firebase-ben ──
-    // FONTOS: a rögzített útvonal (_meta.startTime) a fuvar INDULÁSAKOR jön létre,
-    // ezért az egyeztetéshez is az indulási időt (felvetelIdoMs) kell használni, ne
-    // a leadási időt (j.datum) — különben (főleg hosszabb fuvaroknál, vagy ha a
-    // sofőr rögtön új fuvart kezd) egy másik, idegen fuvar útvonala jöhet be.
-    // Régebbi, a javítás előtt rögzített fuvaroknál nincs felvetelIdoMs, ott
-    // marad a régi (közelítő) viselkedés a j.datum alapján.
-    const driverKulcs = (driverName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const jobDatum = j.felvetelIdoMs || (j.datum ? new Date(j.datum).getTime() : null);
-    html += '<div style="grid-column:1/-1;margin-top:10px;">' +
-      '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\', ' + (j.maxSebesseg || 0) + ')" ' +
-      'style="width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
-      '🗺️ Útvonal visszajátszása' +
-      '</button></div>';
 
     if (grid) grid.innerHTML = html;
     const modal = byId('srt-job-info-modal');
@@ -11800,8 +11195,7 @@ function srtJobTruckId(j) {
   function adminOK(){
     try {
       return !!(window.isAnySiteAdmin && window.isAnySiteAdmin()) ||
-             !!(window.isFirebaseFullAdmin && window.isFirebaseFullAdmin()) ||
-             !!(window.isDeputyUser && window.isDeputyUser());
+             !!(window.isFirebaseFullAdmin && window.isFirebaseFullAdmin());
     } catch(e){ return true; }
   }
 
@@ -12034,1561 +11428,6 @@ function srtJobTruckId(j) {
   }
 </style>
 
-<!-- ================== ÚTVONAL VISSZAJÁTSZÁS MODAL ================== -->
-<div id="route-playback-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
-  <div style="background:rgba(7,13,24,0.98);border:1px solid rgba(249,115,22,0.3);border-radius:18px;width:min(92vw,880px);max-height:92vh;overflow:hidden;display:flex;flex-direction:column;">
-    <!-- Fejléc -->
-    <div style="padding:18px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <div>
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--orange);margin-bottom:4px;">Fuvar visszajátszás</div>
-        <div id="route-playback-title" style="font-size:18px;font-weight:800;color:#fff;">— → —</div>
-      </div>
-      <button onclick="closeRoutePlayback()" style="background:rgba(255,255,255,0.08);border:none;border-radius:8px;color:#fff;font-size:20px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-    </div>
-    <!-- Térkép -->
-    <div id="route-map" style="flex:1;min-height:420px;"></div>
-    <!-- Pozíció (tekerő) sáv -->
-    <div style="padding:12px 20px 0 20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;flex-shrink:0;">
-      <input id="route-seek-slider" type="range" min="0" max="0" value="0" step="1" style="flex:1;accent-color:var(--orange);" oninput="seekRoute(this.value)">
-    </div>
-    <!-- Vezérlő sáv -->
-    <div style="padding:10px 20px 14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;">
-      <button id="route-play-btn" onclick="toggleRoutePlayback()" style="padding:8px 18px;background:var(--orange);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">▶ Lejátszás</button>
-      <input id="route-speed-slider" type="range" min="1" max="10" value="3" style="flex:1;min-width:100px;accent-color:var(--orange);" oninput="document.getElementById('route-speed-label').textContent = this.value + 'x'">
-      <span id="route-speed-label" style="font-size:12px;color:var(--muted);min-width:28px;">3x</span>
-      <span id="route-progress-label" style="font-size:12px;color:var(--muted);">0 / 0 pont</span>
-      <span id="route-speed-cur" style="font-size:12px;color:#4ade80;min-width:70px;text-align:right;">0 km/h</span>
-    </div>
-  </div>
-</div>
-
-<script>
-/* ============================================================
-   ÚTVONAL VISSZAJÁTSZÁS
-   Betölti a Firebase routePoints/<driver>/<jobId> adatokat
-   és animálva lejátssza a térképen
-   ============================================================ */
-
-let routeMap = null;
-let routeMapInit = false;
-let routeMarker = null;
-let routePolyline = null;
-let routePoints = [];
-let routePlayInterval = null;
-let routeCurrentIdx = 0;
-let routeIsPlaying = false;
-let routeGame = 'ets2';
-let routeAllLatLngs = []; // ÚJ: minden pont előre kiszámolt lat/lng-je, a tekeréshez
-const FIREBASE_RT_URL = 'https://srt-trans-reply-default-rtdb.europe-west1.firebasedatabase.app';
-
-// ÚJ: sebességtúllépés-jelölők az útvonal-visszajátszó térképen
-const TULSEBESSEG_LIMIT_KMH = 100;
-let routeSpeedMarkers = [];
-
-async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo, fuvarMaxSebesseg) {
-  routeGame = (game === 'ats') ? 'ats' : 'ets2';
-  const modal = document.getElementById('route-playback-modal');
-  modal.style.display = 'flex';
-
-  // Ha a fuvar max sebessége 100 km/h alatt volt, rögtön mutatjuk az üzenetet
-  if (fuvarMaxSebesseg > 0 && fuvarMaxSebesseg < 100) {
-    document.getElementById('route-playback-title').textContent =
-      `🐢 Nem lépte át a 100 km/h sebességet (max ${Math.round(fuvarMaxSebesseg)} km/h) — gyors hajtás nem történt, útvonal nem lett rögzítve`;
-    document.getElementById('route-progress-label').textContent = '0 / 0 pont';
-    routePoints = []; routeAllLatLngs = []; routeCurrentIdx = 0;
-    return;
-  }
-  modal.style.display = 'flex';
-
-  document.getElementById('route-playback-title').textContent = '⏳ Útvonal betöltése...';
-  document.getElementById('route-progress-label').textContent = '0 / 0 pont';
-  routePoints = [];
-  routeAllLatLngs = [];
-  routeCurrentIdx = 0;
-  const seekSliderInit = document.getElementById('route-seek-slider');
-  seekSliderInit.max = 0;
-  seekSliderInit.value = 0;
-  stopRouteAnimation();
-
-  // Térkép inicializálás
-  if (!routeMapInit) {
-    if (typeof L === 'undefined') {
-      document.getElementById('route-playback-title').textContent = '❌ Térkép betöltési hiba';
-      return;
-    }
-    routeMap = L.map('route-map', {
-      crs: L.CRS.Simple,
-      minZoom: 2, maxZoom: 8,
-      zoom: 3,
-      center: [0, 0],
-      zoomControl: true,
-      attributionControl: false,
-    });
-    L.tileLayer(game === 'ats' ? ATS_TILES : ETS2_TILES, {
-      minZoom: 2, maxZoom: 8, tileSize: 512, noWrap: true,
-      errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
-    }).addTo(routeMap);
-    routeMapInit = true;
-  } else {
-    routeMap.invalidateSize();
-  }
-
-  // Firebase routePoints lekérés — az új (replay) ÉS a régi DB-ből is lekérjük,
-  // majd jobId szerint összefésüljük (nem "vagy-vagy", mert egy sofőrnek lehet
-  // fuvarja MINDKÉT adatbázisban — a régi migráció előttiek, az új utániak).
-  const FIREBASE_RT_URL_LEGACY = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
-  try {
-    let dataNew = null, dataOld = null;
-
-    try {
-      const respNew = await fetch(`${FIREBASE_RT_URL}/routePoints/${driverKulcs}.json`);
-      const j = await respNew.json();
-      if (j && typeof j === 'object') dataNew = j;
-    } catch(e) { /* új DB nem elérhető, megyünk a régivel */ }
-
-    try {
-      const respOld = await fetch(`${FIREBASE_RT_URL_LEGACY}/routePoints/${driverKulcs}.json`);
-      const j = await respOld.json();
-      if (j && typeof j === 'object') dataOld = j;
-    } catch(e) { /* régi DB nem elérhető */ }
-
-    // Összefésülés jobId szerint — ütközés esetén az új DB verziója nyer
-    let allRoutes = null;
-    if (dataOld || dataNew) {
-      allRoutes = { ...(dataOld || {}), ...(dataNew || {}) };
-    }
-
-    if (!allRoutes || typeof allRoutes !== 'object') {
-      document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
-      return;
-    }
-
-    // Megkeressük a jobTimestamp-hoz legközelebb eső útvonalat.
-    // JAVÍTVA: a korábbi 20 órás ablak túl tág volt — ha egy fuvarhoz nem volt
-    // rögzített útvonal (pl. mert nem lépte át a sebességküszöböt, vagy tényleg
-    // nem volt launcher), a kód a legközelebbi IDŐBEN lévő MÁSIK fuvar útvonalát
-    // nyitotta meg helyette, ami egy teljesen más fuvart mutatott vissza.
-    // Mostantól: szigorúbb időablak (30 perc — indulási idő szerint ennyinél
-    // sosem térhet el egy valós egyezés), ÉS ha van honnan/hova adatunk a
-    // fuvarról, azt is ellenőrizzük — csak akkor fogadjuk el a találatot, ha
-    // legalább az egyik egyezik. Enélkül inkább mutatjuk a "nincs rögzítve"
-    // üzenetet, mint egy rossz fuvar útvonalát.
-    let bestJobId = null;
-    let bestDiff = Infinity;
-
-    const normCity = s => (s || '').toString().toLowerCase().trim();
-    const fbFrom = normCity(fallbackFrom);
-    const fbTo   = normCity(fallbackTo);
-
-    Object.keys(allRoutes).forEach(jobId => {
-      if (jobId === '_meta') return;
-      const meta = allRoutes[jobId]?._meta;
-      if (meta && meta.startTime) {
-        const diff = jobTimestamp ? Math.abs(meta.startTime - jobTimestamp) : Infinity;
-        if (diff < bestDiff) { bestDiff = diff; bestJobId = jobId; }
-      } else {
-        if (!bestJobId) bestJobId = jobId;
-      }
-    });
-
-    // Ha jobTimestamp=0 (nincs felvetelIdoMs), válasszuk a legutóbbi útvonalat
-    if (!jobTimestamp || jobTimestamp === 0) {
-      let latestTime = -1;
-      Object.keys(allRoutes).forEach(jobId => {
-        if (jobId === '_meta') return;
-        const meta = allRoutes[jobId]?._meta;
-        const t = meta?.startTime || 0;
-        if (t > latestTime) { latestTime = t; bestJobId = jobId; bestDiff = 0; }
-      });
-    }
-
-    const MAX_MATCH_DIFF_MS = 2 * 60 * 60 * 1000; // 2 óra
-    const routeJobIds = Object.keys(allRoutes).filter(k => k !== '_meta');
-
-    // Ha csak EGY rögzített útvonal van ennél a sofőrnél, azt használjuk akkor is,
-    // ha az időbélyeg-egyeztetés bizonytalan (pl. régi rekord felvetelIdoMs nélkül) —
-    // nincs mivel összetéveszteni, szóval feleslegesen ne dobjunk hamis hibaüzenetet.
-    if (!bestJobId && routeJobIds.length === 1) {
-      bestJobId = routeJobIds[0];
-      bestDiff = 0;
-    }
-
-    if (!bestJobId || !allRoutes[bestJobId] || (bestDiff !== Infinity && bestDiff > MAX_MATCH_DIFF_MS)) {
-      // Mielőtt "nincs launcher" üzenetet mutatunk, nézzük meg van-e skipped meta
-      // valamelyik közeli rekordban — ha igen, az azt jelenti launcher futott, csak
-      // nem volt 100 km/h feletti sebesség
-      let skippedMeta = null;
-      Object.values(allRoutes).forEach(r => {
-        if (r._meta && r._meta.skipped) skippedMeta = r._meta;
-      });
-      if (skippedMeta) {
-        document.getElementById('route-playback-title').textContent =
-          `🐢 Nem lépte át a sebességküszöböt (max ${Math.round(skippedMeta.maxSpeedKmh || 0)} km/h) — gyors hajtás nem történt, útvonal nem lett rögzítve`;
-      } else {
-        document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
-      }
-      return;
-    }
-
-    // Másodlagos ellenőrzés: ha van honnan/hova infónk a fuvarról, és a talált
-    // rekord metája MINDKETTŐben eltér, ne fogadjuk el a találatot (kivéve ha
-    // ez az egyetlen rögzített útvonal — akkor nincs mivel összetéveszteni).
-    if (routeJobIds.length > 1) {
-      const bm = allRoutes[bestJobId]?._meta;
-      if (bm && (fbFrom || fbTo)) {
-        const metaFrom = normCity(bm.from);
-        const metaTo = normCity(bm.to);
-        const fromOk = !fbFrom || !metaFrom || metaFrom === fbFrom;
-        const toOk   = !fbTo   || !metaTo   || metaTo === fbTo;
-        if (!fromOk && !toOk) {
-          let skippedMeta2 = null;
-          Object.values(allRoutes).forEach(r => {
-            if (r._meta && r._meta.skipped) skippedMeta2 = r._meta;
-          });
-          if (skippedMeta2) {
-            document.getElementById('route-playback-title').textContent =
-              `🐢 Nem lépte át a 100 km/h sebességet (max ${Math.round(skippedMeta2.maxSpeedKmh || 0)} km/h) — gyors hajtás nem történt, útvonal nem lett rögzítve`;
-          } else {
-            document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
-          }
-          return;
-        }
-      }
-    }
-
-    const routeData = allRoutes[bestJobId];
-    const meta = routeData._meta || {};
-
-    // Ha a fuvar sosem lépte át a sebességküszöböt, csak egy "skipped" jelző
-    // lett elmentve, teljes útvonal nélkül — ezt külön üzenettel jelezzük,
-    // nem próbálunk (üres) útvonalat lejátszani.
-    if (meta.skipped) {
-      document.getElementById('route-playback-title').textContent =
-        `🐢 Nem lépte át a 100 km/h sebességet (max ${Math.round(meta.maxSpeedKmh || 0)} km/h) — gyors hajtás nem történt, útvonal nem lett rögzítve`;
-      return;
-    }
-
-    // Pontok összegyűjtése és rendezése index szerint
-    const pts = [];
-    Object.entries(routeData).forEach(([key, val]) => {
-      if (key === '_meta') return;
-      const idx = parseInt(key);
-      if (!isNaN(idx) && val && val.x !== undefined) pts.push({ idx, ...val });
-    });
-    pts.sort((a, b) => a.idx - b.idx);
-    routePoints = pts;
-
-    const from = meta.from || fallbackFrom || '?';
-    const to   = meta.to   || fallbackTo   || '?';
-    const cargo = meta.cargo ? ` · ${meta.cargo}` : (fallbackCargo ? ` · ${fallbackCargo}` : '');
-    document.getElementById('route-playback-title').textContent = `${from} → ${to}${cargo}`;
-    document.getElementById('route-progress-label').textContent = `0 / ${routePoints.length} pont`;
-
-    if (routePoints.length === 0) {
-      document.getElementById('route-playback-title').textContent = '❌ Üres útvonal';
-      return;
-    }
-
-    // Régi rétegek törlése
-    if (routeMarker) { routeMap.removeLayer(routeMarker); routeMarker = null; }
-    if (routePolyline) { routeMap.removeLayer(routePolyline); routePolyline = null; }
-    routeSpeedMarkers.forEach(m => routeMap.removeLayer(m));
-    routeSpeedMarkers = [];
-
-    // Teljes útvonal halvány vonal (előnézet)
-    const allLatLngs = routePoints.map(p => gameToLatLng(routeMap, p.x, p.z, routeGame));
-    routeAllLatLngs = allLatLngs; // ÚJ: eltároljuk a tekerő csúszkához is
-    routePolyline = L.polyline(allLatLngs, { color: 'rgba(249,115,22,0.25)', weight: 3, dashArray: '6 6' }).addTo(routeMap);
-
-    // ÚJ: tekerő csúszka beállítása a friss útvonalhoz
-    const seekSlider = document.getElementById('route-seek-slider');
-    seekSlider.max = routePoints.length - 1;
-    seekSlider.value = 0;
-
-    // Start/End marker
-    L.marker(allLatLngs[0], {
-      icon: L.divIcon({ html: '<div style="width:14px;height:14px;border-radius:50%;background:#4ade80;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5);"></div>', className:'', iconSize:[14,14], iconAnchor:[7,7] })
-    }).addTo(routeMap).bindPopup(`🟢 Start: ${from}`);
-    L.marker(allLatLngs[allLatLngs.length-1], {
-      icon: L.divIcon({ html: '<div style="width:14px;height:14px;border-radius:50%;background:#f43f5e;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5);"></div>', className:'', iconSize:[14,14], iconAnchor:[7,7] })
-    }).addTo(routeMap).bindPopup(`🔴 Cél: ${to}`);
-
-    // ÚJ: sebességtúllépés jelölése — minden rögzített pontot megjelölünk,
-    // ahol a sofőr TULSEBESSEG_LIMIT_KMH (100 km/h) fölött ment. Kattintva
-    // a pontra kiírja a pontos, aznapi rögzített sebességet.
-    routePoints.forEach((p, i) => {
-      const sebesseg = p.s || 0;
-      if (sebesseg > TULSEBESSEG_LIMIT_KMH) {
-        const m = L.marker(allLatLngs[i], {
-          icon: L.divIcon({
-            html: '<div style="width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.7);"></div>',
-            className: '', iconSize: [11,11], iconAnchor: [5,5]
-          })
-        }).addTo(routeMap).bindPopup(`🚨 Sebességtúllépés: ${Math.round(sebesseg)} km/h`);
-        routeSpeedMarkers.push(m);
-      }
-    });
-
-    // Truck marker
-    const truckIcon = L.divIcon({
-      html: '<div style="width:26px;height:26px;border-radius:50%;background:#f97316;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.6);">🚛</div>',
-      className: '', iconSize: [26,26], iconAnchor: [13,13]
-    });
-    routeMarker = L.marker(allLatLngs[0], { icon: truckIcon }).addTo(routeMap);
-
-    // Térkép igazítása az útvonalra
-    routeMap.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
-
-    // Automatikus lejátszás indítása
-    routeCurrentIdx = 0;
-    startRouteAnimation();
-
-  } catch(e) {
-    document.getElementById('route-playback-title').textContent = '❌ Hiba: ' + e.message;
-  }
-}
-
-let routeDrawnLatLngs = [];
-
-function startRouteAnimation() {
-  routeIsPlaying = true;
-  document.getElementById('route-play-btn').textContent = '⏸ Szünet';
-  routeDrawnLatLngs = [];
-
-  // Régi animált vonal törlése
-  if (routePolyline) { routeMap.removeLayer(routePolyline); }
-  routePolyline = L.polyline([], { color: '#f97316', weight: 3 }).addTo(routeMap);
-
-  const speed = parseInt(document.getElementById('route-speed-slider').value) || 3;
-  const intervalMs = Math.max(50, Math.round(1000 / speed));
-
-  routePlayInterval = setInterval(() => {
-    if (routeCurrentIdx >= routePoints.length) {
-      stopRouteAnimation();
-      document.getElementById('route-play-btn').textContent = '🔄 Újra';
-      return;
-    }
-
-    const pt = routePoints[routeCurrentIdx];
-    const ll = gameToLatLng(routeMap, pt.x, pt.z, routeGame);
-
-    routeDrawnLatLngs.push(ll);
-    routePolyline.setLatLngs(routeDrawnLatLngs);
-    if (routeMarker) routeMarker.setLatLng(ll);
-
-    document.getElementById('route-progress-label').textContent =
-      `${routeCurrentIdx + 1} / ${routePoints.length} pont`;
-    document.getElementById('route-speed-cur').textContent =
-      (pt.s || 0) + ' km/h';
-    document.getElementById('route-seek-slider').value = routeCurrentIdx;
-
-    // Kamera követés — csak ha az ablak közepe közelében van
-    if (routeCurrentIdx % 5 === 0) {
-      routeMap.panTo(ll, { animate: true, duration: 0.5 });
-    }
-
-    routeCurrentIdx++;
-  }, intervalMs);
-}
-
-function stopRouteAnimation() {
-  if (routePlayInterval) { clearInterval(routePlayInterval); routePlayInterval = null; }
-  routeIsPlaying = false;
-}
-
-function toggleRoutePlayback() {
-  if (routeIsPlaying) {
-    stopRouteAnimation();
-    document.getElementById('route-play-btn').textContent = '▶ Folytatás';
-  } else {
-    if (routeCurrentIdx >= routePoints.length) {
-      routeCurrentIdx = 0;
-      routeDrawnLatLngs = [];
-      if (routePolyline) routePolyline.setLatLngs([]);
-    }
-    startRouteAnimation();
-  }
-}
-
-function closeRoutePlayback() {
-  stopRouteAnimation();
-  document.getElementById('route-playback-modal').style.display = 'none';
-}
-
-// ÚJ: kézi tekerés a felvételben — a csúszka húzásakor hívódik
-function seekRoute(value) {
-  if (!routePoints.length || !routeAllLatLngs.length) return;
-
-  // Húzás közben álljon meg az automata lejátszás, hogy ne csapjon
-  // vissza a csúszka a saját pozíciójára
-  if (routeIsPlaying) stopRouteAnimation();
-
-  const idx = Math.max(0, Math.min(routePoints.length - 1, parseInt(value) || 0));
-  routeCurrentIdx = idx;
-  drawRouteUpTo(idx);
-
-  document.getElementById('route-play-btn').textContent =
-    (idx >= routePoints.length - 1) ? '🔄 Újra' : '▶ Folytatás';
-}
-
-// ÚJ: a térkép (vonal + jármű ikon) és a feliratok frissítése egy adott
-// pontig — ezt használja a tekerés, de elméletileg a lejátszás is
-// használhatná ugyanezt (most még a saját, fokozatosan bővülő tömbjével dolgozik)
-function drawRouteUpTo(idx) {
-  const slice = routeAllLatLngs.slice(0, idx + 1);
-  routeDrawnLatLngs = slice;
-  if (routePolyline) routePolyline.setLatLngs(slice);
-
-  const ll = routeAllLatLngs[idx];
-  if (routeMarker && ll) routeMarker.setLatLng(ll);
-  if (routeMap && ll) routeMap.panTo(ll, { animate: true, duration: 0.3 });
-
-  const pt = routePoints[idx];
-  document.getElementById('route-progress-label').textContent =
-    `${idx + 1} / ${routePoints.length} pont`;
-  document.getElementById('route-speed-cur').textContent =
-    ((pt && pt.s) || 0) + ' km/h';
-  document.getElementById('route-seek-slider').value = idx;
-}
-</script>
-
-<!-- ================== LIVE TÉRKÉP (srt-trans.dll) ================== -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-/* ==============================================================
-   ETS2 / ATS koordináta konverzió Leaflet térképre
-   Forrás: ismert ETS2 térkép projektek koordináta-rendszere
-   ETS2 X: -94000..94000 → Leaflet lng
-   ETS2 Z: -80000..80000 → Leaflet lat (invertált!)
-   ============================================================== */
-
-// ETS2 térkép tile server (hivatalos Trucky csempeszolgáltatás — a verziómappa
-// (05102019) és a cache-busting "v" paraméter is KÖTELEZŐ, e nélkül 404-et ad)
-const MAP_TILE_VERSION = '05102019';
-const MAP_TILES_TS = Date.now();
-const ETS2_TILES = `https://tiles.truckyapp.com/ets2/${MAP_TILE_VERSION}/{z}/{x}/{y}.png?v=${MAP_TILES_TS}`;
-const ATS_TILES  = `https://tiles.truckyapp.com/ats/${MAP_TILE_VERSION}/{z}/{x}/{y}.png?v=${MAP_TILES_TS}`;
-
-// Hivatalos, a Trucky saját mapManager.js-éből származó kalibrációs konstansok.
-// A csempeszerver NEM sima lat/lng-t vár, hanem Leaflet CRS.Simple pixel-koordinátát,
-// amit csak map.unproject()-tel szabad kiszámolni (soha nem kézzel felírt képlettel).
-const MAP_CONFIG = {
-  ets2: { pointsPerPixel: 1.609055, multipliers: { x: 70272, y: 76157 }, maxZoom: 8 },
-  ats:  { pointsPerPixel: 1.239899, multipliers: { x: 97373, y: 70186 }, maxZoom: 8 },
-};
-
-// ETS2/ATS játékkoordináta (x, z) → Leaflet LatLng, az adott Leaflet map példányhoz kötve
-function gameToLatLng(map, x, z, jatek) {
-  const cfg = MAP_CONFIG[jatek === 'ats' ? 'ats' : 'ets2'];
-  const pixelX = x / cfg.pointsPerPixel + cfg.multipliers.x;
-  const pixelY = z / cfg.pointsPerPixel + cfg.multipliers.y;
-  return map.unproject([pixelX, pixelY], cfg.maxZoom);
-}
-
-// ETS2 alapjáték városnevei (közismert, nyilvános koordináta-adatbázisból: x/z játékkoordináták).
-// Egyelőre csak ETS2-höz van adatunk, ATS-hez nincs várostáblázat.
-const ETS2_CITIES = [
-  {name:'Aalborg',x:855.258,z:-35995.1},{name:'Aberdeen',x:-38846.7,z:-55270.3},
-  {name:'Amsterdam',x:-18562,z:-11736.2},{name:'Bergen',x:-10371.6,z:-55777.6},
-  {name:'Berlin',x:10183.1,z:-10001.2},{name:'Bern',x:-12730.8,z:20130.1},
-  {name:'Białystok',x:44098.4,z:-15083.4},{name:'Birmingham',x:-45951.1,z:-20423},
-  {name:'Bratislava',x:24823.3,z:14831},{name:'Bremen',x:-4545.41,z:-14326.1},
-  {name:'Brno',x:22273.8,z:8964.95},{name:'Brussel',x:-21576,z:-3235.03},
-  {name:'Budapest',x:32367.8,z:17882.7},{name:'Banská Bystrica',x:32657.6,z:10680.5},
-  {name:'Calais',x:-30363,z:-4985.64},{name:'Cambridge',x:-36822.7,z:-16119.4},
-  {name:'Cardiff',x:-54005.3,z:-14698.4},{name:'Carlisle',x:-45889.2,z:-39573.5},
-  {name:'Debrecen',x:41641.6,z:17483.7},{name:'Dijon',x:-22470,z:16655.5},
-  {name:'Dortmund',x:-8266.59,z:-4718.39},{name:'Dover',x:-33321.9,z:-7884.36},
-  {name:'Dresden',x:12411.8,z:-1606.27},{name:'Duisburg',x:-13113.6,z:-6370.93},
-  {name:'Düsseldorf',x:-13377.2,z:-4399.6},{name:'Edinburgh',x:-44900.7,z:-47219.7},
-  {name:'Erfurt',x:2436.19,z:-1733.77},{name:'Esbjerg',x:-4699.43,z:-27555.9},
-  {name:'Felixstowe',x:-31664.6,z:-13837.2},{name:'Frankfurt am Main',x:-6304.08,z:2732.91},
-  {name:'Frederikshavn',x:2711.7,z:-38141.5},{name:'Gdańsk',x:28343.1,z:-20619.5},
-  {name:'Gedser',x:6271.11,z:-22000.3},{name:'Genève',x:-18099.1,z:23717},
-  {name:'Glasgow',x:-50384.7,z:-48471.6},{name:'Göteborg',x:7235.89,z:-40227.5},
-  {name:'Graz',x:18216.5,z:20552.7},{name:'Grimsby',x:-36117.9,z:-26575.2},
-  {name:'Groningen',x:-12437.6,z:-15468.7},{name:'Hamburg',x:-1666.25,z:-16912.1},
-  {name:'Hannover',x:-1928.93,z:-8916.4},{name:'Helsingborg',x:9405.2,z:-29882.4},
-  {name:'Hirtshals',x:1425.47,z:-38873.3},{name:'Innsbruck',x:2250.09,z:19214.1},
-  {name:'Jönköping',x:14177.3,z:-39575.6},{name:'Kalmar',x:20559.5,z:-33634.5},
-  {name:'Karlskrona',x:17145.6,z:-30862.4},{name:'Kassel',x:-3031.32,z:-3898.7},
-  {name:'Katowice',x:30728.8,z:2458.83},{name:'Kiel',x:188.074,z:-20826.7},
-  {name:'Klagenfurt am Wörthersee',x:13841.3,z:23052.6},{name:'København',x:8100.74,z:-28097.8},
-  {name:'Köln',x:-13150.8,z:-2732.75},{name:'Košice',x:39843.9,z:10494.4},
-  {name:'Kraków',x:34470.3,z:3249.68},{name:'Kristiansand',x:-4638.28,z:-42891.5},
-  {name:'Leipzig',x:7042.06,z:-3160.18},{name:'Liège',x:-17181.5,z:-1231.25},
-  {name:'Lille',x:-26495.9,z:-2483.4},{name:'Linköping',x:18411.7,z:-43092.9},
-  {name:'Linz',x:13665.7,z:13754.6},{name:'Liverpool',x:-48871.7,z:-29091.8},
-  {name:'Łódź',x:32014.5,z:-6143.92},{name:'London',x:-39546.9,z:-11564.2},
-  {name:'Lublin',x:43244.2,z:-4104.96},{name:'Luxembourg',x:-16134.2,z:4382.97},
-  {name:'Lyon',x:-23869.8,z:25892.3},{name:'Magdeburg',x:4601.58,z:-7896.8},
-  {name:'Malmö',x:10744.9,z:-27481.2},{name:'Manchester',x:-45548.7,z:-27815},
-  {name:'Mannheim',x:-7722.87,z:6165.95},{name:'Metz',x:-16294.5,z:7463.71},
-  {name:'Milano',x:-6616.31,z:28982.8},{name:'München',x:3234.12,z:14470},
-  {name:'Newcastle-upon-Tyne',x:-39778,z:-38787.7},{name:'Nürnberg',x:2665.54,z:7237.8},
-  {name:'Nynäshamn',x:25032,z:-46079.8},{name:'Odense',x:1617.69,z:-26700.4},
-  {name:'Olsztyn',x:34758.6,z:-17885.9},{name:'Örebro',x:17087.8,z:-48374.7},
-  {name:'Oslo',x:4390.91,z:-53410.5},{name:'Osnabrück',x:-7702.9,z:-9613.47},
-  {name:'Ostrava',x:28231.9,z:5136.1},{name:'Paris',x:-30494.9,z:6998.41},
-  {name:'Pécs',x:29039.9,z:26311.6},{name:'Plymouth',x:-60041.4,z:-7882.32},
-  {name:'Poznań',x:22863.4,z:-9112.2},{name:'Praha',x:14299.7,z:3978.97},
-  {name:'Reims',x:-24021.9,z:5799.34},{name:'Rostock',x:6490.95,z:-18588.9},
-  {name:'Rotterdam',x:-20156,z:-9135.8},{name:'Salzburg',x:9075.84,z:16564.5},
-  {name:'Sheffield',x:-42688.8,z:-26687.6},{name:'Södertälje',x:23525.2,z:-46319.9},
-  {name:'Southampton',x:-46338.7,z:-7523.25},{name:'Stavanger',x:-10553.7,z:-48126.8},
-  {name:'Stockholm',x:24743.6,z:-47746.1},{name:'Strasbourg',x:-10786.9,z:11198.7},
-  {name:'Stuttgart',x:-4957.84,z:10047},{name:'Swansea',x:-56896,z:-16881.9},
-  {name:'Szczecin',x:15052.7,z:-15049.8},{name:'Szeged',x:36880.7,z:24565.7},
-  {name:'Torino',x:-12697.3,z:30932},{name:'Trelleborg',x:10808.3,z:-25887},
-  {name:'Uppsala',x:24021.5,z:-51634.5},{name:'Västerås',x:20937.7,z:-50468.3},
-  {name:'Växjö',x:16044.4,z:-34835.6},{name:'Venezia',x:5089.88,z:30078.9},
-  {name:'Verona',x:39.1094,z:29453.3},{name:'Warszawa',x:37444.9,z:-9435.84},
-  {name:'Wien',x:21298.3,z:14215.5},{name:'Wrocław',x:23502.9,z:-1950.98},
-  {name:'Zürich',x:-8473.81,z:17968.5},
-];
-
-// ATS városok koordinátái — 1.5-ös koordináta-rendszer (Trucky tiles-kompatibilis)
-// 262 város: CA/NV/AZ/OR/WA (pontos), MT/UT/NM (konvertált ~5km),
-// CO/ID/WY/TX/KS/NE/OK/AR/IA/MO/LA (GPS-alapú számítás ~2km pontossággal)
-const ATS_CITIES = [
-  {name:'Aberdeen',x:-105848.0,z:-61123.8},
-  {name:'Abilene',x:-25473.8,z:44515.9},
-  {name:'Alamogordo',x:-92881.7,z:26229.9},
-  {name:'Alamosa',x:-44631.5,z:10226.4},
-  {name:'Albuquerque',x:-97457.7,z:5625.4},
-  {name:'Alexandria',x:4126.8,z:58765.9},
-  {name:'Alliance',x:-25211.5,z:-11893.1},
-  {name:'Amarillo',x:-30523.8,z:26995.3},
-  {name:'Ardmore',x:-11933.2,z:37895.2},
-  {name:'Artesia',x:-81968.0,z:28916.7},
-  {name:'Astoria',x:-107078.0,z:-57243.0},
-  {name:'Austin',x:-20047.1,z:58671.0},
-  {name:'Bakersfield',x:-104572.0,z:6987.6},
-  {name:'Barstow',x:-96833.3,z:12105.3},
-  {name:'Baton Rouge',x:8294.4,z:64865.5},
-  {name:'Beaumont',x:-4708.4,z:63667.1},
-  {name:'Bellingham',x:-98203.0,z:-70298.9},
-  {name:'Bend',x:-100856.0,z:-42806.8},
-  {name:'Billings',x:-95402.4,z:-98945.0},
-  {name:'Blythe',x:-87440.7,z:21774.9},
-  {name:'Boise',x:-80161.9,z:-34844.3},
-  {name:'Bozeman',x:-111541.6,z:-99945.3},
-  {name:'Brownsville',x:-25192.2,z:82890.4},
-  {name:'Burlington',x:-26630.8,z:4133.6},
-  {name:'Burns',x:-92989.7,z:-37951.5},
-  {name:'Butte',x:-118824.5,z:-103953.8},
-  {name:'Camp Verde',x:-73776.6,z:19211.8},
-  {name:'Cape Girardeau',x:25172.9,z:29096.0},
-  {name:'Carlsbad',x:-80359.2,z:32574.2},
-  {name:'Carson City',x:-101961.0,z:-11300.8},
-  {name:'Casper',x:-38943.2,z:-19792.3},
-  {name:'Cedar City',x:-133450.2,z:-28889.7},
-  {name:'Cedar Rapids',x:22607.0,z:1104.8},
-  {name:'Chadron',x:-24733.5,z:-16024.8},
-  {name:'Cheyenne',x:-34924.7,z:-8756.4},
-  {name:'Clifton',x:-65563.8,z:30703.0},
-  {name:'Clinton',x:-17839.8,z:28530.7},
-  {name:'Clovis',x:-73208.3,z:14647.5},
-  {name:'Cody',x:-48262.2,z:-31990.0},
-  {name:"Coeur d'Alene",x:-76871.2,z:-57768.1},
-  {name:'Colby',x:-21261.5,z:4953.9},
-  {name:'Colorado Springs',x:-38203.4,z:3893.7},
-  {name:'Columbia',x:15448.0,z:16972.0},
-  {name:'Columbus',x:-2596.3,z:-2155.5},
-  {name:'Colville',x:-81888.3,z:-63979.9},
-  {name:'Coos Bay',x:-113632.0,z:-42775.4},
-  {name:'Corpus Christi',x:-22063.6,z:72584.0},
-  {name:'Council Bluffs',x:3622.2,z:422.0},
-  {name:'Dalhart',x:-32266.2,z:21648.5},
-  {name:'Dallas',x:-12432.6,z:45943.5},
-  {name:'Davenport',x:26622.1,z:4792.9},
-  {name:'DeRidder',x:-144.8,z:60391.9},
-  {name:'Del Rio',x:-34838.7,z:60166.9},
-  {name:'Denver',x:-37641.7,z:-1258.5},
-  {name:'Des Moines',x:13659.5,z:1096.9},
-  {name:'Dodge City',x:-19160.8,z:15105.0},
-  {name:'Dubuque',x:27631.9,z:-645.6},
-  {name:'Durango',x:-53516.6,z:9082.6},
-  {name:'El Centro',x:-92073.9,z:24709.8},
-  {name:'El Dorado',x:5871.2,z:48119.5},
-  {name:'El Paso',x:-55367.7,z:40862.8},
-  {name:'Elko',x:-83038.2,z:-19609.2},
-  {name:'Ely',x:-81817.0,z:-10079.4},
-  {name:'Emporia',x:-1809.2,z:15748.5},
-  {name:'Enid',x:-11927.2,z:24901.4},
-  {name:'Eugene',x:-107310.0,z:-45581.2},
-  {name:'Eureka',x:-118391.0,z:-27408.9},
-  {name:'Evanston',x:-61054.0,z:-16212.1},
-  {name:'Everett',x:-98694.0,z:-65602.2},
-  {name:'Farmington',x:-104164.0,z:-12332.9},
-  {name:'Fayetteville',x:3537.5,z:30817.9},
-  {name:'Flagstaff',x:-71524.6,z:14406.3},
-  {name:'Fort Collins',x:-36843.7,z:-6003.7},
-  {name:'Fort Dodge',x:12623.2,z:-4497.0},
-  {name:'Fort Smith',x:1544.2,z:34265.4},
-  {name:'Fort Stockton',x:-41153.6,z:49586.1},
-  {name:'Fort Worth',x:-14749.0,z:45473.1},
-  {name:'Fresno',x:-105164.0,z:-144.3},
-  {name:'Gallup',x:-109313.5,z:-1106.0},
-  {name:'Galveston',x:-8802.9,z:67207.2},
-  {name:'Garden City',x:-22513.0,z:12964.2},
-  {name:'Gillette',x:-33371.8,z:-26793.0},
-  {name:'Glasgow',x:-83176.9,z:-119754.5},
-  {name:'Glendive',x:-73800.3,z:-107316.3},
-  {name:'Grand Canyon Village',x:-73445.0,z:10298.5},
-  {name:'Grand Coulee',x:-86528.1,z:-62675.2},
-  {name:'Grand Island',x:-7481.2,z:-464.5},
-  {name:'Grand Junction',x:-53849.4,z:-1466.8},
-  {name:'Grangeville',x:-76542.8,z:-47450.4},
-  {name:'Great Falls',x:-108784.9,z:-119625.7},
-  {name:'Guymon',x:-26950.8,z:19359.5},
-  {name:'Harrison',x:8270.8,z:31054.4},
-  {name:'Havre',x:-99039.4,z:-125428.2},
-  {name:'Hays',x:-14604.6,z:9683.2},
-  {name:'Helena',x:-113903.8,z:-110203.1},
-  {name:'Hilt',x:-109721.5,z:-32161.7},
-  {name:'Hobbs',x:-73677.8,z:30045.1},
-  {name:'Hornbrook',x:-110260.0,z:-31052.7},
-  {name:'Hot Springs',x:6045.4,z:40581.6},
-  {name:'Houma',x:9082.5,z:70073.8},
-  {name:'Houston',x:-10601.5,z:64059.8},
-  {name:'Huntsville',x:-10008.3,z:58577.5},
-  {name:'Huron',x:-109205.0,z:1883.6},
-  {name:'Hutchinson',x:-9783.5,z:15709.4},
-  {name:'Idabel',x:-2415.5,z:41967.5},
-  {name:'Idaho Falls',x:-62482.8,z:-29586.4},
-  {name:'Indio',x:-94264.2,z:19422.5},
-  {name:'Iowa City',x:22737.2,z:2991.6},
-  {name:'Jackpot',x:-77998.7,z:-24885.2},
-  {name:'Jackson',x:-57054.1,z:-28124.3},
-  {name:'Jefferson City',x:15603.5,z:19205.8},
-  {name:'Jonesboro',x:18014.7,z:35821.7},
-  {name:'Joplin',x:3463.3,z:24822.2},
-  {name:'Junction',x:-28435.5,z:55220.8},
-  {name:'Junction City',x:-3706.5,z:11606.9},
-  {name:'Kalispell',x:-125952.7,z:-128765.5},
-  {name:'Kansas City',x:5855.7,z:13560.5},
-  {name:'Kayenta',x:-64177.0,z:7337.6},
-  {name:'Kennewick',x:-89747.4,z:-52595.2},
-  {name:'Ketchum',x:-72191.4,z:-33180.5},
-  {name:'Kingman',x:-82132.6,z:13052.4},
-  {name:'Kirksville',x:16147.0,z:9878.8},
-  {name:'Klamath Falls',x:-105784.0,z:-33779.6},
-  {name:'Lafayette',x:4405.1,z:65197.8},
-  {name:'Lake Charles',x:-720.8,z:63867.8},
-  {name:'Lake Havasu City',x:-85071.9,z:17315.8},
-  {name:'Lakeview',x:-100530.0,z:-31392.0},
-  {name:'Lamar',x:-29837.7,z:10407.7},
-  {name:'Laramie',x:-37983.2,z:-10544.0},
-  {name:'Laredo',x:-31372.4,z:71774.8},
-  {name:'Las Cruces',x:-99643.8,z:31425.5},
-  {name:'Las Vegas',x:-84856.9,z:6994.3},
-  {name:'Laurel',x:-97864.4,z:-96587.2},
-  {name:'Lawton',x:-16680.4,z:34136.2},
-  {name:'Lewiston',x:-79677.5,z:-51109.8},
-  {name:'Lewistown',x:-99909.1,z:-111640.3},
-  {name:'Lincoln',x:-619.7,z:1956.2},
-  {name:'Little Rock',x:9669.2,z:40091.0},
-  {name:'Logan',x:-120292.3,z:-63663.3},
-  {name:'Longview',x:-104161.0,z:-56725.8},
-  {name:'Los Angeles',x:-103989.0,z:16444.4},
-  {name:'Lubbock',x:-32960.0,z:35988.7},
-  {name:'Lufkin',x:-5619.7,z:56107.5},
-  {name:'Marysville',x:-1763.2,z:7339.3},
-  {name:'Maryville',x:6548.7,z:6528.9},
-  {name:'Mason City',x:17699.7,z:-7032.7},
-  {name:'McAlester',x:-4971.1,z:35240.7},
-  {name:'McAllen',x:-27901.2,z:80430.2},
-  {name:'McCook',x:-18289.1,z:1003.6},
-  {name:'Medford',x:-110683.0,z:-35739.2},
-  {name:'Midland',x:-36157.5,z:44415.2},
-  {name:'Miles City',x:-80165.7,z:-104031.9},
-  {name:'Missoula',x:-126276.3,z:-116204.4},
-  {name:'Moab',x:-110179.5,z:-31366.4},
-  {name:'Modesto',x:-109180.5,z:-7329.7},
-  {name:'Mojave',x:-100762.4,z:9963.0},
-  {name:'Monroe',x:7222.8,z:52551.6},
-  {name:'Montrose',x:-51792.2,z:2487.1},
-  {name:'Nampa',x:-81814.4,z:-34833.7},
-  {name:'Natchitoches',x:2018.4,z:55595.7},
-  {name:'New Orleans',x:12362.3,z:68836.8},
-  {name:'Newport',x:-111075.0,z:-48807.3},
-  {name:'Nogales',x:-72018.8,z:36925.1},
-  {name:'Norfolk',x:-1955.2,z:-5493.0},
-  {name:'North Platte',x:-17580.9,z:-4209.9},
-  {name:'Oakland',x:-113452.0,z:-8458.5},
-  {name:'Odessa',x:-37613.5,z:44928.5},
-  {name:'Ogden',x:-122822.6,z:-59151.3},
-  {name:'Oklahoma City',x:-11694.0,z:30390.3},
-  {name:'Olympia',x:-102416.0,z:-60826.9},
-  {name:'Omaha',x:3298.9,z:370.6},
-  {name:'Omak',x:-88227.0,z:-64692.8},
-  {name:'Ontario',x:-84423.1,z:-38195.3},
-  {name:'Ottumwa',x:18053.3,z:5540.3},
-  {name:'Oxnard',x:-107309.0,z:13456.6},
-  {name:'Page',x:-69181.3,z:5521.9},
-  {name:'Pendleton',x:-90062.4,z:-49278.4},
-  {name:'Phillipsburg',x:-13329.4,z:4876.8},
-  {name:'Phoenix',x:-76543.6,z:24448.1},
-  {name:'Pine Bluff',x:10160.4,z:43248.1},
-  {name:'Pioche',x:-80956.8,z:-4638.4},
-  {name:'Pittsburg',x:3106.4,z:22819.3},
-  {name:'Pocatello',x:-65126.9,z:-26635.3},
-  {name:'Poplar Bluff',x:20646.6,z:31147.0},
-  {name:'Port Angeles',x:-103441.0,z:-66931.1},
-  {name:'Port Fourchon',x:10600.2,z:73300.7},
-  {name:'Portland',x:-105022.0,z:-52232.6},
-  {name:'Price',x:-115614.6,z:-42849.1},
-  {name:'Primm',x:-86787.6,z:9272.0},
-  {name:'Provo',x:-121194.1,z:-49350.9},
-  {name:'Pueblo',x:-38116.7,z:7306.2},
-  {name:'Rangely',x:-53493.8,z:-7365.1},
-  {name:'Raton',x:-80091.3,z:-9969.7},
-  {name:'Rawlins',x:-44359.1,z:-14986.5},
-  {name:'Redding',x:-110650.0,z:-24844.6},
-  {name:'Reno',x:-102745.0,z:-16298.0},
-  {name:'Riverton',x:-47500.5,z:-23006.1},
-  {name:'Rock Springs',x:-53060.9,z:-16028.4},
-  {name:'Rolla',x:16439.8,z:23078.7},
-  {name:'Roswell',x:-82369.5,z:23278.2},
-  {name:'Sacramento',x:-111350.0,z:-12283.6},
-  {name:'Salem',x:-106253.0,z:-49404.3},
-  {name:'Salina',x:-124317.8,z:-38662.0},
-  {name:'Salmon',x:-68068.8,z:-40875.3},
-  {name:'Salt Lake City',x:-123627.1,z:-54898.7},
-  {name:'San Angelo',x:-29886.7,z:49145.5},
-  {name:'San Antonio',x:-24458.4,z:62471.4},
-  {name:'San Diego',x:-98862.2,z:24029.7},
-  {name:'San Francisco',x:-114531.0,z:-10140.2},
-  {name:'San Jose',x:-113417.0,z:-6656.5},
-  {name:'San Simon',x:-62858.7,z:33093.0},
-  {name:'Sandpoint',x:-75046.7,z:-60803.7},
-  {name:'Santa Cruz',x:-114925.0,z:-4429.4},
-  {name:'Santa Fe',x:-89694.9,z:-67.5},
-  {name:'Santa Maria',x:-111657.0,z:8656.0},
-  {name:'Scottsbluff',x:-28954.4,z:-11475.2},
-  {name:'Seattle',x:-99469.1,z:-62870.0},
-  {name:'Sheridan',x:-38881.0,z:-31167.5},
-  {name:'Show Low',x:-65590.3,z:21658.3},
-  {name:'Shreveport',x:260.1,z:50671.9},
-  {name:'Sidney',x:-70798.0,z:-113704.1},
-  {name:'Sierra Vista',x:-68525.5,z:36654.0},
-  {name:'Sioux City',x:3068.9,z:-6962.8},
-  {name:'Socorro',x:-98338.2,z:14366.9},
-  {name:'Spokane',x:-80659.5,z:-59089.4},
-  {name:'Springdale',x:3836.1,z:30168.5},
-  {name:'Springfield',x:8870.1,z:25479.5},
-  {name:'St. George',x:-138663.2,z:-22461.8},
-  {name:'St. Joseph',x:5844.3,z:9734.9},
-  {name:'St. Louis',x:24130.1,z:21099.6},
-  {name:'Steamboat Springs',x:-44469.9,z:-7373.8},
-  {name:'Sterling',x:-28748.6,z:-4161.6},
-  {name:'Stockton',x:-110864.0,z:-9926.9},
-  {name:'Tacoma',x:-100595.0,z:-60834.9},
-  {name:'Texarkana',x:287.0,z:45316.4},
-  {name:'The Dalles',x:-98710.0,z:-51127.6},
-  {name:'Thompson Falls',x:-130073.2,z:-122825.3},
-  {name:'Tonopah',x:-93600.9,z:-5250.6},
-  {name:'Topeka',x:1226.4,z:12713.6},
-  {name:'Truckee',x:-106289.0,z:-15493.7},
-  {name:'Tucson',x:-71475.1,z:31556.9},
-  {name:'Tucumcari',x:-75933.5,z:6781.5},
-  {name:'Tulsa',x:-4194.0,z:28299.2},
-  {name:'Twin Falls',x:-74196.6,z:-27159.0},
-  {name:'Tyler',x:-6629.4,z:49921.4},
-  {name:'Ukiah',x:-116865.0,z:-19252.1},
-  {name:'Valentine',x:-14177.9,z:-13566.5},
-  {name:'Van Horn',x:-49306.6,z:46643.9},
-  {name:'Vancouver',x:-102675.0,z:-55284.7},
-  {name:'Vernal',x:-107968.8,z:-48911.0},
-  {name:'Victoria',x:-18955.0,z:67503.8},
-  {name:'Waco',x:-15672.7,z:52292.8},
-  {name:'Waterloo',x:20438.3,z:-2464.1},
-  {name:'Wenatchee',x:-92417.7,z:-60054.8},
-  {name:'Wichita',x:-7745.3,z:18418.2},
-  {name:'Wichita Falls',x:-18084.4,z:37841.3},
-  {name:'Winnemucca',x:-91334.8,z:-22075.4},
-  {name:'Winslow',x:-68778.8,z:18335.8},
-  {name:'Woodward',x:-18365.0,z:23028.2},
-  {name:'Yakima',x:-94370.8,z:-55556.1},
-  {name:'Yuma',x:-88849.8,z:26463.2},
-];
-
-// Városnév-címkék hozzáadása egy térképhez (ETS2 és ATS).
-// A címkék áttetszősége a zoom szinttől függ, hogy kis nagyításnál ne legyen zsúfolt.
-function addCityLabels(map, jatek) {
-  if (jatek !== 'ets2' && jatek !== 'ats') return null;
-  const cityList = jatek === 'ats' ? ATS_CITIES : ETS2_CITIES;
-  const layer = L.layerGroup();
-  cityList.forEach(city => {
-    const pos = gameToLatLng(map, city.x, city.z, jatek);
-    L.marker(pos, {
-      icon: L.divIcon({
-        className: 'city-name-label',
-        html: `<span>${city.name}</span>`,
-        iconSize: [200, 20],
-        iconAnchor: [100, -6],
-      }),
-      interactive: false,
-      keyboard: false,
-    }).addTo(layer);
-  });
-  layer.addTo(map);
-  const updateOpacity = () => {
-    const z = map.getZoom();
-    const opacity = Math.max(0, Math.min(1, (z - 2) / 3));
-    map.getContainer().style.setProperty('--city-label-opacity', opacity);
-  };
-  map.on('zoomend', updateOpacity);
-  updateOpacity();
-  return layer;
-}
-
-let liveMap = null;
-let liveMapInitialized = false;
-let liveMapJatek = 'ets2';
-let liveTileLayer = null;
-let liveDriverMarkers = {};
-let liveRefreshInterval = null;
-let liveSelectedDriver = null;
-let liveMapFitted = false;
-let liveCityLayer = null;
-let liveMapUserMoved = false;  // igaz, ha a felhasználó manuálisan mozgatta a térképet
-
-// Sofőr színek (minden sofőrnek egyedi szín)
-const DRIVER_COLORS = ['#f97316','#3b82f6','#4ade80','#a78bfa','#f43f5e','#06b6d4','#eab308','#ec4899'];
-function getDriverColor(index) { return DRIVER_COLORS[index % DRIVER_COLORS.length]; }
-
-function initLiveTerkep() {
-  if (liveMapInitialized) {
-    refreshLiveDrivers();
-    return;
-  }
-
-  // Leaflet betöltés ellenőrzés
-  if (typeof L === 'undefined') {
-    setTimeout(initLiveTerkep, 500);
-    return;
-  }
-
-  liveMap = L.map('live-map', {
-    crs: L.CRS.Simple,
-    minZoom: 2,
-    maxZoom: 8,
-    zoom: 3,
-    center: [0, 0],
-    zoomControl: true,
-    attributionControl: false,
-  });
-
-  liveTileLayer = L.tileLayer(ETS2_TILES, {
-    minZoom: 2, maxZoom: 8,
-    tileSize: 512,
-    noWrap: true,
-    errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
-  }).addTo(liveMap);
-
-  // Kezdő nézet: az ETS2 térkép nagyjából középső régiójára (Németország táján) igazítva,
-  // amíg meg nem érkezik az első élő sofőr-adat (utána automatikusan rááll a sofőrökre).
-  liveMap.setView(gameToLatLng(liveMap, -20000, -3000, 'ets2'), 3);
-  liveMapInitialized = true;
-  liveMapFitted = false;
-  liveMapUserMoved = false;
-  liveCityLayer = addCityLabels(liveMap, liveMapJatek);
-
-  // Ha a felhasználó manuálisan mozgatja/zoomolja a térképet, letiltjuk az auto-követést
-  liveMap.on('dragstart', () => {
-    liveMapUserMoved = true;
-    const btn = document.getElementById('live-map-follow-btn');
-    if (btn) btn.style.display = 'block';
-  });
-  liveMap.on('zoomstart', (e) => {
-    // Csak akkor jelezzük user-mozgásnak, ha valóban a felhasználó zoomol
-    // (nem a programból hívott setView/fitBounds során)
-    if (e.hard) {
-      liveMapUserMoved = true;
-      const btn = document.getElementById('live-map-follow-btn');
-      if (btn) btn.style.display = 'block';
-    }
-  });
-
-  // Automatikus frissítés 5 mp-enként (ennyi időnként küld új adatot az srt-trans.dll is)
-  liveRefreshInterval = setInterval(refreshLiveDrivers, 1000);
-  refreshLiveDrivers();
-}
-
-function toggleLiveMapFullscreen(forceState) {
-  const container = document.getElementById('live-map-container');
-  if (!container) return;
-  const next = (forceState !== undefined) ? forceState : !container.classList.contains('fullscreen');
-  container.classList.toggle('fullscreen', next);
-  document.body.classList.toggle('live-map-fs-active', next);
-  document.body.style.overflow = next ? 'hidden' : '';
-  setTimeout(() => { if (liveMap) liveMap.invalidateSize(); }, 150);
-}
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    const container = document.getElementById('live-map-container');
-    if (container && container.classList.contains('fullscreen')) toggleLiveMapFullscreen(false);
-  }
-});
-
-function setLiveTerkepJatek(jatek) {
-  liveMapJatek = jatek;
-  document.getElementById('live-btn-ets2').classList.toggle('active', jatek === 'ets2');
-  document.getElementById('live-btn-ats').classList.toggle('active', jatek === 'ats');
-
-  if (liveMapInitialized && liveTileLayer) {
-    liveTileLayer.setUrl(jatek === 'ets2' ? ETS2_TILES : ATS_TILES);
-  }
-  if (liveMapInitialized) {
-    if (liveCityLayer) { liveMap.removeLayer(liveCityLayer); liveCityLayer = null; }
-    liveCityLayer = addCityLabels(liveMap, jatek);
-  }
-  refreshLiveDrivers();
-}
-
-function toLatLng(x, y, z, jatek) {
-  return gameToLatLng(liveMap, x, z, jatek);
-}
-
-async function refreshLiveDrivers() {
-  if (!liveMapInitialized) return;
-  try {
-    // JAVÍTVA: a liveTelemetry (élő térkép adata) átköltözött az új
-    // ("reply") adatbázisba — a routePoints/útvonal-visszajátszáshoz
-    // hasonlóan. A bot (index.js routePointSet) már ide írja, de a
-    // térkép eddig még a régi (immár üres) adatbázisból próbálta olvasni.
-    const FIREBASE_URL = 'https://srt-trans-reply-default-rtdb.europe-west1.firebasedatabase.app';
-    const resp = await fetch(`${FIREBASE_URL}/liveTelemetry.json`);
-    const allData = await resp.json();
-
-    const noDataEl = document.getElementById('live-map-no-data');
-    const legendList = document.getElementById('live-legend-list');
-    const statusEl = document.getElementById('live-map-status');
-
-    if (!allData || typeof allData !== 'object') {
-      noDataEl.style.display = 'flex';
-      legendList.innerHTML = '<div style="font-size:12px;color:var(--muted);">Nincs adat</div>';
-      return;
-    }
-
-    const most = Date.now();
-    const AKTIV_LIMIT = 30 * 1000;        // 30 mp = aktív
-    const STALE_LIMIT = 5 * 60 * 1000;   // 5 perc = elavult
-    const DEAD_LIMIT  = 30 * 60 * 1000;  // 30 perc = teljesen régi, ne mutassuk
-
-    // Szűrés: csak az aktuális játékhoz tartozó, érvényes sofőr-bejegyzések
-    // Kizárjuk: nincs position, nincs player név, gyökérszintű mezők (nincs truck alstruktura)
-    const drivers = Object.entries(allData)
-      .map(([key, d]) => ({ key, ...d }))
-      .filter(d => {
-        if (!d.position || !d.truck) return false;         // nincs pozíció vagy truck adat
-        if (!d.player || d.player === '') return false;    // nincs játékos név (gyökérszintű bejegyzés)
-        // Ha van frissitve, és 30 percnél régebbi → kizárjuk
-        if (d.frissitve) {
-          const frissitve = new Date(d.frissitve).getTime();
-          if ((most - frissitve) > DEAD_LIMIT) return false;
-        }
-        const gameMatch = liveMapJatek === 'ets2'
-          ? (!d.game || d.game.toLowerCase() !== 'ats') && (!d.jatek || d.jatek.toUpperCase() !== 'ATS')
-          : (d.game && d.game.toLowerCase() === 'ats') || (d.jatek && d.jatek.toUpperCase() === 'ATS');
-        return gameMatch;
-      });
-
-    if (drivers.length === 0) {
-      noDataEl.style.display = 'flex';
-      legendList.innerHTML = '<div style="font-size:12px;color:var(--muted);">Nincs aktív sofőr (' + (liveMapJatek === 'ets2' ? 'ETS2' : 'ATS') + ')</div>';
-      // Régi markerek törlése
-      Object.values(liveDriverMarkers).forEach(m => liveMap.removeLayer(m));
-      liveDriverMarkers = {};
-      return;
-    }
-
-    // Legfrissebb adat elöl — ha van frissitve, az alapján rendezzük
-    drivers.sort((a, b) => {
-      const ta = a.frissitve ? new Date(a.frissitve).getTime() : 0;
-      const tb = b.frissitve ? new Date(b.frissitve).getTime() : 0;
-      return tb - ta;  // csökkenő: legfrissebb első
-    });
-
-    noDataEl.style.display = 'none';
-    let legendHtml = '';
-
-    // Régi markerek törlése (ha már nem szerepel a listában)
-    const currentKeys = new Set(drivers.map(d => d.key));
-    Object.keys(liveDriverMarkers).forEach(k => {
-      if (!currentKeys.has(k)) { liveMap.removeLayer(liveDriverMarkers[k]); delete liveDriverMarkers[k]; }
-    });
-
-    drivers.forEach((d, idx) => {
-      const color = getDriverColor(idx);
-      const pos = d.position;
-      if (!pos || pos.x === undefined || pos.z === undefined) return;
-
-      const frissitve = d.frissitve ? new Date(d.frissitve).getTime() : 0;
-      const korkm = most - frissitve;
-      const dotClass = korkm < AKTIV_LIMIT ? 'active' : korkm < STALE_LIMIT ? 'stale' : 'offline';
-      const dotColor = dotClass === 'active' ? '#4ade80' : dotClass === 'stale' ? '#f97316' : '#6b7280';
-
-      const latLng = toLatLng(pos.x, pos.y, pos.z, liveMapJatek);
-      const nev = d.player || d.key;
-      const speed = d.truck ? Math.round(d.truck.speedKmh || 0) : 0;
-      const fuel = d.truck ? Math.round(d.truck.fuel || 0) : 0;
-      const cargo = d.job && d.job.cargo ? d.job.cargo : '—';
-      const dest = d.job && d.job.to ? d.job.to : '—';
-      const navDist = d.navigation ? (d.navigation.distanceKm || 0).toFixed(1) + ' km' : '—';
-      const truckName = d.truck ? `${d.truck.brand || ''} ${d.truck.name || ''}`.trim() : '—';
-      const maxWear = d.truck && d.truck.wear
-        ? Math.round(Math.max(...Object.values(d.truck.wear)) * 100) + '%'
-        : '—';
-      const paused = d.paused ? ' ⏸' : '';
-
-      // Egyedi ikon
-      const iconHtml = `<div style="
-        width:28px;height:28px;border-radius:50%;
-        background:${color};border:3px solid #fff;
-        display:flex;align-items:center;justify-content:center;
-        font-size:12px;font-weight:800;color:#fff;
-        box-shadow:0 2px 8px rgba(0,0,0,0.5);
-        ${dotClass === 'active' ? 'animation:pulse-marker 2s infinite;' : ''}
-      ">🚛</div>`;
-
-      const icon = L.divIcon({ html: iconHtml, className: 'live-driver-marker-icon', iconSize: [28,28], iconAnchor: [14,14] });
-
-      const popupContent = `
-        <div style="min-width:180px;">
-          <div style="font-weight:800;font-size:14px;color:${color};margin-bottom:8px;">🚛 ${nev}${paused}</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;">
-            <span style="color:#9ca3af;">⚡ Sebesség</span><span>${speed} km/h</span>
-            <span style="color:#9ca3af;">⛽ Üzemanyag</span><span>${fuel} L</span>
-            <span style="color:#9ca3af;">📦 Rakomány</span><span>${cargo}</span>
-            <span style="color:#9ca3af;">🎯 Cél</span><span>${dest}</span>
-            <span style="color:#9ca3af;">📏 Hátralévő</span><span>${navDist}</span>
-            <span style="color:#9ca3af;">🔧 Kopás</span><span>${maxWear}</span>
-          </div>
-          <div style="margin-top:8px;font-size:11px;color:#6b7280;">
-            Frissítve: ${frissitve ? new Date(frissitve).toLocaleTimeString('hu-HU') : '—'}
-          </div>
-        </div>`;
-
-      if (liveDriverMarkers[d.key]) {
-        liveDriverMarkers[d.key].setLatLng(latLng);
-        liveDriverMarkers[d.key].setIcon(icon);
-        liveDriverMarkers[d.key].setPopupContent(popupContent);
-      } else {
-        const marker = L.marker(latLng, { icon })
-          .addTo(liveMap)
-          .bindPopup(popupContent, { maxWidth: 240 });
-        marker.on('click', () => showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName, maxWear));
-        liveDriverMarkers[d.key] = marker;
-      }
-
-      // Ha ez a kiválasztott sofőr, frissítjük az info panelt is
-      if (liveSelectedDriver === d.key) {
-        showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName, maxWear);
-      }
-
-      legendHtml += `
-        <div class="live-driver-row" onclick="focusLiveDriver('${d.key}')">
-          <div class="live-driver-dot ${dotClass}" style="background:${dotColor};"></div>
-          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e8f0fc;">${nev}</span>
-          <span style="color:#9ca3af;font-size:11px;">${speed} km/h</span>
-        </div>`;
-    });
-
-    legendList.innerHTML = legendHtml || '<div style="font-size:12px;color:var(--muted);">Nincs adat</div>';
-    statusEl.textContent = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
-
-    const markerKeys = Object.keys(liveDriverMarkers);
-
-    // Első sikeres adatbetöltéskor ráigazítjuk a nézetet az összes aktív sofőrre
-    if (!liveMapFitted && markerKeys.length > 0) {
-      // A legfrissebb sofőrre zoomolunk (drivers[0] a sort után)
-      const firstKey = drivers.length > 0 ? drivers[0].key : markerKeys[0];
-      if (drivers.length === 1 || !liveDriverMarkers[firstKey]) {
-        liveMap.setView(liveDriverMarkers[firstKey || markerKeys[0]].getLatLng(), 6, { animate: false });
-      } else {
-        const group = L.featureGroup(Object.values(liveDriverMarkers));
-        liveMap.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 7 });
-      }
-      liveMapFitted = true;
-      liveMapUserMoved = false;
-      return;
-    }
-
-    // Folyamatos auto-követés: ha a felhasználó nem mozgatta a térképet kézzel,
-    // kövessük a legfrissebb aktív sofőrt minden frissítésnél
-    if (liveMapFitted && !liveMapUserMoved && drivers.length > 0) {
-      // Ha van kiválasztott sofőr, azt kövessük; különben a legfrissebb sofőrt (drivers[0])
-      const followKey = (liveSelectedDriver && liveDriverMarkers[liveSelectedDriver])
-        ? liveSelectedDriver
-        : drivers[0].key;
-      if (liveDriverMarkers[followKey]) {
-        liveMap.panTo(liveDriverMarkers[followKey].getLatLng(), { animate: true, duration: 0.8 });
-      }
-    }
-
-  } catch(e) {
-    console.warn('[Live Térkép] Firebase hiba:', e.message);
-  }
-}
-
-function showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName, maxWear) {
-  liveSelectedDriver = d.key;
-  const panel = document.getElementById('live-map-driver-info');
-  panel.style.display = 'block';
-  document.getElementById('live-info-nev').textContent = '🚛 ' + nev + (d.paused ? ' ⏸ Szünetelve' : ' ● Aktív');
-  document.getElementById('live-info-speed').textContent = speed + ' km/h';
-  document.getElementById('live-info-fuel').textContent = fuel + ' L';
-  document.getElementById('live-info-cargo').textContent = cargo;
-  document.getElementById('live-info-dest').textContent = dest;
-  document.getElementById('live-info-navdist').textContent = navDist;
-  document.getElementById('live-info-truck').textContent = truckName || '—';
-  document.getElementById('live-info-wear').textContent = maxWear;
-}
-
-function focusLiveDriver(key) {
-  const marker = liveDriverMarkers[key];
-  if (marker && liveMap) {
-    liveMap.setView(marker.getLatLng(), 6, { animate: true });
-    marker.openPopup();
-  }
-}
-
-function liveMapKovetes() {
-  // Visszakapcsolja az auto-követést — a térkép ismét a sofőrt fogja követni
-  liveMapUserMoved = false;
-  const btn = document.getElementById('live-map-follow-btn');
-  if (btn) btn.style.display = 'none';
-  // Azonnal ráigazítás a sofőrre
-  const markerKeys = Object.keys(liveDriverMarkers);
-  if (markerKeys.length > 0) {
-    const followKey = (liveSelectedDriver && liveDriverMarkers[liveSelectedDriver])
-      ? liveSelectedDriver
-      : markerKeys[0];
-    if (liveDriverMarkers[followKey]) {
-      liveMap.setView(liveDriverMarkers[followKey].getLatLng(), liveMap.getZoom(), { animate: true });
-    }
-  }
-}
-
-// Térkép méret újraszámítás ha az oldal váltáskor aktiválódik
-document.addEventListener('DOMContentLoaded', () => {
-  // Ha az oldal betöltésekor a terkep aktív tab-ra kerül, inicializáljon
-  const origShowPage = window.showPage;
-  if (typeof origShowPage === 'function') {
-    window.showPage = function(page) {
-      origShowPage(page);
-      if (page === 'terkep') {
-        setTimeout(() => { if (liveMap) liveMap.invalidateSize(); }, 200);
-      }
-    };
-  }
-});
-</script>
-<style>
-@keyframes pulse-marker {
-  0%,100% { box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 0 0 rgba(74,222,128,0.4); }
-  50%      { box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 0 8px rgba(74,222,128,0); }
-}
-</style>
-
-<script>
-// Névnap buborék a kezdőlapon — Budapest időzóna szerinti mai dátum alapján
-const NEVNAPOK = {
-  "1-1": "Fruzsina",
-  "1-2": "Ábel",
-  "1-3": "Genovéva,Benjámin",
-  "1-4": "Titusz,Leona,Angel",
-  "1-5": "Simon",
-  "1-6": "Boldizsár",
-  "1-7": "Ramóna,Attila",
-  "1-8": "Gyöngyvér",
-  "1-9": "Marcell",
-  "1-10": "Melánia",
-  "1-11": "Ágota",
-  "1-12": "Ernő",
-  "1-13": "Veronika",
-  "1-14": "Bódog",
-  "1-15": "Loránt,Loránd",
-  "1-16": "Gusztáv",
-  "1-17": "Antónia,Antal",
-  "1-18": "Piroska",
-  "1-19": "Sára,Márió",
-  "1-20": "Fábián,Sebestyén,Attila",
-  "1-21": "Ágnes",
-  "1-22": "Vince,Artúr",
-  "1-23": "Rajmund,Zelma",
-  "1-24": "Timót",
-  "1-25": "Pál",
-  "1-26": "Paula,Vanda",
-  "1-27": "Angelika",
-  "1-28": "Karola,Károly",
-  "1-29": "Adél",
-  "1-30": "Gerda,Martina",
-  "1-31": "Marcella",
-  "2-1": "Ignác",
-  "2-2": "Karolina,Aida",
-  "2-3": "Balázs",
-  "2-4": "Csenge,Ráhel",
-  "2-5": "Ágota,Ingrid",
-  "2-6": "Dorottya,Dóra",
-  "2-7": "Tódor,Rómeó",
-  "2-8": "Aranka",
-  "2-9": "Abigél,Alex",
-  "2-10": "Elvira",
-  "2-11": "Bertold,Marietta",
-  "2-12": "Lívia,Lídia",
-  "2-13": "Ella,Linda",
-  "2-14": "Valentin,Bálint",
-  "2-15": "Georgina,Kolos",
-  "2-16": "Lilla,Julianna",
-  "2-17": "Donát",
-  "2-18": "Bernadett",
-  "2-19": "Zsuzsanna",
-  "2-20": "Aladár,Álmos",
-  "2-21": "Eleonóra",
-  "2-22": "Gerzson",
-  "2-23": "Alfréd",
-  "2-24": "Mátyás",
-  "2-25": "Géza",
-  "2-26": "Edina",
-  "2-27": "Bátor",
-  "2-28": "Elemér",
-  "3-1": "Albin",
-  "3-2": "Lujza",
-  "3-3": "Kornélia",
-  "3-4": "Kázmér",
-  "3-5": "Adrián,Adorján",
-  "3-6": "Leonóra,Ágnes,Inez",
-  "3-7": "Tamás",
-  "3-8": "Zoltán",
-  "3-9": "Franciska,Fanni",
-  "3-10": "Ildikó",
-  "3-11": "Szilárd",
-  "3-12": "Gergely",
-  "3-13": "Krisztián,Ajtony",
-  "3-14": "Matild",
-  "3-15": "Kristóf",
-  "3-16": "Henrietta",
-  "3-17": "Gertrúd,Patrik",
-  "3-18": "Ede,Sándor",
-  "3-19": "Bánk,József",
-  "3-20": "Klaudia",
-  "3-21": "Benedek",
-  "3-22": "Beáta,Lea,Izolda",
-  "3-23": "Emőke",
-  "3-24": "Karina,Gábor",
-  "3-25": "Írisz,Irén",
-  "3-26": "Emánuel",
-  "3-27": "Hajnalka",
-  "3-28": "Johanna,Gedeon",
-  "3-29": "Auguszta",
-  "3-30": "Zalán",
-  "3-31": "Árpád",
-  "4-1": "Hugó",
-  "4-2": "Áron",
-  "4-3": "Buda,Richárd",
-  "4-4": "Izidor",
-  "4-5": "Vince",
-  "4-6": "Vilmos,Bíborka",
-  "4-7": "Herman",
-  "4-8": "Dénes",
-  "4-9": "Erhard",
-  "4-10": "Zsolt",
-  "4-11": "Szaniszló,Leó",
-  "4-12": "Gyula",
-  "4-13": "Ida",
-  "4-14": "Tibor",
-  "4-15": "Tas,Anasztázia",
-  "4-16": "Csongor",
-  "4-17": "Rudolf",
-  "4-18": "Ilona,Andrea,Ilma",
-  "4-19": "Emma",
-  "4-20": "Tivadar",
-  "4-21": "Konrád",
-  "4-22": "Csilla,Noémi",
-  "4-23": "Béla",
-  "4-24": "György",
-  "4-25": "Márk",
-  "4-26": "Ervin",
-  "4-27": "Zita",
-  "4-28": "Valéria",
-  "4-29": "Péter",
-  "4-30": "Kitti,Katalin",
-  "5-1": "Jakab,Zsaklin,Fülöp",
-  "5-2": "Zsigmond",
-  "5-3": "Tímea,Irma",
-  "5-4": "Flórián,Mónika",
-  "5-5": "Györgyi",
-  "5-6": "Ivett,Frida",
-  "5-7": "Gizella",
-  "5-8": "Mihály",
-  "5-9": "Gergely",
-  "5-10": "Ármin,Pálma",
-  "5-11": "Ferenc",
-  "5-12": "Pongrác",
-  "5-13": "Szervác,Imola",
-  "5-14": "Bonifác",
-  "5-15": "Zsófia,Szonja",
-  "5-16": "Botond,Mózes",
-  "5-17": "Paszkál",
-  "5-18": "Erik,Alexandra",
-  "5-19": "Ivó,Milán",
-  "5-20": "Felícia,Bernát",
-  "5-21": "Konstantin",
-  "5-22": "Júlia,Rita",
-  "5-23": "Dezső",
-  "5-24": "Vanessza,Eliza,Eszter",
-  "5-25": "Orbán",
-  "5-26": "Fülöp,Evelin",
-  "5-27": "Hella",
-  "5-28": "Csanád,Emil",
-  "5-29": "Magdolna",
-  "5-30": "Zsanett,Janka",
-  "5-31": "Petronella,Angéla",
-  "6-1": "Tünde",
-  "6-2": "Kármen,Anita",
-  "6-3": "Klotild,Cecília",
-  "6-4": "Bulcsú",
-  "6-5": "Fatima,Fatime",
-  "6-6": "Norbert,Cintia",
-  "6-7": "Róbert",
-  "6-8": "Medárd",
-  "6-9": "Félix",
-  "6-10": "Gréta,Margit",
-  "6-11": "Barnabás",
-  "6-12": "Villő",
-  "6-13": "Antal,Anett",
-  "6-14": "Vazul",
-  "6-15": "Jolán,Vid",
-  "6-16": "Jusztin",
-  "6-17": "Alida,Laura",
-  "6-18": "Arnold,Levente",
-  "6-19": "Gyárfás",
-  "6-20": "Rafael",
-  "6-21": "Alajos,Leila",
-  "6-22": "Paulina",
-  "6-23": "Zoltán",
-  "6-24": "Iván",
-  "6-25": "Vilmos",
-  "6-26": "János,Pál",
-  "6-27": "László",
-  "6-28": "Levente,Irén",
-  "6-29": "Pál,Péter",
-  "6-30": "Pál",
-  "7-1": "Tihamér,Annamária",
-  "7-2": "Ottó",
-  "7-3": "Soma,Kornél",
-  "7-4": "Ulrik",
-  "7-5": "Emese,Sarolta",
-  "7-6": "Csaba",
-  "7-7": "Apollónia",
-  "7-8": "Ellák",
-  "7-9": "Lukrécia",
-  "7-10": "Amália",
-  "7-11": "Lili,Nóra",
-  "7-12": "Izabella,Dalma",
-  "7-13": "Jenő",
-  "7-14": "Stella,Örs",
-  "7-15": "Henrik,Roland",
-  "7-16": "Valter",
-  "7-17": "Elek,Endre",
-  "7-18": "Frigyes",
-  "7-19": "Emília",
-  "7-20": "Illés,Éliás",
-  "7-21": "Daniella,Dániel",
-  "7-22": "Magdolna",
-  "7-23": "Lenke",
-  "7-24": "Kinga,Kincső",
-  "7-25": "Jakab,Kristóf",
-  "7-26": "Anikó,Anna",
-  "7-27": "Olga,Liliána",
-  "7-28": "Szabolcs",
-  "7-29": "Flóra,Márta",
-  "7-30": "Judit,Xénia",
-  "7-31": "Oszkár",
-  "8-1": "Boglárka",
-  "8-2": "Lehel",
-  "8-3": "Hermina",
-  "8-4": "Dominika,Domonkos",
-  "8-5": "Krisztina",
-  "8-6": "Berta,Bettina",
-  "8-7": "Ibolya",
-  "8-8": "László",
-  "8-9": "Emőd",
-  "8-10": "Lőrinc",
-  "8-11": "Tiborc,Zsuzsanna",
-  "8-12": "Klára",
-  "8-13": "Ipoly",
-  "8-14": "Marcell",
-  "8-15": "Mária",
-  "8-16": "Ábrahám",
-  "8-17": "Jácint",
-  "8-18": "Ilona",
-  "8-19": "Huba",
-  "8-20": "István",
-  "8-21": "Hajna,Sámuel",
-  "8-22": "Mirjam,Menyhért",
-  "8-23": "Bence",
-  "8-24": "Bertalan",
-  "8-25": "Lajos,Patrícia",
-  "8-26": "Izsó",
-  "8-27": "Gáspár",
-  "8-28": "Ágoston",
-  "8-29": "Beatrix,Erna",
-  "8-30": "Rózsa",
-  "8-31": "Bella,Erika",
-  "9-1": "Egon,Egyed",
-  "9-2": "Rebeka,Dorina",
-  "9-3": "Hilda",
-  "9-4": "Rozália",
-  "9-5": "Lőrinc,Viktor",
-  "9-6": "Zakariás",
-  "9-7": "Regina",
-  "9-8": "Adrienn,Mária",
-  "9-9": "Ádám",
-  "9-10": "Hunor,Nikolett",
-  "9-11": "Teodóra",
-  "9-12": "Mária",
-  "9-13": "Kornél",
-  "9-14": "Szeréna,Roxána",
-  "9-15": "Enikő,Melitta",
-  "9-16": "Edith,Edit",
-  "9-17": "Zsófia",
-  "9-18": "Diána",
-  "9-19": "Vilhelmina",
-  "9-20": "Friderika",
-  "9-21": "Máté,Mirella",
-  "9-22": "Móric",
-  "9-23": "Líviusz,Tekla",
-  "9-24": "Gellért,Mercédesz",
-  "9-25": "Eufrozina,Kende",
-  "9-26": "Jusztina",
-  "9-27": "Adalbert",
-  "9-28": "Vencel",
-  "9-29": "Mihály",
-  "9-30": "Jeromos",
-  "10-1": "Malvin",
-  "10-2": "Petra",
-  "10-3": "Helga",
-  "10-4": "Ferenc",
-  "10-5": "Aurél",
-  "10-6": "Brúnó,Renáta",
-  "10-7": "Amália",
-  "10-8": "Koppány",
-  "10-9": "Dénes",
-  "10-10": "Gedeon",
-  "10-11": "Brigitta",
-  "10-12": "Miksa,Miklós",
-  "10-13": "Ede,Kálmán",
-  "10-14": "Helén",
-  "10-15": "Teréz",
-  "10-16": "Gál",
-  "10-17": "Hedvig",
-  "10-18": "Lukács",
-  "10-19": "Nándor",
-  "10-20": "Vendel",
-  "10-21": "Orsolya",
-  "10-22": "Előd",
-  "10-23": "Gyöngyi",
-  "10-24": "Salamon",
-  "10-25": "Bianka,Blanka",
-  "10-26": "Dömötör",
-  "10-27": "Szabina",
-  "10-28": "Szimonetta,Szimonett,Simon",
-  "10-29": "Nárcisz",
-  "10-30": "Alfonz",
-  "10-31": "Farkas",
-  "11-1": "Marianna",
-  "11-2": "Achilles",
-  "11-3": "Győző",
-  "11-4": "Károly",
-  "11-5": "Imre",
-  "11-6": "Lénárd",
-  "11-7": "Rezső",
-  "11-8": "Zsombor",
-  "11-9": "Tivadar",
-  "11-10": "Réka",
-  "11-11": "Márton",
-  "11-12": "Jónás,Renátó",
-  "11-13": "Szilvia",
-  "11-14": "Aliz",
-  "11-15": "Albert,Lipót",
-  "11-16": "Ödön",
-  "11-17": "Gergő,Hortenzia",
-  "11-18": "Jenő",
-  "11-19": "Erzsébet",
-  "11-20": "Jolán",
-  "11-21": "Olivér",
-  "11-22": "Cecília",
-  "11-23": "Kelemen,Klementina",
-  "11-24": "Emma",
-  "11-25": "Katalin",
-  "11-26": "Virág",
-  "11-27": "Virgil",
-  "11-28": "Stefánia",
-  "11-29": "Taksony",
-  "11-30": "András,Andor",
-  "12-1": "Elza",
-  "12-2": "Melinda,Vivien",
-  "12-3": "Ferenc",
-  "12-4": "Borbála,Barbara",
-  "12-5": "Vilma",
-  "12-6": "Miklós",
-  "12-7": "Ambrus",
-  "12-8": "Mária",
-  "12-9": "Natália",
-  "12-10": "Judit",
-  "12-11": "Árpád,Árpádina",
-  "12-12": "Gabriella",
-  "12-13": "Otília,Luca",
-  "12-14": "Szilárda",
-  "12-15": "Valér",
-  "12-16": "Etelka,Aletta",
-  "12-17": "Lázár,Olimpia",
-  "12-18": "Auguszta",
-  "12-19": "Viola",
-  "12-20": "Teofil",
-  "12-21": "Tamás",
-  "12-22": "Zénó",
-  "12-23": "Viktória",
-  "12-24": "Ádám,Éva",
-  "12-25": "Eugénia",
-  "12-26": "István",
-  "12-27": "János",
-  "12-28": "Kamilla",
-  "12-29": "Tamara,Tamás",
-  "12-30": "Dávid",
-  "12-31": "Szilveszter",
-};
-
-function nevnapBuborekBezar() {
-  const bub = document.getElementById('nevnap-bubble');
-  if (bub) bub.style.display = 'none';
-  // Csak az aktuális megtekintésre tűnik el — frissítéskor vagy legközelebbi
-  // látogatáskor újra megjelenik, amíg aznap van névnap.
-}
-
-function nevnapBuborekInit() {
-  const bub = document.getElementById('nevnap-bubble');
-  const szoveg = document.getElementById('nevnap-bubble-text');
-  if (!bub || !szoveg) return;
-
-  const ma = new Date();
-  const kulcs = `${ma.getMonth() + 1}-${ma.getDate()}`;
-  const nevek = NEVNAPOK[kulcs];
-  if (!nevek) return; // nincs bejegyzett névnap erre a napra
-
-  const nevSor = nevek.split(',').join(' és ');
-  szoveg.innerHTML = `Ma <strong>${nevSor}</strong> névnapja van!<br>Boldog névnapot, ${nevSor}! 🎊`;
-  bub.style.display = 'flex';
-}
-
-document.addEventListener('DOMContentLoaded', nevnapBuborekInit);
-</script>
 </body>
 </html>
 
