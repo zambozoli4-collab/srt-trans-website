@@ -66,6 +66,13 @@
     .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid rgba(249,115,22,0.4); color: var(--orange); background: rgba(7,13,24,0.6); backdrop-filter: blur(6px); text-decoration: none; transition: background 0.2s; cursor: pointer; }
     .badge:hover { background: rgba(249,115,22,0.25); }
     .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .nameday-bubble { position: absolute; top: 34px; right: 48px; z-index: 2; max-width: 260px; background: #fff; color: #1a2233; border-radius: 20px; padding: 16px 20px; box-shadow: 0 14px 34px rgba(0,0,0,0.45); font-family: 'Inter', sans-serif; opacity: 0; transform: translateY(-8px) scale(0.96); transition: opacity 0.4s ease, transform 0.4s ease; pointer-events: none; }
+    .nameday-bubble.is-visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    .nameday-bubble::after { content: ''; position: absolute; left: 46px; bottom: -14px; width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 14px solid #fff; }
+    .nameday-bubble-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange); margin-bottom: 4px; }
+    .nameday-bubble-names { font-size: 15px; font-weight: 700; color: #1a2233; margin-bottom: 2px; }
+    .nameday-bubble-greeting { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: var(--orange); line-height: 1.1; }
+    @media (max-width: 860px) { .nameday-bubble { top: 18px; right: 18px; left: 18px; max-width: none; padding: 12px 16px; } .nameday-bubble::after { left: 28px; } .nameday-bubble-greeting { font-size: 18px; } }
     .btn-primary { background: var(--orange); color: #fff; font-weight: 600; font-size: 15px; padding: 13px 26px; border-radius: 10px; text-decoration: none; transition: opacity 0.2s, transform 0.15s; display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
     .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
     .btn-outline { background: rgba(255,255,255,0.1); color: #fff; font-weight: 600; font-size: 15px; padding: 13px 26px; border-radius: 10px; text-decoration: none; border: 1px solid rgba(255,255,255,0.25); backdrop-filter: blur(6px); transition: background 0.2s; cursor: pointer; font-family: 'Inter', sans-serif; }
@@ -3177,6 +3184,11 @@ body { font-size: 15px; }
   <div class="page active" id="page-home">
     <section class="hero">
       <div class="hero-bg" id="bg-home"></div>
+      <div class="nameday-bubble" id="nameday-bubble">
+        <div class="nameday-bubble-eyebrow" id="nameday-bubble-date">Ma névnapos</div>
+        <div class="nameday-bubble-names" id="nameday-bubble-names">—</div>
+        <div class="nameday-bubble-greeting">Boldog Névnapot! 🎉</div>
+      </div>
       <div class="hero-content">
         <p class="hero-eyebrow" data-edit="home_eyebrow">Euro Truck Simulator 2 · Magyar konvoj</p>
         <h1 data-edit="home_h1">Éld át a <em>kamionos</em> életet!</h1>
@@ -12918,6 +12930,44 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 </style>
 
+<script>
+(function () {
+  var HU_HONAP_NEVEK = ['jan','feb','márc','ápr','máj','jún','júl','aug','szept','okt','nov','dec'];
+
+  function formatDatumCimke(d) {
+    return d.getDate() + '. ' + HU_HONAP_NEVEK[d.getMonth()];
+  }
+
+  function mutatBuborek(nevek) {
+    var buborek = document.getElementById('nameday-bubble');
+    var datumEl = document.getElementById('nameday-bubble-date');
+    var nevekEl = document.getElementById('nameday-bubble-names');
+    if (!buborek || !datumEl || !nevekEl) return;
+    var ma = new Date();
+    datumEl.textContent = formatDatumCimke(ma) + ' · Ma névnapos';
+    nevekEl.textContent = nevek || 'Sikeres napot!';
+    requestAnimationFrame(function () { buborek.classList.add('is-visible'); });
+  }
+
+  function frissitNevnapBuborek() {
+    var ma = new Date();
+    var honap = ma.getMonth() + 1;
+    var nap = ma.getDate();
+    fetch('https://api.abalin.net/namedays?country=hu&month=' + honap + '&day=' + nap)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        var nevek = data && data.data && data.data.namedays && data.data.namedays.hu;
+        mutatBuborek(nevek);
+      })
+      .catch(function () {
+        // Ha az API nem elérhető, csak az ünnepi üzenetet mutatjuk név nélkül.
+        mutatBuborek('');
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', frissitNevnapBuborek);
+})();
+</script>
 </body>
 </html>
 
