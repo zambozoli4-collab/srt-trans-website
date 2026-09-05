@@ -7928,15 +7928,8 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
             const startedAt = e.felvételIdeje || e.datumFormazva || e.idopont || '';
             const elapsedMin = fuvarIdoPerc(startedAt);
             const cargo = e.aru || '-';
-            // JAVÍTVA: a "km" mező felvétel után néhány percig még 0 lehet,
-            // amíg a launcher meg nem kapja a játék motorjától az érvényes
-            // navigációs távot (lásd OLVASS_EL.txt) — ilyenkor NEM "0 km"-t
-            // mutatunk (ami úgy tűnne, mintha a fuvarnak tényleg ne lenne
-            // hossza), hanem egy jelzést, hogy még számolódik. Amint a
-            // launcher elküldi a korrigált értéket, ez a lista automatikusan
-            // frissül (élő Firebase-figyelés), és a valós táv jelenik meg.
-            const distance = e.km != null && Number.isFinite(Number(e.km)) && Number(e.km) > 0
-              ? Math.round(Number(e.km)) + ' km' : 'táv számolása…';
+            const distance = e.km != null && Number.isFinite(Number(e.km))
+              ? Math.round(Number(e.km)) + ' km' : '-';
             const tonna = e.tonna != null && e.tonna !== '' ? `${escFuvar(e.tonna)} t` : null;
             const route = e.honnan && e.hova
               ? `${escFuvar(e.honnan)} → ${escFuvar(e.hova)}` : '-';
