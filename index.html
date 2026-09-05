@@ -3405,6 +3405,14 @@ body { font-size: 15px; }
           #live-map-close-btn { left: 14px; display: none; }
           #live-map-container.fullscreen #live-map-fullscreen-btn { display: none; }
           #live-map-container.fullscreen #live-map-close-btn { display: flex; }
+          #live-map-follow-btn {
+            position: absolute; z-index: 1001; top: 14px; left: 106px;
+            width: 34px; height: 34px; border-radius: 8px;
+            background: rgba(7,13,24,0.88); border: 1px solid var(--border);
+            color: #fff; font-size: 16px; display: flex; align-items: center;
+            justify-content: center; cursor: pointer;
+          }
+          #live-map-follow-btn.active { background: rgba(249,115,22,0.92); border-color: #f97316; }
           .city-name-label { pointer-events: none; white-space: nowrap; }
           .city-name-label span {
             font-size: 14px; font-weight: 700; color: #fff;
@@ -3477,6 +3485,7 @@ body { font-size: 15px; }
         <div id="live-map-container">
           <button id="live-map-fullscreen-btn" onclick="toggleLiveMapFullscreen(true)" title="Teljes képernyő">⛶</button>
           <button id="live-map-close-btn" onclick="toggleLiveMapFullscreen(false)" title="Bezárás">✕</button>
+          <button id="live-map-follow-btn" class="active" onclick="kovessSofortLiveTerkep()" title="Kövesd a sofőrt élőben">🎯</button>
           <div id="live-map"></div>
           <div id="live-map-no-data">
             <div style="font-size:40px;margin-bottom:12px;">🗺️</div>
@@ -12449,6 +12458,14 @@ let liveRefreshInterval = null;
 let liveSelectedDriver = null;
 let liveMapFitted = false;
 let liveCityLayer = null;
+// ÚJ: jelzi, hogy a felhasználó KÉZZEL elmozdította-e a térképet (húzással).
+// Amíg ez false, a térkép automatikusan "követi" a sofőr(öke)t minden frissítéskor
+// — enélkül a térkép csak EGYETLEN alkalommal (az első adatnál) állt rá a
+// sofőrre, utána soha többé nem igazította a nézetet, így ha a sofőr elhagyta
+// a kezdeti (gyakran nagyon szűk, egyetlen pontra rázoomolt) nézetet, a marker
+// technikailag a helyes helyre mozgott, de a látható térképkivágat ezt már nem
+// mutatta — emiatt tűnt úgy, mintha "nem tudná" a weboldal, hol jár a sofőr.
+let liveMapUserPanned = false;
 
 // Sofőr színek (minden sofőrnek egyedi szín)
 const DRIVER_COLORS = ['#f97316','#3b82f6','#4ade80','#a78bfa','#f43f5e','#06b6d4','#eab308','#ec4899'];
@@ -12488,7 +12505,16 @@ function initLiveTerkep() {
   liveMap.setView(gameToLatLng(liveMap, -20000, -3000, 'ets2'), 3);
   liveMapInitialized = true;
   liveMapFitted = false;
+  liveMapUserPanned = false;
   liveCityLayer = addCityLabels(liveMap, liveMapJatek);
+
+  // Ha a felhasználó saját kezűleg húzza a térképet, kapcsoljuk ki az
+  // automatikus követést, hogy ne "rángassa vissza" a nézetet, amíg ő épp
+  // körül akar nézni — a "🎯" gombbal bármikor visszakapcsolható.
+  liveMap.on('dragstart', () => {
+    liveMapUserPanned = true;
+    frissitKovetesGombot();
+  });
 
   // Automatikus frissítés 5 mp-enként (ennyi időnként küld új adatot az srt-trans.dll is)
   liveRefreshInterval = setInterval(refreshLiveDrivers, 5000);
@@ -12666,6 +12692,25 @@ async function refreshLiveDrivers() {
       liveMap.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 7 });
       liveMapFitted = true;
     }
+    // ÚJ: "Kövesd" mód — minden további frissítésnél is ellenőrizzük, hogy a
+    // sofőr(ök) még mindig látszanak-e a jelenlegi nézetben. Ha valaki kihajtott
+    // belőle (pl. tovább vezetett), automatikusan visszaigazítjuk a térképet rá
+    // — kivéve, ha a felhasználó közben kézzel elmozdította a térképet (akkor a
+    // "🎯" gombbal lehet visszakapcsolni). Csak akkor mozgatjuk a nézetet, ha
+    // tényleg szükséges (valaki kilóg belőle) — így nem "ugrál" feleslegesen
+    // minden 5 mp-es frissítésnél.
+    else if (!liveMapUserPanned && Object.keys(liveDriverMarkers).length > 0) {
+      const group = L.featureGroup(Object.values(liveDriverMarkers));
+      const bounds = group.getBounds();
+      if (bounds.isValid() && !liveMap.getBounds().contains(bounds)) {
+        if (Object.keys(liveDriverMarkers).length === 1) {
+          // Egyetlen sofőrnél sima követés (panTo) — nem piszkál a zoom szintbe.
+          liveMap.panTo(bounds.getCenter(), { animate: true });
+        } else {
+          liveMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 7 });
+        }
+      }
+    }
 
   } catch(e) {
     console.warn('[Live Térkép] Firebase hiba:', e.message);
@@ -12692,6 +12737,27 @@ function focusLiveDriver(key) {
     liveMap.setView(marker.getLatLng(), 6, { animate: true });
     marker.openPopup();
   }
+}
+
+// ÚJ: a "🎯" gomb — visszakapcsolja az automatikus követést (ha a felhasználó
+// korábban kézzel elhúzta a térképet), és azonnal rá is igazítja a nézetet a
+// jelenleg élő sofőr(ök)re.
+function kovessSofortLiveTerkep() {
+  liveMapUserPanned = false;
+  frissitKovetesGombot();
+  if (liveMap && Object.keys(liveDriverMarkers).length > 0) {
+    const group = L.featureGroup(Object.values(liveDriverMarkers));
+    liveMap.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 7 });
+  }
+}
+
+function frissitKovetesGombot() {
+  const btn = document.getElementById('live-map-follow-btn');
+  if (!btn) return;
+  btn.classList.toggle('active', !liveMapUserPanned);
+  btn.title = liveMapUserPanned
+    ? 'Kövesd újra a sofőrt (a térkép jelenleg nem követi automatikusan)'
+    : 'Kövesd a sofőrt élőben (bekapcsolva)';
 }
 
 // Térkép méret újraszámítás ha az oldal váltáskor aktiválódik
