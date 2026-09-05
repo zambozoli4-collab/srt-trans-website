@@ -12956,7 +12956,11 @@ function toLatLng(x, y, z, jatek) {
 async function refreshLiveDrivers() {
   if (!liveMapInitialized) return;
   try {
-    const FIREBASE_URL = 'https://srt-trans-c52a7-default-rtdb.firebaseio.com';
+    // JAVÍTVA: a liveTelemetry (élő térkép adata) átköltözött az új
+    // ("reply") adatbázisba — a routePoints/útvonal-visszajátszáshoz
+    // hasonlóan. A bot (index.js routePointSet) már ide írja, de a
+    // térkép eddig még a régi (immár üres) adatbázisból próbálta olvasni.
+    const FIREBASE_URL = 'https://srt-trans-reply-default-rtdb.europe-west1.firebasedatabase.app';
     const resp = await fetch(`${FIREBASE_URL}/liveTelemetry.json`);
     const allData = await resp.json();
 
