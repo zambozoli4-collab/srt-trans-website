@@ -12437,6 +12437,66 @@ const ETS2_CITIES = [
   {name:'Verona',x:39.1094,z:29453.3},{name:'Warszawa',x:37444.9,z:-9435.84},
   {name:'Wien',x:21298.3,z:14215.5},{name:'Wrocław',x:23502.9,z:-1950.98},
   {name:'Zürich',x:-8473.81,z:17968.5},
+  // --- Kiegészítés: Road to the Black Sea (Románia/Bulgária/Törökország) +
+  // 5 további romániai város, forrás: a felhasználó által feltöltött
+  // Koenvh1/ETS2-City-Coordinate-Retriever repó cities_balkan_e.json és
+  // cities.json fájljai. Epocha-ellenőrzés: a cities.json-ban szereplő
+  // Budapest/Bratislava/Debrecen/Kraków/Pécs/Praha/Szeged/Wien koordináták
+  // bájtra (vagy néhány egység eltéréssel) megegyeznek a fenti listával,
+  // tehát ugyanaz a koordináta-verzió. A cities_balkan_e.json és a
+  // cities.json közös városai (Bacău, Constanța, Craiova, Cluj-Napoca,
+  // Timișoara) között csak kis, irány nélküli eltérés van (max ~2000
+  // egység) — ez mérési zaj két különböző kinyerés között, NEM
+  // léptékváltás, tehát biztonságosan felhasználható.
+  {name:'Bacău',x:62137.4,z:18494},{name:'Brașov',x:58252.4,z:23552.8},
+  {name:'București',x:61121,z:31703.6},{name:'Burgas',x:68297.2,z:40880.7},
+  {name:'Cernavodă',x:69579.5,z:30015.4},{name:'Cluj-Napoca',x:50303.3,z:18277.2},
+  {name:'Constanța',x:71731.7,z:30870.9},{name:'Craiova',x:51918.5,z:33228.5},
+  {name:'Călărași',x:66074.6,z:31257.8},{name:'Edirne',x:65096,z:46829.2},
+  {name:'Galați',x:67046.2,z:24473},{name:'Hunedoara',x:49016.9,z:26114.8},
+  {name:'Iași',x:64746.4,z:14963.9},{name:'Karlovo',x:58056.4,z:42057.7},
+  {name:'Kozloduy',x:52658.2,z:36247.3},{name:'Mangalia',x:71577.7,z:33330.9},
+  {name:'Pernik',x:48351.3,z:45310.5},{name:'Pirdop',x:55937.9,z:42161.1},
+  {name:'Pitești',x:56247.5,z:29912.5},{name:'Pleven',x:57594.6,z:37457.6},
+  {name:'Plovdiv',x:58234.8,z:46169.4},{name:'Reșița',x:43990.4,z:29154.6},
+  {name:'Ruse',x:61454,z:35069.8},{name:'Sofia',x:51154.8,z:42490.6},
+  {name:'Tekirdağ',x:68590.5,z:49762.8},{name:'Timișoara',x:41402.3,z:27128},
+  {name:'Târgu Mureș',x:53959.7,z:20157.2},{name:'Varna',x:70143.4,z:36462.2},
+  {name:'Veliko Tarnovo',x:60763.4,z:38859.5},{name:'İstanbul',x:75753.5,z:47644},
+  {name:'Arad',x:41265.9,z:24603.7},{name:'Baia Mare',x:49264.7,z:15764.6},
+  {name:'Oradea',x:43493.9,z:19439.1},{name:'Piatra Neamţ',x:59773,z:17823.8},
+  {name:'Sibiu',x:52251.6,z:26325.7},
+  // --- Kiegészítés: Nyugat-Balkán határmenti városok (Horvátország/Szerbia/
+  // Bosznia/Szlovénia), forrás: cities_project_balkans_2.2.json. Epocha-
+  // ellenőrzés: a Maribor koordináta bájtra egyezik a cities.json-nal, a
+  // Ljubljana koordináta ~130 egységgel tér el — ez is mérési zaj, nem
+  // léptékváltás.
+  // FONTOS HIÁNYOSSÁG: ebben a repóban SEHOL nem található megbízható
+  // koordináta Zágráb, Belgrád, Novi Sad, Szarajevó és Szkopje városokhoz,
+  // pedig ezek a fuvarok gyakran érintik őket — ezek továbbra is hiányoznak
+  // a térképről, mert rossz koordinátával kiírni őket rosszabb lenne, mint
+  // egyáltalán nem kiírni.
+  {name:'Brod',x:28427,z:31904.5},{name:'Doboj',x:28738.5,z:33952},
+  {name:'Ljubljana',x:14583,z:26544.1},{name:'Maribor',x:18319.2,z:24176.3},
+  {name:'Novo mesto',x:17082.4,z:28594.2},{name:'Osijek',x:30999.1,z:29231.6},
+  {name:'Slavonski Brod',x:28441.5,z:31539.2},{name:'Sremska Mitrovica',x:34996,z:32520.7},
+  {name:'Udine',x:9876.48,z:26440.5},{name:'Virovitica',x:25820.5,z:27611.5},
+  // --- Kiegészítés: Franciaország DLC városai, forrás: cities_fr.json.
+  // Epocha-ellenőrzés: a cities.json-ban is szereplő francia városok
+  // (Bordeaux, Brest, Le Havre, Limoges, Le Mans, Nantes, Rennes, Toulouse)
+  // koordinátái ~200-1800 egységgel térnek el, irány nélküli szórással —
+  // ez ugyanaz a zaj-jellegű eltérés, mint a fenti eseteknél, tehát ugyanaz
+  // az epocha.
+  {name:'Bordeaux',x:-46138.6,z:27274.4},{name:'Bourges',x:-31951.8,z:16275.5},
+  {name:'Brest',x:-56771.4,z:3869.3},{name:'Civaux',x:-39029.7,z:18292},
+  {name:'Clermont-Ferrand',x:-30447.4,z:24698.4},{name:'Golfech',x:-40395.4,z:31472.6},
+  {name:'La Rochelle',x:-46575.7,z:19532.5},{name:'Le Havre',x:-37894.2,z:1515.48},
+  {name:'Le Mans',x:-39749.7,z:9718.43},{name:'Limoges',x:-37417.3,z:23632},
+  {name:'Marseille',x:-23472.4,z:39210.8},{name:'Montpellier',x:-30052.4,z:36127.6},
+  {name:'Nantes',x:-47170.9,z:13162},{name:'Nice',x:-15520.4,z:38206.2},
+  {name:'Paluel',x:-33608.1,z:224.902},{name:'Rennes',x:-46539.8,z:8064.61},
+  {name:'Roscoff',x:-53697.9,z:3120.41},{name:'Saint-Alban-du-Rhône',x:-25953.6,z:28986.3},
+  {name:'Saint-Laurent',x:-35649.6,z:13817.4},{name:'Toulouse',x:-39213.8,z:35665.6},
 ];
 
 // ATS alapjáték városnevei (Kalifornia + Nevada — ugyanabból a nyilvános
@@ -12444,16 +12504,22 @@ const ETS2_CITIES = [
 // ETS2 koordináták (pl. Berlin, Budapest, Amsterdam) bájtra egyeznek a fenti
 // ETS2_CITIES listával, tehát ugyanaz a koordináta-verzió/epocha, mint amit
 // ez az oldal már használ).
-// FONTOS KORLÁTOZÁS: az ATS térkép több alkalommal jelentősen átalakult a
-// később hozzáadott DLC-államokkal (Arizona, Oregon, Utah, Colorado, stb.) —
-// az ezekhez elérhető nyilvános koordináták egy RÉGEBBI, eltérő léptékű/
-// átdolgozott térkép-verzióból származnak (nem konvertálhatók egyszerű
-// szorzással az jelenlegi koordináta-rendszerbe, mert nem egyenletes
-// átméretezés történt, hanem az útvonalak/városok tényleges áthelyezése is).
-// Rossz koordinátával feltenni egy városnevet ROSSZABB, mint egyáltalán nem
-// kiírni — ezért egyelőre csak ezt a 30, megbízhatóan ellenőrzött várost
-// tartalmazza a lista. Ha a többi állam városaihoz is van megbízható,
-// ellenőrzött koordinátád, ez a lista bővíthető.
+// FRISSÍTVE: a felhasználó által feltöltött Koenvh1/ETS2-City-Coordinate-
+// Retriever repóban megtaláltuk a cities_ats_1.3.json fájlt, ami Arizona
+// koordinátáit ugyanazon epochában tartalmazza, mint a Kalifornia/Nevada
+// alap — ellenőrzés: a fájlban szereplő Bakersfield/Barstow/Carlsbad/stb.
+// koordináták BÁJTRA egyeznek a fenti listával, tehát Arizona biztonságosan
+// hozzáadható.
+// FONTOS KORLÁTOZÁS TOVÁBBRA IS FENNÁLL: Oregon, Washington, Utah, Új-Mexikó
+// és Montana városaihoz is van adat a repóban (cities_ats_or.json,
+// cities_wa.json, cities_ut.json, cities_nm.json, cities_mt.json), DE ezek
+// a fájlok önmagukban, más állam városa nélkül állnak, így nincs közös
+// városnév, amivel ellenőrizni lehetne, hogy ugyanaz-e a koordináta-epocha,
+// mint a fenti (CA/NV/AZ) listáé. Mivel a cities_ats_1.5.json fájl igazoltan
+// egy MÁSIK, összeegyeztethetetlen epochát használ (pl. Bakersfield ott
+// x:-104572,z:6987.57 — teljesen más, mint a fenti -52261.9/20598.8), ezért
+// az ellenőrizhetetlen államokat NEM tettük be — rossz koordinátával
+// kiírni egy várost rosszabb, mint egyáltalán nem kiírni.
 const ATS_CITIES = [
   {name:'Bakersfield',x:-52261.9,z:20598.8},{name:'Barstow',x:-47300.4,z:21963.2},
   {name:'Carlsbad',x:-49106.5,z:27008},{name:'Carson City',x:-51957.3,z:8904.93},
@@ -12470,10 +12536,20 @@ const ATS_CITIES = [
   {name:'San Francisco',x:-60374.2,z:13271},{name:'San Rafael',x:-61918.1,z:10079.6},
   {name:'Stockton',x:-57824.6,z:12037.9},{name:'Tonopah',x:-48104.3,z:12496.8},
   {name:'Truckee',x:-56640.5,z:8566.73},{name:'Winnemucca',x:-50540.7,z:1847.23},
+  // --- Kiegészítés: Arizona (cities_ats_1.3.json, epocha-ellenőrizve fent)
+  {name:'Camp Verde',x:-33629.5,z:24333.2},{name:'Ehrenberg',x:-39775.6,z:25641.3},
+  {name:'Flagstaff',x:-32217.3,z:20628.5},{name:'Grand Canyon Village',x:-34858.1,z:17678.5},
+  {name:'Holbrook',x:-28652.1,z:22607.4},{name:'Kayenta',x:-27266,z:16366},
+  {name:'Kingman',x:-38210.2,z:20919.9},{name:'Nogales',x:-31347.3,z:33621.1},
+  {name:'Page',x:-31973.2,z:15909.3},{name:'Phoenix',x:-35803.2,z:27274.2},
+  {name:'San Simon',x:-26847.4,z:30618.6},{name:'Show Low',x:-29201.1,z:24820.8},
+  {name:'Sierra Vista',x:-28898,z:33499.8},{name:'Tucson',x:-31249.8,z:30690.9},
+  {name:'Yuma',x:-39644,z:29858.5},
 ];
 
-// Városnév-címkék hozzáadása egy térképhez — ETS2-nél teljes alapjáték-
-// lista, ATS-nél a fent leírt korlátozással (csak Kalifornia + Nevada).
+// Városnév-címkék hozzáadása egy térképhez — ETS2-nél alapjáték + Románia/
+// Bulgária/Törökország/Nyugat-Balkán/Franciaország kiegészítés, ATS-nél
+// Kalifornia + Nevada + Arizona (a fent leírt korlátozással a többi államra).
 // A címkék áttetszősége a zoom szinttől függ, hogy kis nagyításnál ne legyen zsúfolt.
 function addCityLabels(map, jatek) {
   const cities = jatek === 'ats' ? ATS_CITIES : (jatek === 'ets2' ? ETS2_CITIES : null);
