@@ -3408,7 +3408,6 @@ body { font-size: 15px; }
       <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab(this, 'tab-trucky-map')">🚛 Trucky Világ Térkép</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-tmp-map')">🗺 TruckersMP Térkép</button>
-        <button class="tab-btn" onclick="switchTab(this, 'tab-vtlog-map')">🌍 VTLog Térkép (Promods/RusMap)</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-live-map'); initLiveTerkep()">🔴 Élő SRT Térkép</button>
       </div>
 
@@ -3560,28 +3559,6 @@ body { font-size: 15px; }
           <a href="https://map.truckersmp.com" style="display: inline-block; padding: 12px 28px; background: #e85d04; color: #fff; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none;">🔗 Megnyitás TruckersMP térképen →</a>
         </div>
       </div>
-
-      <!-- ── VTLog Térkép tab (Promods + RusMap + alapjáték) ── -->
-      <div id="tab-vtlog-map" class="tab-panel">
-        <div style="margin-bottom:12px;padding:14px 18px;background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(59,130,246,0.04));border:1px solid rgba(59,130,246,0.3);border-radius:12px;">
-          <div style="font-size:13px;color:#93c5fd;font-weight:600;margin-bottom:4px;">🌍 VTLog Térkép — Promods 2.x + RusMap + alapjáték</div>
-          <div style="font-size:12px;color:var(--muted);">Teljes ETS2 térkép utakkal, benzinkutakkal, pihenőkkel, cégekkel — beleértve Oroszország, Ukrajna, Skandinávia és Promods területeket.</div>
-        </div>
-        <div style="border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-          <iframe
-            src="https://map.vtlog.net/ets2?mode=frame"
-            title="VTLog ETS2 Térkép"
-            style="width:100%;height:75vh;border:none;display:block;"
-            loading="lazy"
-            allowfullscreen>
-          </iframe>
-        </div>
-        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
-          <a href="https://map.vtlog.net/ets2" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:#3b82f6;color:#fff;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">🔗 Teljes méretben →</a>
-          <a href="https://map.vtlog.net/ets2?mode=frame" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">📍 Promods területek is látszanak</a>
-        </div>
-      </div>
-      <!-- ── /VTLog Térkép tab ── -->
 
     </div>
   </div>
@@ -12557,6 +12534,64 @@ const ETS2_CITIES = [
   {name:'Paluel',x:-33608.1,z:224.902},{name:'Rennes',x:-46539.8,z:8064.61},
   {name:'Roscoff',x:-53697.9,z:3120.41},{name:'Saint-Alban-du-Rhône',x:-25953.6,z:28986.3},
   {name:'Saint-Laurent',x:-35649.6,z:13817.4},{name:'Toulouse',x:-39213.8,z:35665.6},
+  // --- Olaszország DLC városai (cities_italy_map.json)
+  {name:'Ajaccio',x:-10031.5,z:48620.9},{name:'Ancona',x:10260.4,z:40272.5},
+  {name:'Bari',x:23803.7,z:54577.8},{name:'Bastia',x:-7139.6,z:44186.3},
+  {name:'Bologna',x:1895.7,z:34717.7},{name:'Bonifacio',x:-8469.8,z:52254.9},
+  {name:'Cagliari',x:-9351.1,z:64225.5},{name:'Calvi',x:-10035.8,z:46017.5},
+  {name:'Catania',x:16904.9,z:75107.5},{name:'Catanzaro',x:23154.8,z:66889.7},
+  {name:'Civitavecchia',x:3124.0,z:48749.1},{name:'Crotone',x:25677.5,z:65250.7},
+  {name:'Enna',x:12818.1,z:74267.5},{name:'Firenze',x:2042.7,z:38929.3},
+  {name:'Foggia',x:18927.3,z:52413.7},{name:'Genova',x:-8329.9,z:34875.6},
+  {name:'Imola',x:3285.9,z:35401.5},{name:"L'Aquila",x:10098.9,z:46803.9},
+  {name:"L'Île-Rousse",x:-8914.7,z:44676.3},{name:'La Spezia',x:-5183.6,z:37196.4},
+  {name:'Latina',x:7572.0,z:52219.6},{name:'Lecce',x:30077.0,z:58629.2},
+  {name:'Livorno',x:-2974.6,z:40352.3},{name:'Lucca',x:-1316.9,z:38411.4},
+  {name:'Messina',x:18557.4,z:70913.3},{name:'Modena',x:-110.4,z:34033.2},
+  {name:'Napoli',x:13301.3,z:55970.5},{name:'Olbia',x:-6934.5,z:54933.6},
+  {name:'Oristano',x:-11619.1,z:59839.6},{name:'Palermo',x:8961.5,z:71177.8},
+  {name:'Parma',x:-2529.5,z:33610.7},{name:'Perugia',x:5484.8,z:42625.8},
+  {name:'Pescara',x:12380.7,z:47439.0},{name:'Pisa',x:-2296.7,z:39358.6},
+  {name:'Porto-Vecchio',x:-7626.5,z:51010.2},{name:'Potenza',x:19793.2,z:57224.2},
+  {name:'Ravenna',x:5416.9,z:35514.5},{name:'Reggio',x:20164.5,z:72275.1},
+  {name:'Roma',x:5853.8,z:49761.7},{name:'Siena',x:1194.2,z:41722.3},
+  {name:'Taranto',x:25414.4,z:58739.8},
+  // --- Skandinávia DLC + Beyond the Baltic Sea városai (cities_btbs.json)
+  {name:'Daugavpils',x:53075.4,z:-31905.7},{name:'Helsinki',x:44945.4,z:-55691.5},
+  {name:'Kaunas',x:45564.0,z:-25347.7},{name:'Klaipėda',x:36342.8,z:-28719.6},
+  {name:'Kotka',x:50245.1,z:-58045.7},{name:'Kouvola',x:48776.3,z:-60408.9},
+  {name:'Kunda',x:49785.3,z:-52304.7},{name:'Lahti',x:45529.8,z:-60557.0},
+  {name:'Liepāja',x:35329.5,z:-33299.9},{name:'Loviisa',x:47717.4,z:-57187.8},
+  {name:'Mažeikiai',x:39434.4,z:-32809.6},{name:'Naantali',x:35110.2,z:-56362.4},
+  {name:'Narva',x:54382.2,z:-52462.3},{name:'Olkiluoto',x:34255.3,z:-60008.2},
+  {name:'Paldiski',x:42570.0,z:-50011.9},{name:'Panevėžys',x:46202.3,z:-29962.8},
+  {name:'Pärnu',x:44626.8,z:-45237.7},{name:'Pori',x:34862.3,z:-61707.6},
+  {name:'Rēzekne',x:54953.4,z:-36075.6},{name:'Rīga',x:44678.0,z:-37089.7},
+  {name:'Šiauliai',x:43188.8,z:-30503.8},{name:'Tallinn',x:44388.5,z:-50868.6},
+  {name:'Tampere',x:40238.8,z:-62490.7},{name:'Tartu',x:50958.0,z:-46408.0},
+  {name:'Turku',x:36697.8,z:-56006.0},{name:'Utena',x:50778.2,z:-29540.4},
+  {name:'Valmiera',x:47973.1,z:-40783.7},{name:'Ventspils',x:36679.7,z:-38562.0},
+  {name:'Vilnius',x:50562.6,z:-24885.7},{name:'Vyborg',x:54465.3,z:-60221.8},
+  {name:'Saint-Petersburg',x:59773.8,z:-57040.6},
+  // --- Iberia DLC városai (GPS-alapú számítás)
+  {name:'A Coruña',x:-72000.0,z:4000.0},{name:'Albacete',x:-32000.0,z:41000.0},
+  {name:'Alicante',x:-29000.0,z:46000.0},{name:'Almería',x:-26000.0,z:56000.0},
+  {name:'Aveiro',x:-80000.0,z:19000.0},{name:'Badajoz',x:-58000.0,z:42000.0},
+  {name:'Barcelona',x:-17000.0,z:42000.0},{name:'Bilbao',x:-36000.0,z:30000.0},
+  {name:'Braga',x:-77000.0,z:16000.0},{name:'Burgos',x:-38000.0,z:35000.0},
+  {name:'Castellón',x:-23000.0,z:43000.0},{name:'Córdoba',x:-38000.0,z:52000.0},
+  {name:'Faro',x:-69000.0,z:54000.0},{name:'Gijón',x:-47000.0,z:28000.0},
+  {name:'Granada',x:-30000.0,z:55000.0},{name:'Huelva',x:-58000.0,z:54000.0},
+  {name:'León',x:-51000.0,z:32000.0},{name:'Lisboa',x:-80000.0,z:43000.0},
+  {name:'Logroño',x:-36000.0,z:33000.0},{name:'Lugo',x:-62000.0,z:27000.0},
+  {name:'Madrid',x:-40000.0,z:39000.0},{name:'Málaga',x:-30000.0,z:58000.0},
+  {name:'Murcia',x:-27000.0,z:49000.0},{name:'Oviedo',x:-48000.0,z:28000.0},
+  {name:'Pamplona',x:-31000.0,z:32000.0},{name:'Porto',x:-77000.0,z:18000.0},
+  {name:'Salamanca',x:-52000.0,z:37000.0},{name:'San Sebastián',x:-34000.0,z:29000.0},
+  {name:'Santander',x:-41000.0,z:28000.0},{name:'Sevilla',x:-49000.0,z:54000.0},
+  {name:'Toledo',x:-40000.0,z:42000.0},{name:'Valencia',x:-26000.0,z:44000.0},
+  {name:'Valladolid',x:-46000.0,z:35000.0},{name:'Vigo',x:-71000.0,z:22000.0},
+  {name:'Vitoria',x:-36000.0,z:31000.0},{name:'Zaragoza',x:-28000.0,z:37000.0},
 ];
 
 // ATS alapjáték városnevei (Kalifornia + Nevada — ugyanabból a nyilvános
