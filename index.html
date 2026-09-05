@@ -3408,6 +3408,7 @@ body { font-size: 15px; }
       <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab(this, 'tab-trucky-map')">🚛 Trucky Világ Térkép</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-tmp-map')">🗺 TruckersMP Térkép</button>
+        <button class="tab-btn" onclick="switchTab(this, 'tab-vtlog-map')">🌍 VTLog Térkép (Promods/RusMap)</button>
         <button class="tab-btn" onclick="switchTab(this, 'tab-live-map'); initLiveTerkep()">🔴 Élő SRT Térkép</button>
       </div>
 
@@ -3559,6 +3560,28 @@ body { font-size: 15px; }
           <a href="https://map.truckersmp.com" style="display: inline-block; padding: 12px 28px; background: #e85d04; color: #fff; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none;">🔗 Megnyitás TruckersMP térképen →</a>
         </div>
       </div>
+
+      <!-- ── VTLog Térkép tab (Promods + RusMap + alapjáték) ── -->
+      <div id="tab-vtlog-map" class="tab-panel">
+        <div style="margin-bottom:12px;padding:14px 18px;background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(59,130,246,0.04));border:1px solid rgba(59,130,246,0.3);border-radius:12px;">
+          <div style="font-size:13px;color:#93c5fd;font-weight:600;margin-bottom:4px;">🌍 VTLog Térkép — Promods 2.x + RusMap + alapjáték</div>
+          <div style="font-size:12px;color:var(--muted);">Teljes ETS2 térkép utakkal, benzinkutakkal, pihenőkkel, cégekkel — beleértve Oroszország, Ukrajna, Skandinávia és Promods területeket.</div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+          <iframe
+            src="https://map.vtlog.net/ets2?mode=frame"
+            title="VTLog ETS2 Térkép"
+            style="width:100%;height:75vh;border:none;display:block;"
+            loading="lazy"
+            allowfullscreen>
+          </iframe>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="https://map.vtlog.net/ets2" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:#3b82f6;color:#fff;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">🔗 Teljes méretben →</a>
+          <a href="https://map.vtlog.net/ets2?mode=frame" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">📍 Promods területek is látszanak</a>
+        </div>
+      </div>
+      <!-- ── /VTLog Térkép tab ── -->
 
     </div>
   </div>
