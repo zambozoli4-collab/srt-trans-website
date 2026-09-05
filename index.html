@@ -11992,6 +11992,8 @@ let routeMap = null;
 let routeMapInit = false;
 let routeMarker = null;
 let routePolyline = null;
+let routeStartMarker = null; // ÚJ: eddig nem volt eltárolva, ezért sosem lehetett törölni
+let routeEndMarker = null;   // ÚJ: eddig nem volt eltárolva, ezért sosem lehetett törölni
 let routePoints = [];
 let routePlayInterval = null;
 let routeCurrentIdx = 0;
@@ -12033,6 +12035,22 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
   seekSliderInit.max = 0;
   seekSliderInit.value = 0;
   stopRouteAnimation();
+
+  // JAVÍTVA: az ELŐZŐ visszajátszásból megmaradt térkép-rétegeket (útvonal,
+  // kamion-jelölő, sebességtúllépés-pontok) eddig csak KÖZVETLENÜL AZ ÚJ
+  // útvonal felrajzolása előtt töröltük — ha viszont a friss fuvarnál a
+  // betöltés korábban kilépett (pl. "nem volt gyors hajtás" jelző, üres
+  // útvonal, vagy nincs launcher-adat), ez a törlés sosem futott le, ezért a
+  // térkép tévesen továbbra is az ELŐZŐ (más fuvarhoz tartozó) útvonalat
+  // mutatta, miközben a cím fölötte már a helyes, új üzenetet írta ki. Most
+  // ezt itt, minden megnyitáskor elöl is elvégezzük, hogy ilyenkor a térkép
+  // tényleg üresen induljon.
+  if (routeMarker) { routeMap && routeMap.removeLayer(routeMarker); routeMarker = null; }
+  if (routePolyline) { routeMap && routeMap.removeLayer(routePolyline); routePolyline = null; }
+  if (routeStartMarker) { routeMap && routeMap.removeLayer(routeStartMarker); routeStartMarker = null; }
+  if (routeEndMarker) { routeMap && routeMap.removeLayer(routeEndMarker); routeEndMarker = null; }
+  if (routeMap) routeSpeedMarkers.forEach(m => routeMap.removeLayer(m));
+  routeSpeedMarkers = [];
 
   // Térkép inicializálás
   if (!routeMapInit) {
@@ -12161,6 +12179,8 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     // Régi rétegek törlése
     if (routeMarker) { routeMap.removeLayer(routeMarker); routeMarker = null; }
     if (routePolyline) { routeMap.removeLayer(routePolyline); routePolyline = null; }
+    if (routeStartMarker) { routeMap.removeLayer(routeStartMarker); routeStartMarker = null; }
+    if (routeEndMarker) { routeMap.removeLayer(routeEndMarker); routeEndMarker = null; }
     routeSpeedMarkers.forEach(m => routeMap.removeLayer(m));
     routeSpeedMarkers = [];
 
@@ -12174,11 +12194,13 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     seekSlider.max = routePoints.length - 1;
     seekSlider.value = 0;
 
-    // Start/End marker
-    L.marker(allLatLngs[0], {
+    // Start/End marker — JAVÍTVA: eddig nem voltak eltárolva, ezért egy
+    // korábbi visszajátszás start/cél-jelölői sosem törlődtek, hanem örökre
+    // rajta maradtak a térképen, valahányszor egy újabb fuvart nyitottál meg.
+    routeStartMarker = L.marker(allLatLngs[0], {
       icon: L.divIcon({ html: '<div style="width:14px;height:14px;border-radius:50%;background:#4ade80;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5);"></div>', className:'', iconSize:[14,14], iconAnchor:[7,7] })
     }).addTo(routeMap).bindPopup(`🟢 Start: ${from}`);
-    L.marker(allLatLngs[allLatLngs.length-1], {
+    routeEndMarker = L.marker(allLatLngs[allLatLngs.length-1], {
       icon: L.divIcon({ html: '<div style="width:14px;height:14px;border-radius:50%;background:#f43f5e;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.5);"></div>', className:'', iconSize:[14,14], iconAnchor:[7,7] })
     }).addTo(routeMap).bindPopup(`🔴 Cél: ${to}`);
 
