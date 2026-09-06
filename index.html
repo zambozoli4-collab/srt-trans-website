@@ -3472,6 +3472,8 @@ body { font-size: 15px; }
           .live-driver-dot.active { background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,0.3); animation: pulse-green 2s infinite; }
           .live-driver-dot.stale  { background: #f97316; }
           .live-driver-dot.offline { background: #6b7280; }
+          .live-driver-row.followed { background: rgba(249,115,22,0.14); border-radius: 6px; padding-left: 4px; }
+          .live-driver-row.followed span:first-of-type { color: #f97316; font-weight: 700; }
           @keyframes pulse-green { 0%,100%{box-shadow:0 0 0 3px rgba(74,222,128,0.3)} 50%{box-shadow:0 0 0 6px rgba(74,222,128,0.08)} }
           #live-map-status { font-size: 11px; color: var(--muted); margin-top: 10px; text-align: center; }
           #live-map-game-switcher { display: flex; gap: 6px; margin-bottom: 14px; }
@@ -12997,6 +12999,12 @@ let liveCityLayer = null;
 // technikailag a helyes helyre mozgott, de a látható térképkivágat ezt már nem
 // mutatta — emiatt tűnt úgy, mintha "nem tudná" a weboldal, hol jár a sofőr.
 let liveMapUserPanned = false;
+// ÚJ: melyik sofőrt "követjük" folyamatosan (rákattintás után). Amíg ez be van
+// állítva és a felhasználó nem húzta el kézzel a térképet, minden egyes
+// frissítésnél a térkép közepére igazítjuk ennek a sofőrnek a pozícióját —
+// így a kamionja soha nem tud "kilógni" a látható térképablakból, hanem a
+// térkép vele együtt mozog.
+let liveFollowedDriver = null;
 
 // Sofőr színek (minden sofőrnek egyedi szín)
 const DRIVER_COLORS = ['#f97316','#3b82f6','#4ade80','#a78bfa','#f43f5e','#06b6d4','#eab308','#ec4899'];
@@ -13074,6 +13082,7 @@ document.addEventListener('keydown', (e) => {
 
 function setLiveTerkepJatek(jatek) {
   liveMapJatek = jatek;
+  liveFollowedDriver = null;
   document.getElementById('live-btn-ets2').classList.toggle('active', jatek === 'ets2');
   document.getElementById('live-btn-ats').classList.toggle('active', jatek === 'ats');
 
@@ -13213,13 +13222,27 @@ async function refreshLiveDrivers() {
         showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName, maxWear);
       }
 
+      // ÚJ: ha ez a "követett" sofőr, minden frissítésnél a térkép közepére
+      // igazítjuk a pozícióját, hogy sose tudjon kilógni a térképablakból —
+      // kivéve, ha a felhasználó épp kézzel elhúzta a térképet.
+      if (liveFollowedDriver === d.key && liveMap && !liveMapUserPanned) {
+        liveMap.panTo(latLng, { animate: true, duration: 0.6 });
+      }
+
+      const followedClass = liveFollowedDriver === d.key ? ' followed' : '';
       legendHtml += `
-        <div class="live-driver-row" onclick="focusLiveDriver('${d.key}')">
+        <div class="live-driver-row${followedClass}" onclick="focusLiveDriver('${d.key}')">
           <div class="live-driver-dot ${dotClass}" style="background:${dotColor};"></div>
           <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nev}</span>
           <span style="color:#6b7280;font-size:11px;">${speed} km/h</span>
         </div>`;
     });
+
+    // Ha a követett sofőr időközben eltűnt a listából (pl. kilépett), töröljük
+    // a követést, nehogy egy nem létező kulcsra próbáljunk később rácentrázni.
+    if (liveFollowedDriver && !currentKeys.has(liveFollowedDriver)) {
+      liveFollowedDriver = null;
+    }
 
     legendList.innerHTML = legendHtml || '<div style="font-size:12px;color:var(--muted);">Nincs adat</div>';
     statusEl.textContent = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
@@ -13237,7 +13260,7 @@ async function refreshLiveDrivers() {
     // "🎯" gombbal lehet visszakapcsolni). Csak akkor mozgatjuk a nézetet, ha
     // tényleg szükséges (valaki kilóg belőle) — így nem "ugrál" feleslegesen
     // minden 5 mp-es frissítésnél.
-    else if (!liveMapUserPanned && Object.keys(liveDriverMarkers).length > 0) {
+    else if (!liveFollowedDriver && !liveMapUserPanned && Object.keys(liveDriverMarkers).length > 0) {
       const group = L.featureGroup(Object.values(liveDriverMarkers));
       const bounds = group.getBounds();
       if (bounds.isValid() && !liveMap.getBounds().contains(bounds)) {
@@ -13271,10 +13294,23 @@ function showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName
 
 function focusLiveDriver(key) {
   const marker = liveDriverMarkers[key];
-  if (marker && liveMap) {
-    liveMap.setView(marker.getLatLng(), 6, { animate: true });
-    marker.openPopup();
+  if (!marker || !liveMap) return;
+
+  // Ha ugyanarra a sofőrre kattint még egyszer, akikapcsoljuk a követést
+  // (marad a jelenlegi nézet, csak nem "ragad rá" tovább a kamionra).
+  if (liveFollowedDriver === key) {
+    liveFollowedDriver = null;
+    frissitKovetesGombot();
+    return;
   }
+
+  liveFollowedDriver = key;
+  liveMapUserPanned = false;
+  frissitKovetesGombot();
+  // Teljesen ráközelítünk (max zoom szint) és odaugrunk, majd innentől minden
+  // frissítésnél (lásd refreshLiveDrivers) automatikusan követjük a mozgását.
+  liveMap.setView(marker.getLatLng(), liveMap.getMaxZoom(), { animate: true });
+  marker.openPopup();
 }
 
 // ÚJ: a "🎯" gomb — visszakapcsolja az automatikus követést (ha a felhasználó
@@ -13283,7 +13319,12 @@ function focusLiveDriver(key) {
 function kovessSofortLiveTerkep() {
   liveMapUserPanned = false;
   frissitKovetesGombot();
-  if (liveMap && Object.keys(liveDriverMarkers).length > 0) {
+  if (!liveMap) return;
+
+  if (liveFollowedDriver && liveDriverMarkers[liveFollowedDriver]) {
+    // Van kijelölt/követett sofőr — arra igazítunk vissza, teljes ráközelítéssel.
+    liveMap.setView(liveDriverMarkers[liveFollowedDriver].getLatLng(), liveMap.getMaxZoom(), { animate: true });
+  } else if (Object.keys(liveDriverMarkers).length > 0) {
     const group = L.featureGroup(Object.values(liveDriverMarkers));
     liveMap.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 7 });
   }
