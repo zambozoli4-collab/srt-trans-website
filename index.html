@@ -3490,6 +3490,13 @@ body { font-size: 15px; }
           .leaflet-popup-tip { background: rgba(7,13,24,0.95)!important; }
           .leaflet-popup-content { color: #e8f0fc!important; font-size: 13px!important; line-height: 1.6!important; }
           #live-map-no-data { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(7,13,24,0.7); z-index: 500; border-radius: 14px; }
+          /* Fix: a globális világos téma felülírja a --text/--orange/--muted változókat,
+             emiatt a sötét hátterű élő-sofőr dobozban a szöveg olvashatatlanná vált.
+             Itt fix, világos színekkel biztosítjuk az olvashatóságot a sötét dobozon. */
+          #live-map-legend, #live-map-legend * { color: #e8f0fc !important; }
+          #live-map-legend h4 { color: #f97316 !important; }
+          #live-map-status { color: rgba(232,240,252,0.65) !important; }
+          .live-driver-row { border-bottom-color: rgba(255,255,255,0.12) !important; }
         </style>
 
         <!-- Játék választó + Sofőr info panel -->
