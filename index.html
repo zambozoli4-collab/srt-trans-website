@@ -8632,6 +8632,10 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
 
     onValue(ref(db, 'aktivFuvarok'), (snapshot) => {
       aktivFuvarokAdat = snapshot.val() || {};
+      // JAVÍTVA: a "Futó fuvarok" számláló egy másik <script> blokkban fut, ami
+      // (mivel ez egy <script type="module">) nem látja ezt a lokális változót.
+      // Ezért globálisan is elérhetővé tesszük window-on keresztül.
+      window.aktivFuvarokAdat = aktivFuvarokAdat;
       window.frissitiFuvarWidgeteket();
     }, (hiba) => console.warn('Aktív fuvarok figyelési hiba:', hiba.message));
     // A "Fuvarban: X perce" érték percenként frissüljön akkor is, ha nincs új Firebase esemény.
@@ -10062,7 +10066,11 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       totalJobs += jobs.length || Number(u && (u.totalJobs || u.osszesFuvar) || 0);
     });
 
-    const activeSource = (typeof aktivFuvarokAdat !== 'undefined' && aktivFuvarokAdat) ? aktivFuvarokAdat : {};
+    // JAVÍTVA: a korábbi "aktivFuvarokAdat" egy másik <script type="module"> blokk
+    // saját, elszigetelt változója volt, amit ez a script sosem látott — ezért
+    // a "Futó fuvarok" mindig 0 maradt. Most a window-ra kitett globális
+    // változatot olvassuk, amit az a modul frissít minden Firebase változáskor.
+    const activeSource = (window.aktivFuvarokAdat && typeof window.aktivFuvarokAdat === 'object') ? window.aktivFuvarokAdat : {};
     const activeJobs = Object.values(activeSource).filter(e => {
       const game = String(e && (e.jatek || e.gameType) || 'ETS2').toLowerCase();
       return game !== 'ats';
