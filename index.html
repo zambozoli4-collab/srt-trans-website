@@ -4477,6 +4477,34 @@ body { font-size: 15px; }
       return (name || '').replace(/[.#$\[\]]/g, '_');
     }
 
+    // Központi mentő függvény a srtdata.json (allData + allJobs) Firebase-be
+    // írásához. KRITIKUS: korábban minden törlő/mentő funkció simán
+    // `await fetch(...)`-ot hívott a res.ok ELLENŐRZÉSE NÉLKÜL. A fetch()
+    // csak hálózati hibán dob kivételt - egy Firebase "permission denied"
+    // (pl. megváltozott Database Rules miatt) vagy egyéb HTTP hibaválasz
+    // (4xx/5xx) NEM dob hibát, tehát a hívó kód azt hitte a mentés sikerült,
+    // a felületen eltűnt a törölt fuvar/sofőr, de a szerveren valójában
+    // semmi nem változott. Emiatt frissítéskor (újratöltéskor) a "törölt"
+    // elem visszatért, mert sosem lett ténylegesen törölve a Firebase-ben.
+    // Ez a függvény most explicit ellenőrzi res.ok-ot és hibát dob, ha a
+    // mentés nem sikerült, így a hívó try/catch blokkjai ténylegesen
+    // értesítik az admint a sikertelen törlésről/mentésről, ahelyett hogy
+    // csendben "elnyelnék" a hibát.
+    async function saveSrtData() {
+      const res = await fetch(`${FIREBASE_URL}/srtdata.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: allData, jobs: allJobs })
+      });
+      if (!res.ok) {
+        let reszletek = '';
+        try { reszletek = await res.text(); } catch (_) {}
+        console.error('saveSrtData mentési hiba:', res.status, reszletek);
+        throw new Error(`Mentés sikertelen (HTTP ${res.status})`);
+      }
+      return res;
+    }
+
     async function loadJsonBin(force = false) {
       if (!force && allData !== null && allJobs !== null) return true;
       // Megjegyzés: szándékosan NEM AbortController/AbortSignal-t használunk
@@ -5253,11 +5281,7 @@ body { font-size: 15px; }
         allData._media.videok.splice(idx, 1);
       }
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
         if (msgId) {
           await fetch(`${UPLOAD_API.replace('/upload', '/delete')}`, {
             method: 'POST',
@@ -5278,11 +5302,7 @@ body { font-size: 15px; }
       jobs.splice(reversedIdx, 1);
       allJobs[jobKey(driverName)] = jobs;
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
         showDriverJobs(driverName);
       } catch(e) {
         alert('Hiba a törlés során!');
@@ -5560,11 +5580,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       if (!allData) await loadJsonBin(true);
       allData._driverOrder = order;
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
       } catch(e) {
         alert('❌ Mentési hiba!');
       }
@@ -5579,11 +5595,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       delete allData[driverId];
       delete allJobs[jobKey(driverName)];
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
         document.getElementById('jobs-view').style.display = 'none';
         currentDriver = null;
         renderDrivers();
@@ -6589,11 +6601,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       if (!allData) return;
       allData._statOverride = statOverride || {};
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
       } catch(e) { alert('❌ Mentési hiba!'); }
     }
 
@@ -6864,11 +6872,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
       allData._ats_drivers = order;
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
       } catch(e) {
         alert('❌ Mentési hiba!');
       }
@@ -7010,11 +7014,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       const [id, u] = entry;
       u[key] = num;
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
         showDriverJobs(driverName);
       } catch(e) { alert('❌ Mentési hiba!'); }
     }
@@ -7037,11 +7037,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         u[key] = num;
       }
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
         showATSDriverJobs(driverName);
       } catch(e) { alert('❌ Mentési hiba!'); }
     }
@@ -7052,11 +7048,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       if (!allData._ats_drivers) return;
       allData._ats_drivers = allData._ats_drivers.filter(n => n !== name);
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
         renderATSDrivers();
       } catch(e) {
         alert('Hiba a törlés során!');
@@ -7075,11 +7067,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       allJobsList.splice(realIdx, 1);
       allJobs[jobKey(driverName)] = allJobsList;
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
         showATSDriverJobs(driverName);
       } catch(e) {
         alert('Hiba a törlés során!');
@@ -7236,11 +7224,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       if (!allData) return;
       allData._atsStatOverride = allData._atsStatOverride || {};
       try {
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
       } catch(e) { alert('❌ Mentési hiba!'); }
     }
 
@@ -7379,11 +7363,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         if (!allData) await loadJsonBin(true);
         allData._szovegek = szovegek;
         try {
-          await fetch(`${FIREBASE_URL}/srtdata.json`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: allData, jobs: allJobs })
-          });
+          await saveSrtData();
         } catch(e) { alert('❌ Mentési hiba!'); }
         document.getElementById('edit-modal').style.display = 'none';
       };
@@ -7396,11 +7376,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         if (!allData) await loadJsonBin(true);
         allData._szovegek = szovegek;
         try {
-          await fetch(`${FIREBASE_URL}/srtdata.json`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: allData, jobs: allJobs })
-          });
+          await saveSrtData();
           location.reload();
         } catch(e) { alert('❌ Hiba!'); }
         document.getElementById('edit-modal').style.display = 'none';
@@ -7475,11 +7451,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         el.appendChild(img);
         if (!allData) await loadJsonBin(true);
         allData['_avatar_' + avatarId] = imageUrl;
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
       } catch(e) {
         el.innerHTML = origContent;
         el.style.background = origBg;
@@ -7687,11 +7659,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         if (!allData) await loadJsonBin(true);
         if (!allData._hatterek) allData._hatterek = {};
         allData._hatterek[pageKey] = url;
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
         status.textContent = '✅ Mentve! Háttér frissítve.';
         status.style.color = '#4ade80';
         input.value = '';
@@ -7737,11 +7705,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         if (!res.ok) throw new Error('Bot hiba');
         if (!allData) await loadJsonBin(true);
         allData._media = { kepek: [], videok: allData._media?.videok || [] };
-        await fetch(`${FIREBASE_URL}/srtdata.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: allData, jobs: allJobs })
-        });
+        await saveSrtData();
         renderMedia();
         alert('✅ Összes kép törölve!');
       } catch(e) {
