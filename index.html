@@ -7799,15 +7799,25 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       try {
         if (!currentUser) return;
         const truckyNev = window.srtCurrentRecord && window.srtCurrentRecord.truckyNev;
-        const kulcs = nevKulcsSzamit(truckyNev);
-        if (!kulcs) return; // nincs még kitöltve a Trucky név a profilon
-        const token = await currentUser.getIdToken();
-        await set(ref(db, `webToken/${kulcs}`), {
-          token,
-          email: currentUser.email || null,
-          frissitve: new Date().toISOString(),
-        });
-        webTokenKulcs = kulcs;
+        const discordNev = window.srtCurrentRecord && window.srtCurrentRecord.discordNev;
+        const token = await currentUser.getIdToken(true);
+        const tokenData = { token, email: currentUser.email || null, frissitve: new Date().toISOString() };
+
+        // Trucky név alapú kulcs (pl. "batkimrk")
+        const kulcsTrucky = nevKulcsSzamit(truckyNev);
+        if (kulcsTrucky) {
+          await set(ref(db, `webToken/${kulcsTrucky}`), tokenData);
+          webTokenKulcs = kulcsTrucky;
+        }
+
+        // Discord név alapú kulcs is (pl. "bmark1995") — a launcher ezt használja
+        const kulcsDiscord = nevKulcsSzamit(discordNev);
+        if (kulcsDiscord && kulcsDiscord !== kulcsTrucky) {
+          await set(ref(db, `webToken/${kulcsDiscord}`), tokenData);
+        }
+
+        if (!kulcsTrucky && !kulcsDiscord) return;
+        console.log('[webToken] Kiírva:', kulcsTrucky, kulcsDiscord);
       } catch (e) {
         console.warn('Web token frissítési hiba:', e.message);
       }
