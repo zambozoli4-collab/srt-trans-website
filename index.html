@@ -13169,7 +13169,9 @@ async function refreshLiveDrivers() {
       const pos = d.position;
       if (!pos || pos.x === undefined || pos.z === undefined) return;
 
-      const frissitve = d.frissitve ? new Date(d.frissitve).getTime() : 0;
+      const frissitve = d.frissitve
+        ? (typeof d.frissitve === 'number' ? d.frissitve : new Date(d.frissitve).getTime())
+        : 0;
       const korkm = most - frissitve;
       const dotClass = korkm < AKTIV_LIMIT ? 'active' : korkm < STALE_LIMIT ? 'stale' : 'offline';
       const dotColor = dotClass === 'active' ? '#4ade80' : dotClass === 'stale' ? '#f97316' : '#6b7280';
