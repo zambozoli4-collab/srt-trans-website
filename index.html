@@ -7800,6 +7800,14 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         if (!currentUser) return;
         const truckyNev = window.srtCurrentRecord && window.srtCurrentRecord.truckyNev;
         const discordNev = window.srtCurrentRecord && window.srtCurrentRecord.discordNev;
+        // JAVÍTVA: a regisztrációs form "SRT-Trans játékon belüli név" mezője
+        // (srtNev) pont arra való, hogy a launcher "Sofőr neve" beállítása
+        // ezt kapja meg — DE eddig ehhez sosem íródott ki webToken kulcs.
+        // Ha valaki olyan nevet állított be a launcherben, ami eltér a
+        // Trucky- és Discord-nevétől is, a launcher 2 percenkénti
+        // webToken-lekérése ("webToken/<kulcs>") mindig "null"-t kapott
+        // vissza, ezért a Firebase ID token sosem frissült nála.
+        const srtNev = window.srtCurrentRecord && window.srtCurrentRecord.srtNev;
         const token = await currentUser.getIdToken(true);
         const tokenData = { token, email: currentUser.email || null, frissitve: new Date().toISOString() };
 
@@ -7816,8 +7824,16 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
           await set(ref(db, `webToken/${kulcsDiscord}`), tokenData);
         }
 
-        if (!kulcsTrucky && !kulcsDiscord) return;
-        console.log('[webToken] Kiírva:', kulcsTrucky, kulcsDiscord);
+        // SRT-Trans (launcher) név alapú kulcs — ha a felhasználó a
+        // regisztrációnál külön megadta, mert a launcherben más nevet
+        // használ, mint a Trucky/Discord neve.
+        const kulcsSrt = nevKulcsSzamit(srtNev);
+        if (kulcsSrt && kulcsSrt !== kulcsTrucky && kulcsSrt !== kulcsDiscord) {
+          await set(ref(db, `webToken/${kulcsSrt}`), tokenData);
+        }
+
+        if (!kulcsTrucky && !kulcsDiscord && !kulcsSrt) return;
+        console.log('[webToken] Kiírva:', kulcsTrucky, kulcsDiscord, kulcsSrt);
       } catch (e) {
         console.warn('Web token frissítési hiba:', e.message);
       }
@@ -10716,7 +10732,18 @@ function openJobInfo(game, driverName, index, datum) {
     // sofőr rögtön új fuvart kezd) egy másik, idegen fuvar útvonala jöhet be.
     // Régebbi, a javítás előtt rögzített fuvaroknál nincs felvetelIdoMs, ott
     // marad a régi (közelítő) viselkedés a j.datum alapján.
-    const driverKulcs = (driverName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    // JAVÍTVA: ez korábban egyszerűen kidobta a szóközt/ékezetet
+    // ("Batki Márk" → "batkimark"), miközben a bot (index.js
+    // truckyEsemenyKulcs), ami a routePoints ágba ténylegesen ÍR, előbb
+    // "_"-ra cseréli a szóközt ("Batki Márk" → "batki_mrk"). A két kulcs
+    // nem egyezett, ezért minden olyan sofőrnél, akinek szóköz van a
+    // nevében, az "Útvonal visszajátszása" mindig üresen tért vissza,
+    // annak ellenére, hogy a route adatok ténylegesen ott vannak a
+    // Firebase-ben — csak rossz kulcs alatt kereste őket a lejátszó.
+    const driverKulcs = (driverName || '')
+      .toLowerCase()
+      .replace(/[.#$/\[\]\s]/g, '_')
+      .replace(/[^a-z0-9_]/g, '') || 'ismeretlen';
     const jobDatum = j.felvetelIdoMs || (j.datum ? new Date(j.datum).getTime() : null);
     html += '<div style="grid-column:1/-1;margin-top:10px;">' +
       '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\')" ' +
@@ -13141,8 +13168,9 @@ async function refreshLiveDrivers() {
       .filter(d => {
         if (!d.position) return false;
         const gameMatch = liveMapJatek === 'ets2'
-          ? (!d.game || d.game.toLowerCase() !== 'ats')
-          : (d.game && d.game.toLowerCase() === 'ats');
+          ? (!d.game || d.game.toLowerCase().replace(/\0/g,'').trim() !== 'ats')
+          : (d.game && d.game.toLowerCase().replace(/\0/g,'').trim() === 'ats') ||
+            (d.jatek && d.jatek.toUpperCase() === 'ATS');
         return gameMatch;
       });
 
