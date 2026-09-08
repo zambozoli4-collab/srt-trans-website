@@ -13175,16 +13175,10 @@ async function refreshLiveDrivers() {
       const dotColor = dotClass === 'active' ? '#4ade80' : dotClass === 'stale' ? '#f97316' : '#6b7280';
 
       const latLng = toLatLng(pos.x, pos.y, pos.z, liveMapJatek);
-      // Launcher név -> megjelenő név
-      // A launcherben továbbra is használható a bmark1995 kulcs,
-      // de a live telemetry térképen Batki Márk jelenjen meg.
-      const TELEMETRY_NEV_MAP = {
-        'bmark1995': 'Batki Márk',
-        'batkimrk': 'Batki Márk',
-        'batki márk': 'Batki Márk'
-      };
-      const nevNyers = d.player || d.key;
-      const nev = TELEMETRY_NEV_MAP[String(nevNyers).trim().toLowerCase()] || nevNyers;
+      // A telemetryben a régi launcher-kulcs (pl. bmark1995) is előfordulhat.
+      // A weboldalon ezt a sofőr valódi megjelenítési nevére fordítjuk.
+      const telemetryNev = String(d.player || d.key || '').trim();
+      const nev = /^bmark1995$/i.test(telemetryNev) ? 'Batki Márk' : telemetryNev;
       const speed = d.truck ? Math.round(d.truck.speedKmh || 0) : 0;
       const fuel = d.truck ? Math.round(d.truck.fuel || 0) : 0;
       const cargo = d.job && d.job.cargo ? d.job.cargo : '—';
