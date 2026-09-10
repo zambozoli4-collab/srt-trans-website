@@ -8740,13 +8740,14 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       const box = document.getElementById('aktiv-fuvar-box');
       const listEl = document.getElementById('aktiv-fuvar-list');
       if (box && listEl) {
-        // JAVÍTVA: 3 óra túl rövid volt — egy hosszabb (pl. 4-6+ órás) távolsági
-        // fuvar simán aktív, de ez a küszöb már eltüntette a dobozból. 20 órára
-        // növelve, hogy csak a valóban "beragadt" (pl. launcher-összeomlás miatt
-        // nem törölt) bejegyzéseket szűrje ki, az aktív fuvarokat ne.
-        const idoAblakEzelott = Date.now() - 20 * 60 * 60 * 1000;
+        // JAVÍTVA: a korábbi időalapú (20 órás) szűrő azt okozta, hogy egy
+        // ténylegesen aktív, de régebb óta futó fuvar eltűnt a listából,
+        // miközben a "Futó fuvarok" számláló (renderCompany) nem alkalmazott
+        // ilyen szűrést, így az hibásan 1 aktívat mutatott, a doboz mégis
+        // üres volt. A fuvar mostantól addig látszik itt, amíg ténylegesen
+        // ott van a Firebase "aktivFuvarok" alatt — vagyis amíg a sofőr nem
+        // mondja vissza vagy nem adja le (ekkor a backend törli a bejegyzést).
         const lista = Object.values(aktivFuvarokAdat)
-          .filter(e => e.idopont && new Date(e.idopont).getTime() > idoAblakEzelott)
           .filter(e => String(e.jatek || 'ETS2').toLowerCase() === String(aktualisJatek).toLowerCase())
           .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''));
 
@@ -8876,10 +8877,14 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       const countEl = document.getElementById('futofuvarok-page-osszesen');
       if (!wrap) return;
 
+      // JAVÍTVA: nincs többé 20 órás időalapú kiszűrés — a lista pontosan azt
+      // mutatja, ami a Firebase "aktivFuvarok" alatt ténylegesen szerepel,
+      // hogy összhangban legyen a "Futó fuvarok" számlálóval (renderCompany),
+      // és a fuvar csak akkor tűnjön el, ha a backend ténylegesen törli
+      // (visszamondás vagy leadás esetén).
       const forras = (window.aktivFuvarokAdat && typeof window.aktivFuvarokAdat === 'object') ? window.aktivFuvarokAdat : {};
-      const idoAblakEzelott = Date.now() - 20 * 60 * 60 * 1000;
       const lista = Object.values(forras)
-        .filter(e => e && e.idopont && new Date(e.idopont).getTime() > idoAblakEzelott)
+        .filter(e => e && e.idopont)
         .sort((a, b) => (b.idopont || '').localeCompare(a.idopont || ''));
 
       if (countEl) countEl.textContent = `${lista.length.toLocaleString('hu-HU')} fuvar van jelenleg folyamatban`;
