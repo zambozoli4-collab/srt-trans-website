@@ -13557,8 +13557,17 @@ async function refreshLiveDrivers() {
     const AKTIV_LIMIT = 30 * 1000;   // 30 mp = aktív
     const STALE_LIMIT = 5 * 60 * 1000; // 5 perc = elavult
 
+    // Névfeloldás: ugyanaz a mapping mint a szerveren (bmark1995 → Batki Márk)
+    const PLAYER_NAME_MAP = { 'bmark1995': 'Batki Márk', 'batkimrk': 'Batki Márk', 'batki mark': 'Batki Márk' };
+    function resolveNev(d) {
+      const raw = String(d.player || d.key || '').trim();
+      return PLAYER_NAME_MAP[raw.toLowerCase()] || raw;
+    }
+
     // Szűrés: csak az aktuális játékhoz tartozó sofőrök
-    const drivers = Object.entries(allData)
+    // Deduplikálás: ha ugyanaz a sofőr (player név) több kulcs alatt is szerepel
+    // (pl. "Batki Márk" és "batki_mrk"), csak a legfrissebbet tartjuk meg.
+    const rawDrivers = Object.entries(allData)
       .map(([key, d]) => ({ key, ...d }))
       .filter(d => {
         if (!d.position) return false;
@@ -13568,6 +13577,21 @@ async function refreshLiveDrivers() {
             (d.jatek && d.jatek.toUpperCase() === 'ATS');
         return gameMatch;
       });
+
+    // Deduplikálás: névenkénti legjobb (legfrissebb) bejegyzés megtartása
+    const nevMap = new Map();
+    rawDrivers.forEach(d => {
+      const nev = resolveNev(d).toLowerCase();
+      const frissMs = d.frissitve
+        ? (typeof d.frissitve === 'number' ? d.frissitve : new Date(d.frissitve).getTime())
+        : 0;
+      const meglevo = nevMap.get(nev);
+      const meglesoFriss = meglevo ? (meglevo.frissitve
+        ? (typeof meglevo.frissitve === 'number' ? meglevo.frissitve : new Date(meglevo.frissitve).getTime())
+        : 0) : -1;
+      if (!meglevo || frissMs > meglesoFriss) nevMap.set(nev, d);
+    });
+    const drivers = Array.from(nevMap.values());
 
     if (drivers.length === 0) {
       noDataEl.style.display = 'flex';
@@ -13600,10 +13624,7 @@ async function refreshLiveDrivers() {
       const dotColor = dotClass === 'active' ? '#4ade80' : dotClass === 'stale' ? '#f97316' : '#6b7280';
 
       const latLng = toLatLng(pos.x, pos.y, pos.z, liveMapJatek);
-      // A telemetryben a régi launcher-kulcs (pl. bmark1995) is előfordulhat.
-      // A weboldalon ezt a sofőr valódi megjelenítési nevére fordítjuk.
-      const telemetryNev = String(d.player || d.key || '').trim();
-      const nev = /^bmark1995$/i.test(telemetryNev) ? 'Batki Márk' : telemetryNev;
+      const nev = resolveNev(d);
       const speed = d.truck ? Math.round(d.truck.speedKmh || 0) : 0;
       const fuel = d.truck ? Math.round(d.truck.fuel || 0) : 0;
       const cargo = d.job && d.job.cargo ? d.job.cargo : '—';
