@@ -12592,6 +12592,15 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
   if (routeMap) routeSpeedMarkers.forEach(m => routeMap.removeLayer(m));
   routeSpeedMarkers = [];
 
+  // Ha az előző fuvar sötét "nem volt gyors hajtás" overlay-t mutatott,
+  // visszaállítjuk a térkép konténert normál állapotba
+  const mapElReset = document.getElementById('route-map');
+  mapElReset.style.display = '';
+  mapElReset.style.alignItems = '';
+  mapElReset.style.justifyContent = '';
+  mapElReset.style.background = '';
+  mapElReset.style.minHeight = '';
+
   // Térkép inicializálás
   if (!routeMapInit) {
     if (typeof L === 'undefined') {
@@ -12689,9 +12698,29 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       const fromS = meta.from || fallbackFrom || '?';
       const toS   = meta.to   || fallbackTo   || '?';
       const limitS = tulsebessegLimit((meta.game || routeGame || '').toLowerCase() === 'ats' ? 'ats' : 'ets2');
-      document.getElementById('route-playback-title').textContent = `✅ ${fromS} → ${toS} — nem volt gyors hajtás`;
+      const maxSeb = Math.round(meta.maxSpeedKmh || 0);
+      document.getElementById('route-playback-title').textContent = `${fromS} → ${toS}`;
       document.getElementById('route-progress-label').textContent =
-        `Legnagyobb sebesség: ${Math.round(meta.maxSpeedKmh || 0)} km/h (limit: ${limitS} km/h)`;
+        `Legnagyobb sebesség: ${maxSeb} km/h (limit: ${limitS} km/h)`;
+
+      // Sötét overlay a térkép helyett
+      const mapEl = document.getElementById('route-map');
+      mapEl.innerHTML = '';
+      mapEl.style.display = 'flex';
+      mapEl.style.alignItems = 'center';
+      mapEl.style.justifyContent = 'center';
+      mapEl.style.background = 'rgba(7,13,24,1)';
+      mapEl.style.minHeight = '320px';
+      mapEl.innerHTML = `
+        <div style="text-align:center;padding:32px 24px;max-width:400px;">
+          <div style="font-size:56px;margin-bottom:16px;">🐢</div>
+          <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:10px;">Nem volt gyors hajtás</div>
+          <div style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.6;">
+            Ez a fuvar visszajátszása nem elérhető —<br>
+            a maximális sebesség (<strong style="color:#f97316;">${maxSeb} km/h</strong>)
+            nem érte el a rögzítési határt (<strong style="color:#f97316;">${limitS} km/h</strong>).
+          </div>
+        </div>`;
       return;
     }
 
