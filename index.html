@@ -9148,6 +9148,11 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     });
 
     window.elrejtTruckyEsemeny = async function(kulcs) {
+      // Azonnal (optimistán) tüntessük el a listából, ne várjunk a Firebase
+      // realtime listenerre - ha az írás bármi miatt elakadna (jogosultság,
+      // hálózat), a felhasználó akkor is lássa, hogy a kattintás hatott.
+      bellUtolsoElrejtett = { ...(bellUtolsoElrejtett || {}), [kulcs]: true };
+      renderBell();
       try {
         await fetch(`${DB_URL}/elrejtettErtesitesek/${adminAzonosito()}/${kulcs}.json`, {
           method: 'PUT',
