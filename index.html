@@ -9147,20 +9147,18 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       }
     });
 
-    window.elrejtTruckyEsemeny = async function(kulcs) {
-      // Azonnal (optimistán) tüntessük el a listából, ne várjunk a Firebase
-      // realtime listenerre - ha az írás bármi miatt elakadna (jogosultság,
-      // hálózat), a felhasználó akkor is lássa, hogy a kattintás hatott.
-      bellUtolsoElrejtett = { ...(bellUtolsoElrejtett || {}), [kulcs]: true };
-      renderBell();
-      try {
-        await fetch(`${DB_URL}/elrejtettErtesitesek/${adminAzonosito()}/${kulcs}.json`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(true)
-        });
-      } catch (e) { console.warn('Értesítés elrejtése sikertelen:', e.message); }
-    };
+   window.elrejtTruckyEsemeny = async function(kulcs) {
+  bellUtolsoElrejtett = { ...(bellUtolsoElrejtett || {}), [kulcs]: true };
+  renderBell();
+  try {
+    const authQS = await regAuthQS();
+    await fetch(`${DB_URL}/elrejtettErtesitesek/${adminAzonosito()}/${kulcs}.json${authQS}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(true)
+    });
+  } catch (e) { console.warn('Értesítés elrejtése sikertelen:', e.message); }
+};
 
     function renderBell() {
       const badge = document.getElementById('bell-badge');
