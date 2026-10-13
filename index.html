@@ -3287,7 +3287,7 @@ body { font-size: 15px; }
           <div class="srt-dash-title">Trucky kliens</div>
           <a class="srt-dash-primary" href="https://truckyapp.com/client-download" target="_blank" rel="noreferrer">⬇ Trucky kliens letöltése</a>
           <a id="srt-pickup-client-download" class="srt-dash-secondary" href="https://www.dropbox.com/s/2ugg2vw01j2yap4/PICKUP.zip?dl=1" target="_blank" rel="noreferrer">⬇ Pickup kliens letöltése</a>
-          <a id="dl-srt-launcher-home" class="srt-dash-secondary" href="javascript:void(0)" onclick="openAuthModal(); return false;" style="background:linear-gradient(135deg,rgba(37,99,235,0.18),rgba(37,99,235,0.08));border-color:rgba(37,99,235,0.35);color:#93c5fd;">⬇ SRT-Trans Launcher letöltése</a>
+          <a id="dl-srt-launcher-home" class="srt-dash-secondary" href="javascript:void(0)" onclick="openAuthModal(); return false;" style="background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(34,197,94,0.08));border-color:rgba(34,197,94,0.45);color:#4ade80;font-weight:700;opacity:1;">⬇ SRT-Trans mód letöltő</a>
           <p class="srt-dash-note">Trucky a konvojokhoz és szerverkövetéshez, Pickup a saját fuvarrendszerhez, Launcher a fuvarrögzítéshez.</p>
         </div>
 
@@ -3366,7 +3366,7 @@ body { font-size: 15px; }
             <span class="mod-card-tag tag-required">Kötelező</span>
             <h3>SRT-Trans Launcher</h3>
             <p>Az SRT TRANS KFT. saját pluginja ETS2 és ATS játékhoz. Automatikusan rögzíti a fuvarjaidat a weboldalra — Trucky nélkül is működik! Telepítés után csak add meg a nevedet és játssz.</p>
-            <a class="btn-dl" id="dl-srt-launcher" href="javascript:void(0)" onclick="openAuthModal(); return false;">⬇ Letöltés</a>
+            <a class="btn-dl" id="dl-srt-launcher" href="javascript:void(0)" onclick="openAuthModal(); return false;">⬇ SRT-Trans mód letöltő</a>
           </div>
           <div class="mod-card">
             <div class="mod-card-icon blue">🚐</div>
@@ -9951,14 +9951,14 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
           el.setAttribute('onclick', modId === 'srt-launcher'
             ? `letoltiLauncher(this); return false;`
             : `letoltiVedettModot('${modId}', this); return false;`);
-          el.textContent = '⬇ Letöltés';
-          el.style.opacity = '';
+          el.textContent = modId === 'srt-launcher' ? '⬇ SRT-Trans mód letöltő' : '⬇ Letöltés';
+          el.style.opacity = modId === 'srt-launcher' && id.endsWith('-home') ? '1' : '';
         } else {
           el.href = 'javascript:void(0)';
           el.removeAttribute('target');
           el.setAttribute('onclick', 'openAuthModal(); return false;');
-          el.textContent = rangKell ? '🔒 Letöltés' : '⬇ Letöltés';
-          el.style.opacity = '';
+          el.textContent = rangKell ? '🔒 Letöltés' : (modId === 'srt-launcher' ? '⬇ SRT-Trans mód letöltő' : '⬇ Letöltés');
+          el.style.opacity = modId === 'srt-launcher' && id.endsWith('-home') ? '1' : '';
         }
       });
     };
@@ -10009,7 +10009,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         alert('❌ Hiba a launcher letöltésekor: ' + e.message);
       } finally {
         setTimeout(() => {
-          if (gomb) { gomb.style.pointerEvents = ''; gomb.textContent = eredeti || '⬇ Letöltés'; }
+          if (gomb) { gomb.style.pointerEvents = ''; gomb.textContent = eredeti || '⬇ SRT-Trans mód letöltő'; }
         }, 2500);
       }
     };
