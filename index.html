@@ -3274,7 +3274,7 @@ body { font-size: 15px; }
           <div class="srt-service-row">
             <span>Dedikált ETS2 szerver</span>
             <em id="srt-dedikalt-szerver-status">
-              <i class="srt-status-dot"></i>Üzemképes
+              <i class="srt-status-dot" style="background:#9ca3af;box-shadow:0 0 0 3px rgba(156,163,175,.15)"></i>Ellenőrzés...
             </em>
           </div>
           <div class="srt-service-row">
@@ -10678,34 +10678,28 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
 </script>
 
 
-<script type="module" id="srt-dedikalt-szerver-status-script">
-  import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
+<script id="srt-dedikalt-szerver-status-script">
   (function () {
-    try {
-      const app = getApp();
-      const db = getDatabase(app);
-      const statusRef = ref(db, 'siteStats/dedikaltSzerver');
-      const elemEl = document.getElementById('srt-dedikalt-szerver-status');
+    var elemEl = document.getElementById('srt-dedikalt-szerver-status');
+    if (!elemEl) return;
 
-      onValue(statusRef, (snap) => {
-        if (!elemEl) return;
-        const adat = snap.val();
-        if (!adat) return;
-        if (adat.online) {
-          elemEl.style.background = '';          // vissza a zöldre
-          elemEl.innerHTML = 'Üzemképes';
-        } else {
-          elemEl.style.background = '#ef4444';   // piros
-          elemEl.innerHTML = 'Szerver leállt!';
-        }
-      }, (err) => {
-        console.error('[SRT] Dedikált szerver állapot olvasási hiba (Firebase szabályok?):', err);
-      });
-    } catch (err) {
-      console.warn('[SRT] Dedikált szerver állapot nem frissíthető:', err);
+    function mutat(fut) {
+      elemEl.innerHTML = fut
+        ? '<i class="srt-status-dot"></i>Üzemképes'
+        : '<i class="srt-status-dot red"></i>Szerver leállt!';
+      elemEl.style.color = fut ? '' : '#ef4444';
     }
+
+    function frissit() {
+      // a bot ezt a fájlt írja a tárolóba; az időbélyeg miatt nem a gyorsítótárból jön
+      fetch('server_status.json?t=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (adat) { mutat(!!adat.online); })
+        .catch(function (err) { console.warn('[SRT] Szerver állapot nem olvasható:', err); });
+    }
+
+    frissit();
+    setInterval(frissit, 30000);
   })();
 </script>
 
