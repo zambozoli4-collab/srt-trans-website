@@ -9948,7 +9948,9 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         if (jogosultELetoltesre) {
           el.href = 'javascript:void(0)';
           el.removeAttribute('target');
-          el.setAttribute('onclick', `letoltiVedettModot('${modId}', this); return false;`);
+          el.setAttribute('onclick', modId === 'srt-launcher'
+            ? `letoltiLauncher(this); return false;`
+            : `letoltiVedettModot('${modId}', this); return false;`);
           el.textContent = '⬇ Letöltés';
           el.style.opacity = '';
         } else {
@@ -9982,6 +9984,34 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         return;
       }
       renderModFajlSzint(null);
+    };
+
+    // SRT-Trans Launcher (srt-trans.exe): közvetlen letöltés, mappa-böngésző nélkül.
+    // A bot név alapján megkeresi a fájlt a Drive-on, és bejelentkezés-ellenőrzéssel streameli.
+    window.letoltiLauncher = async function(gomb) {
+      if (!currentUser) { openAuthModal(); return; }
+      const eredeti = gomb ? gomb.textContent : '';
+      if (gomb) { gomb.style.pointerEvents = 'none'; gomb.textContent = '⏳ Letöltés...'; }
+      try {
+        const token = await currentUser.getIdToken();
+        const res = await fetch('https://bot.srt-trans.hu/mod-lista', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken: token, modId: 'srt-launcher' })
+        });
+        const adat = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(adat.error || 'Nincs jogosultság');
+        const fajl = (adat.items || []).find(i => i.type === 'file');
+        if (!fajl) throw new Error('A launcher fájl nem található.');
+        // attachment fejléc → a böngésző letölti, az oldal nem navigál el
+        window.location.href = `https://bot.srt-trans.hu/mod-fajl/${encodeURIComponent(fajl.id)}?token=${encodeURIComponent(token)}`;
+      } catch (e) {
+        alert('❌ Hiba a launcher letöltésekor: ' + e.message);
+      } finally {
+        setTimeout(() => {
+          if (gomb) { gomb.style.pointerEvents = ''; gomb.textContent = eredeti || '⬇ Letöltés'; }
+        }, 2500);
+      }
     };
 
     window.bezarModFajlBongeszo = function() {
