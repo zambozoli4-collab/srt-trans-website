@@ -10692,11 +10692,14 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       onValue(statusRef, (snap) => {
         if (!elemEl) return;
         const adat = snap.val();
-        // Amíg a bot még sosem küldött állapotüzenetet (pl. friss telepítés
-        // után), nincs adat — ilyenkor maradjon a HTML-be írt alapérték.
         if (!adat) return;
-        const szoveg = adat.online ? 'Üzemképes' : 'Leállt';
-        elemEl.innerHTML = `<i class="srt-status-dot${adat.online ? '' : ' red'}"></i>${szoveg}`;
+        if (adat.online) {
+          elemEl.style.background = '';          // vissza a zöldre
+          elemEl.innerHTML = 'Üzemképes';
+        } else {
+          elemEl.style.background = '#ef4444';   // piros
+          elemEl.innerHTML = 'Szerver leállt!';
+        }
       }, (err) => {
         console.error('[SRT] Dedikált szerver állapot olvasási hiba (Firebase szabályok?):', err);
       });
