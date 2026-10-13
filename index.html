@@ -10688,13 +10688,14 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
 
     // Zöld alap marad; online: sárga karika + sárga "Szerver elindult!", leállt: piros karika + piros szöveg
     function megjelenit(online) {
-      const szin = online ? '#facc15' : '#ef4444';
+      const szin = online ? '#facc15' : '#ef4444';      // karika színe
+      const szovegSzin = online ? '#ffffff' : '#ef4444'; // felirat színe
       const arnyek = online ? 'rgba(250,204,21,.25)' : 'rgba(239,68,68,.25)';
       const szoveg = online ? 'Szerver elindult!' : 'Szerver leállt!';
       elemEl.style.background = '';
       elemEl.innerHTML =
         '<i class="srt-status-dot" style="background:' + szin + ';box-shadow:0 0 0 3px ' + arnyek + '"></i>' +
-        '<span style="color:' + szin + '">' + szoveg + '</span>';
+        '<span style="color:' + szovegSzin + '">' + szoveg + '</span>';
     }
 
     // 1) Gyors forrás: a Python figyelő bot által a GitHubra írt server_status.json
