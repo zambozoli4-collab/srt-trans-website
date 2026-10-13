@@ -3274,7 +3274,7 @@ body { font-size: 15px; }
           <div class="srt-service-row">
             <span>Dedikált ETS2 szerver</span>
             <em id="srt-dedikalt-szerver-status">
-              <i class="srt-status-dot" style="background:#9ca3af;box-shadow:0 0 0 3px rgba(156,163,175,.15)"></i>Ellenőrzés...
+              <i class="srt-status-dot" style="background:#facc15;box-shadow:0 0 0 3px rgba(250,204,21,.25)"></i><span style="color:#facc15">Állapot betöltése...</span>
             </em>
           </div>
           <div class="srt-service-row">
@@ -10678,32 +10678,63 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
 </script>
 
 
-<script id="srt-dedikalt-szerver-status-script">
+<script type="module" id="srt-dedikalt-szerver-status-script">
+  import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
   (function () {
-    var elemEl = document.getElementById('srt-dedikalt-szerver-status');
+    const elemEl = document.getElementById('srt-dedikalt-szerver-status');
     if (!elemEl) return;
 
-    function mutat(fut) {
-      elemEl.innerHTML = fut
-        ? '<i class="srt-status-dot"></i>Üzemképes'
-        : '<i class="srt-status-dot red"></i>Szerver leállt!';
-      elemEl.style.color = fut ? '' : '#ef4444';
+    // Zöld alap marad; online: sárga karika + sárga "Szerver elindult!", leállt: piros karika + piros szöveg
+    function megjelenit(online) {
+      const szin = online ? '#facc15' : '#ef4444';
+      const arnyek = online ? 'rgba(250,204,21,.25)' : 'rgba(239,68,68,.25)';
+      const szoveg = online ? 'Szerver elindult!' : 'Szerver leállt!';
+      elemEl.style.background = '';
+      elemEl.innerHTML =
+        '<i class="srt-status-dot" style="background:' + szin + ';box-shadow:0 0 0 3px ' + arnyek + '"></i>' +
+        '<span style="color:' + szin + '">' + szoveg + '</span>';
     }
 
-    function frissit() {
-      // a bot ezt a fájlt írja a tárolóba; az időbélyeg miatt nem a gyorsítótárból jön
-      fetch('server_status.json?t=' + Date.now(), { cache: 'no-store' })
-        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function (adat) { mutat(!!adat.online); })
-        .catch(function (err) {
-          console.warn('[SRT] Szerver állapot nem olvasható (server_status.json):', err);
-          elemEl.innerHTML = '<i class="srt-status-dot" style="background:#9ca3af;box-shadow:0 0 0 3px rgba(156,163,175,.15)"></i>Állapot nem elérhető';
-          elemEl.style.color = '';
+    // 1) Gyors forrás: a Python figyelő bot által a GitHubra írt server_status.json
+    //    (a GitHub API-t olvassuk, így nem kell kivárni a GitHub Pages újraépítését).
+    let githubOk = false;
+    const GH_URL = 'https://api.github.com/repos/zambozoli4-collab/srt-trans-website/contents/server_status.json';
+    async function githubEllenorzes() {
+      try {
+        const r = await fetch(GH_URL, {
+          cache: 'no-store',
+          headers: { 'Accept': 'application/vnd.github.raw+json' }
         });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const adat = JSON.parse(await r.text());
+        githubOk = true;
+        megjelenit(!!adat.online);
+      } catch (err) {
+        githubOk = false;   // hiba esetén a Firebase érték dönt
+        console.warn('[SRT] GitHub szerver-állapot nem olvasható:', err);
+      }
     }
+    githubEllenorzes();
+    setInterval(githubEllenorzes, 60000);
 
-    frissit();
-    setInterval(frissit, 30000);
+    // 2) Tartalék: Firebase (siteStats/dedikaltSzerver)
+    try {
+      const app = getApp();
+      const db = getDatabase(app);
+      const statusRef = ref(db, 'siteStats/dedikaltSzerver');
+      onValue(statusRef, (snap) => {
+        if (githubOk) return;
+        const adat = snap.val();
+        if (!adat) return;
+        megjelenit(!!adat.online);
+      }, (err) => {
+        console.error('[SRT] Dedikált szerver állapot olvasási hiba (Firebase szabályok?):', err);
+      });
+    } catch (err) {
+      console.warn('[SRT] Dedikált szerver állapot nem frissíthető:', err);
+    }
   })();
 </script>
 
