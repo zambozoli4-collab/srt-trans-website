@@ -10695,7 +10695,11 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       fetch('server_status.json?t=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (adat) { mutat(!!adat.online); })
-        .catch(function (err) { console.warn('[SRT] Szerver állapot nem olvasható:', err); });
+        .catch(function (err) {
+          console.warn('[SRT] Szerver állapot nem olvasható (server_status.json):', err);
+          elemEl.innerHTML = '<i class="srt-status-dot" style="background:#9ca3af;box-shadow:0 0 0 3px rgba(156,163,175,.15)"></i>Állapot nem elérhető';
+          elemEl.style.color = '';
+        });
     }
 
     frissit();
