@@ -13627,33 +13627,6 @@ function toLatLng(x, y, z, jatek) {
   return gameToLatLng(liveMap, x, z, jatek);
 }
 
-// Üzemanyag kiolvasása a telemetriából – többféle adatformát is kezel:
-// szám (liter), objektum ({value/amount/liters, capacity}), vagy 0..1 arány.
-function getLiveFuel(t) {
-  const out = { liters: 0, cap: 0, pct: null, text: '—' };
-  if (!t) return out;
-  const num = v => { const n = parseFloat(v); return isFinite(n) ? n : null; };
-  let f = t.fuel, cap = null;
-  if (f && typeof f === 'object') {
-    cap = num(f.capacity ?? f.max ?? f.total ?? f.tank);
-    f = f.value ?? f.amount ?? f.liters ?? f.litres ?? f.current ?? f.level;
-  }
-  let v = num(f);
-  if (v === null) v = num(t.fuelLiters ?? t.fuelLitres ?? t.fuelAmount ?? t.fuel_amount ?? t.fuelValue ?? t.fuelLevel);
-  if (cap === null) cap = num(t.fuelCapacity ?? t.fuelTankCapacity ?? t.fuel_capacity ?? t.tankCapacity);
-  if (v === null) return out;
-  if (cap && cap > 0) {
-    out.cap = cap;
-    out.pct = Math.max(0, Math.min(100, v / cap * 100));
-  } else if (v > 0 && v <= 1) {   // arányként érkezett
-    out.pct = v * 100;
-  }
-  out.liters = Math.round(v);
-  out.text = out.liters + ' L' + (out.cap ? ' / ' + Math.round(out.cap) + ' L' : '') +
-             (out.pct !== null ? ' (' + Math.round(out.pct) + '%)' : '');
-  return out;
-}
-
 async function refreshLiveDrivers() {
   if (!liveMapInitialized) return;
   try {
@@ -13748,10 +13721,7 @@ async function refreshLiveDrivers() {
       const latLng = toLatLng(pos.x, pos.y, pos.z, liveMapJatek);
       const nev = resolveNev(d);
       const speed = d.truck ? Math.round(d.truck.speedKmh || 0) : 0;
-      if (!window._fuelDbg) { window._fuelDbg = true; console.log('[Live] truck nyers adat:', d.truck); }
-      const fuelInfo = getLiveFuel(d.truck);
-      const fuel = fuelInfo.liters;
-      const fuelTxt = fuelInfo.text;
+      const fuel = d.truck ? Math.round(d.truck.fuel || 0) : 0;
       const cargo = d.job && d.job.cargo ? d.job.cargo : '—';
       const dest = d.job && d.job.to ? d.job.to : '—';
       const navDist = d.navigation ? (d.navigation.distanceKm || 0).toFixed(1) + ' km' : '—';
@@ -13778,7 +13748,7 @@ async function refreshLiveDrivers() {
           <div style="font-weight:800;font-size:14px;color:${color};margin-bottom:8px;">🚛 ${nev}${paused}</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;">
             <span style="color:#9ca3af;">⚡ Sebesség</span><span>${speed} km/h</span>
-            <span style="color:#9ca3af;">⛽ Üzemanyag</span><span>${fuelTxt}</span>
+            <span style="color:#9ca3af;">⛽ Üzemanyag</span><span>${fuel} L</span>
             <span style="color:#9ca3af;">📦 Rakomány</span><span>${cargo}</span>
             <span style="color:#9ca3af;">🎯 Cél</span><span>${dest}</span>
             <span style="color:#9ca3af;">📏 Hátralévő</span><span>${navDist}</span>
@@ -13818,8 +13788,7 @@ async function refreshLiveDrivers() {
         <div class="live-driver-row${followedClass}" onclick="focusLiveDriver('${d.key}')">
           <div class="live-driver-dot ${dotClass}" style="background:${dotColor};"></div>
           <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nev}</span>
-          <span style="color:#fbbf24;font-size:11px;" title="Üzemanyag">⛽ ${fuelInfo.pct !== null ? Math.round(fuelInfo.pct) + '%' : fuel + ' L'}</span>
-          <span style="color:#6b7280;font-size:11px;min-width:58px;text-align:right;">${speed} km/h</span>
+          <span style="color:#6b7280;font-size:11px;">${speed} km/h</span>
         </div>`;
     });
 
@@ -13869,7 +13838,7 @@ function showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName
   panel.style.display = 'block';
   document.getElementById('live-info-nev').textContent = '🚛 ' + nev + (d.paused ? ' ⏸ Szünetelve' : ' ● Aktív');
   document.getElementById('live-info-speed').textContent = speed + ' km/h';
-  document.getElementById('live-info-fuel').textContent = getLiveFuel(d.truck).text;
+  document.getElementById('live-info-fuel').textContent = fuel + ' L';
   document.getElementById('live-info-cargo').textContent = cargo;
   document.getElementById('live-info-dest').textContent = dest;
   document.getElementById('live-info-navdist').textContent = navDist;
