@@ -13574,7 +13574,10 @@ function initLiveTerkep() {
   liveMapInitialized = true;
   liveMapFitted = false;
   liveMapUserPanned = false;
-  liveCityLayer = addCityLabels(liveMap, liveMapJatek);
+  // A városneveket NEM rajzoljuk fel külön réteggel: a saját TsMap csempe (ETS2 1.61)
+  // már tartalmazza a játékból kinyert, pontosan a helyükön lévő városneveket.
+  // A régi, részben pontatlan ETS2_CITIES fehér feliratok így nem duplázódnak rá.
+  liveCityLayer = null;
 
   // Ha a felhasználó saját kezűleg húzza a térképet, kapcsoljuk ki az
   // automatikus követést, hogy ne "rángassa vissza" a nézetet, amíg ő épp
@@ -13619,8 +13622,8 @@ function setLiveTerkepJatek(jatek) {
     liveTileLayer.setUrl(jatek === 'ets2' ? ETS2_TILES : ATS_TILES);
   }
   if (liveMapInitialized) {
+    // Játékváltáskor sem rajzolunk külön városnév-réteget: a csempe tartalmazza a neveket.
     if (liveCityLayer) { liveMap.removeLayer(liveCityLayer); liveCityLayer = null; }
-    liveCityLayer = addCityLabels(liveMap, jatek);
   }
   refreshLiveDrivers();
 }
