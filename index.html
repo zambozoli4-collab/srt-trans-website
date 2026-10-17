@@ -12682,7 +12682,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       attributionControl: false,
     });
     L.tileLayer(game === 'ats' ? ATS_TILES : ETS2_TILES, {
-      minZoom: 2, maxZoom: 8, tileSize: 512, noWrap: true,
+      minZoom: 2, maxZoom: 8, tileSize: 256, noWrap: true,
       errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
     }).addTo(routeMap);
     routeMapInit = true;
@@ -12989,19 +12989,21 @@ function drawRouteUpTo(idx) {
    ETS2 Z: -80000..80000 → Leaflet lat (invertált!)
    ============================================================== */
 
-// ETS2 térkép tile server (hivatalos Trucky csempeszolgáltatás — a verziómappa
-// (05102019) és a cache-busting "v" paraméter is KÖTELEZŐ, e nélkül 404-et ad)
-const MAP_TILE_VERSION = '05102019';
-const MAP_TILES_TS = Date.now();
-const ETS2_TILES = `https://tiles.truckyapp.com/ets2/${MAP_TILE_VERSION}/{z}/{x}/{y}.png?v=${MAP_TILES_TS}`;
-const ATS_TILES  = `https://tiles.truckyapp.com/ats/${MAP_TILE_VERSION}/{z}/{x}/{y}.png?v=${MAP_TILES_TS}`;
+// ETS2 térkép tile server — saját generálású TsMap csempe (ETS2 1.61, minden DLC-vel),
+// a GitHub Pages / srt-trans.hu domain alól kiszolgálva. A csempe 256px-es (TsMap alap).
+const ETS2_TILES = `https://srt-trans.hu/tiles/ets2/{z}/{x}/{y}.png`;
+const ATS_TILES  = `https://srt-trans.hu/tiles/ets2/{z}/{x}/{y}.png`;
 
-// Hivatalos, a Trucky saját mapManager.js-éből származó kalibrációs konstansok.
-// A csempeszerver NEM sima lat/lng-t vár, hanem Leaflet CRS.Simple pixel-koordinátát,
-// amit csak map.unproject()-tel szabad kiszámolni (soha nem kézzel felírt képlettel).
+// Kalibrációs konstansok a saját TsMap csempéhez, a generálás TileMapInfo.json-jából
+// számolva. A térkép teljes mérete maxZoom=8 szinten 256*2^8 = 65536 px.
+//   pointsPerPixel = (x2 - x1) / 65536
+//   multipliers.x  = -x1 / pointsPerPixel  (a játék 0,0 pixelpozíciója)
+//   multipliers.y  = -y1 / pointsPerPixel
+// TileMapInfo: x1=-113177.313 x2=97925.625 y1=-122648.086 y2=88454.85
+// A csempeszerver Leaflet CRS.Simple pixel-koordinátát vár (map.unproject()).
 const MAP_CONFIG = {
-  ets2: { pointsPerPixel: 1.609055, multipliers: { x: 70272, y: 76157 }, maxZoom: 8 },
-  ats:  { pointsPerPixel: 1.239899, multipliers: { x: 97373, y: 70186 }, maxZoom: 8 },
+  ets2: { pointsPerPixel: 3.221181, multipliers: { x: 35135.7, y: 38075.5 }, maxZoom: 8 },
+  ats:  { pointsPerPixel: 3.221181, multipliers: { x: 35135.7, y: 38075.5 }, maxZoom: 8 },
 };
 
 // ETS2/ATS játékkoordináta (x, z) → Leaflet LatLng, az adott Leaflet map példányhoz kötve
@@ -13561,7 +13563,7 @@ function initLiveTerkep() {
 
   liveTileLayer = L.tileLayer(ETS2_TILES, {
     minZoom: 2, maxZoom: 8,
-    tileSize: 512,
+    tileSize: 256,
     noWrap: true,
     errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
   }).addTo(liveMap);
