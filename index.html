@@ -3524,6 +3524,7 @@ body { font-size: 15px; }
             <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px;" id="live-info-nev">—</div>
             <div class="driver-info-row"><span class="driver-info-label">⚡ Sebesség</span><span class="driver-info-value" id="live-info-speed">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">⛽ Üzemanyag</span><span class="driver-info-value" id="live-info-fuel">—</span></div>
+            <div class="driver-info-row"><span class="driver-info-label">🔋 Hatótáv</span><span class="driver-info-value" id="live-info-fuelrange">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">📊 Átlagfogyasztás</span><span class="driver-info-value" id="live-info-fuelavg">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">📦 Rakomány</span><span class="driver-info-value" id="live-info-cargo">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">🎯 Cél</span><span class="driver-info-value" id="live-info-dest">—</span></div>
@@ -13523,6 +13524,12 @@ let liveMapInitialized = false;
 let liveMapJatek = 'ets2';
 let liveTileLayer = null;
 let liveDriverMarkers = {};
+// Sofőrönként (feloldott, kisbetűs név szerint) az utolsó ÉRVÉNYES (>0)
+// átlagfogyasztás. A játék időnként 0-t ad erre a csatornára (pl. lassításkor,
+// álláskor), amitől a kijelzett érték korábban "villogott" (megjelent, eltűnt,
+// visszajött). Ezzel a cache-sel az utolsó valós értéket tartjuk, amíg új
+// érvényes érték nem érkezik — így a szám fixen látszik.
+let liveFuelAvgCache = {};
 let liveRefreshInterval = null;
 let liveSelectedDriver = null;
 let liveMapFitted = false;
@@ -13541,6 +13548,31 @@ let liveMapUserPanned = false;
 // így a kamionja soha nem tud "kilógni" a látható térképablakból, hanem a
 // térkép vele együtt mozog.
 let liveFollowedDriver = null;
+
+// Névfeloldás (bmark1995 → Batki Márk): GLOBÁLIS, hogy minden élő-térkép
+// függvény (refreshLiveDrivers, showLiveDriverInfo, getLiveFuelAvg) elérje.
+const PLAYER_NAME_MAP = { 'bmark1995': 'Batki Márk', 'batkimrk': 'Batki Márk', 'batki mark': 'Batki Márk' };
+function resolveNev(d) {
+  const raw = String((d && (d.player || d.key)) || '').trim();
+  return PLAYER_NAME_MAP[raw.toLowerCase()] || raw;
+}
+
+// Átlagfogyasztás megjelenítendő értéke sofőrönként, villogás nélkül.
+// Ha a játék most érvényes (>0) értéket küld, azt tároljuk és adjuk vissza;
+// ha most 0-t küld (pillanatnyi SCS-adathiány), az utolsó ismert értéket
+// tartjuk meg. Így az átlagfogyasztás nem tűnik el és jön vissza folyton.
+function getLiveFuelAvg(d) {
+  // A sofőr azonosítója a cache-hez a feloldott név (kisbetűs) — ugyanaz a
+  // kulcs, mint a dedupnál, így fuvar/kulcs váltáskor is stabil.
+  const nev = resolveNev(d).toLowerCase();
+  const ertek = (d && d.truck && typeof d.truck.fuelAvgL100 === 'number') ? d.truck.fuelAvgL100 : 0;
+  if (ertek > 0) {
+    if (nev) liveFuelAvgCache[nev] = ertek;
+    return ertek;
+  }
+  // Most 0 — az utolsó érvényes értéket adjuk vissza (ha volt), különben 0.
+  return (nev && liveFuelAvgCache[nev]) || 0;
+}
 
 // Sofőr színek (minden sofőrnek egyedi szín)
 const DRIVER_COLORS = ['#f97316','#3b82f6','#4ade80','#a78bfa','#f43f5e','#06b6d4','#eab308','#ec4899'];
@@ -13696,12 +13728,10 @@ async function refreshLiveDrivers() {
     const AKTIV_LIMIT = 30 * 1000;   // 30 mp = aktív
     const STALE_LIMIT = 5 * 60 * 1000; // 5 perc = elavult
 
-    // Névfeloldás: ugyanaz a mapping mint a szerveren (bmark1995 → Batki Márk)
-    const PLAYER_NAME_MAP = { 'bmark1995': 'Batki Márk', 'batkimrk': 'Batki Márk', 'batki mark': 'Batki Márk' };
-    function resolveNev(d) {
-      const raw = String(d.player || d.key || '').trim();
-      return PLAYER_NAME_MAP[raw.toLowerCase()] || raw;
-    }
+    // Névfeloldás: a resolveNev() mostantól GLOBÁLIS (lásd a fájlban feljebb),
+    // hogy a showLiveDriverInfo() és getLiveFuelAvg() is elérje — korábban itt
+    // lokálisan volt, ezért a globális függvényekből hívva ReferenceError-t
+    // dobott, és a térkép "Töltés..."-nél ragadt.
 
     // Szűrés: csak az aktuális játékhoz tartozó sofőrök
     // Deduplikálás: ha ugyanaz a sofőr (player név) több kulcs alatt is szerepel
@@ -13780,7 +13810,10 @@ async function refreshLiveDrivers() {
       const fuelInfo = getLiveFuel(d.truck);
       const fuel = fuelInfo.liters;
       const fuelTxt = fuelInfo.text;
-      const fuelDisplay = (fuel === 0 && d.truck && d.truck.fuelRange > 0) ? Math.round(d.truck.fuelRange) + ' km hatótáv' : fuelTxt;
+      // Üzemanyag (liter) és hatótáv (km) külön: a liter mindig a valós adat (ha >0),
+      // a hatótáv pedig hány km-re elég — ezt a játék akkor is számolja, ha a liter 0.
+      const fuelDisplay = (fuel > 0) ? fuelTxt : '—';
+      const fuelRangeDisplay = (d.truck && d.truck.fuelRange > 0) ? Math.round(d.truck.fuelRange) + ' km' : '—';
       const cargo = d.job && d.job.cargo ? d.job.cargo : '—';
       const dest = d.job && d.job.to ? d.job.to : '—';
       const navDist = d.navigation ? (d.navigation.distanceKm || 0).toFixed(1) + ' km' : '—';
@@ -13808,7 +13841,8 @@ async function refreshLiveDrivers() {
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;">
             <span style="color:#9ca3af;">⚡ Sebesség</span><span>${speed} km/h</span>
             <span style="color:#9ca3af;">⛽ Üzemanyag</span><span>${fuelDisplay}</span>
-            <span style="color:#9ca3af;">📊 Átlagfogy.</span><span>${(d.truck && d.truck.fuelAvgL100 > 0) ? d.truck.fuelAvgL100.toFixed(1) + ' l/100km' : '—'}</span>
+            <span style="color:#9ca3af;">🔋 Hatótáv</span><span>${fuelRangeDisplay}</span>
+            <span style="color:#9ca3af;">📊 Átlagfogy.</span><span>${(() => { const a = getLiveFuelAvg(d); return a > 0 ? a.toFixed(1) + ' l/100km' : '—'; })()}</span>
             <span style="color:#9ca3af;">📦 Rakomány</span><span>${cargo}</span>
             <span style="color:#9ca3af;">🎯 Cél</span><span>${dest}</span>
             <span style="color:#9ca3af;">📏 Hátralévő</span><span>${navDist}</span>
@@ -13904,16 +13938,21 @@ function showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName
   panel.style.display = 'block';
   document.getElementById('live-info-nev').textContent = '🚛 ' + nev + (d.paused ? ' ⏸ Szünetelve' : ' ● Aktív');
   document.getElementById('live-info-speed').textContent = speed + ' km/h';
-  // Üzemanyag: ha a liter 0, de van hatótáv (fuelRange) — ami álló motornál a
-  // tipikus eset a SCS SDK-nál —, akkor a hatótávat mutatjuk, mint a popupban.
+  // Üzemanyag (liter): ha van valós liter adat, azt mutatjuk; ha nincs (0),
+  // akkor "—" (a hatótáv külön sorban szerepel, lásd lejjebb).
   const _fi = getLiveFuel(d.truck);
   document.getElementById('live-info-fuel').textContent =
-    (_fi.liters === 0 && d.truck && d.truck.fuelRange > 0)
-      ? Math.round(d.truck.fuelRange) + ' km hatótáv'
-      : _fi.text;
-  // Átlagfogyasztás (l/100km): a játék csak vezetés közben számolja, állva 0-t
-  // ad — ilyenkor "—"-t mutatunk, mert a "0 l/100km" félrevezető lenne.
-  const _avg = (d.truck && typeof d.truck.fuelAvgL100 === 'number') ? d.truck.fuelAvgL100 : 0;
+    (_fi.liters > 0) ? _fi.text : '—';
+  // Hatótáv (fuelRange): hány km-re elég a jelenlegi üzemanyag. A játék ezt
+  // akkor is számolja (tankméretből), ha a liter 0 — ezért külön sorban mindig
+  // megmutatjuk, ha > 0.
+  const _range = (d.truck && typeof d.truck.fuelRange === 'number') ? d.truck.fuelRange : 0;
+  document.getElementById('live-info-fuelrange').textContent =
+    _range > 0 ? Math.round(_range) + ' km' : '—';
+  // Átlagfogyasztás (l/100km): a játék időnként 0-t ad (lassításkor/álláskor),
+  // ezért az utolsó ÉRVÉNYES értéket tartjuk (getLiveFuelAvg), hogy a kijelzés
+  // ne villogjon (eltűnik/visszajön). "—" csak akkor, ha még sosem volt érték.
+  const _avg = getLiveFuelAvg(d);
   document.getElementById('live-info-fuelavg').textContent =
     _avg > 0 ? _avg.toFixed(1) + ' l/100km' : '—';
   document.getElementById('live-info-cargo').textContent = cargo;
