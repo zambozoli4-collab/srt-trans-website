@@ -3522,6 +3522,7 @@ body { font-size: 15px; }
           </div>
           <div id="live-map-driver-info" style="flex:1;min-width:220px;">
             <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px;" id="live-info-nev">—</div>
+            <div class="driver-info-row"><span class="driver-info-label">🚛 Jármű</span><span class="driver-info-value" id="live-info-truck">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">⚡ Sebesség</span><span class="driver-info-value" id="live-info-speed">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">⛽ Üzemanyag</span><span class="driver-info-value" id="live-info-fuel">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">🔋 Hatótáv</span><span class="driver-info-value" id="live-info-fuelrange">—</span></div>
@@ -3529,7 +3530,6 @@ body { font-size: 15px; }
             <div class="driver-info-row"><span class="driver-info-label">📦 Rakomány</span><span class="driver-info-value" id="live-info-cargo">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">🎯 Cél</span><span class="driver-info-value" id="live-info-dest">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">📏 Hátralévő</span><span class="driver-info-value" id="live-info-navdist">—</span></div>
-            <div class="driver-info-row"><span class="driver-info-label">🚛 Jármű</span><span class="driver-info-value" id="live-info-truck">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">🔧 Kopás</span><span class="driver-info-value" id="live-info-wear">—</span></div>
           </div>
         </div>
@@ -13839,6 +13839,7 @@ async function refreshLiveDrivers() {
         <div style="min-width:180px;">
           <div style="font-weight:800;font-size:14px;color:${color};margin-bottom:8px;">🚛 ${nev}${paused}</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;">
+            <span style="color:#9ca3af;">🚛 Jármű</span><span>${truckName || '—'}</span>
             <span style="color:#9ca3af;">⚡ Sebesség</span><span>${speed} km/h</span>
             <span style="color:#9ca3af;">⛽ Üzemanyag</span><span>${fuelDisplay}</span>
             <span style="color:#9ca3af;">🔋 Hatótáv</span><span>${fuelRangeDisplay}</span>
