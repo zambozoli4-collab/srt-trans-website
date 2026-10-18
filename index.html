@@ -3431,7 +3431,12 @@ body { font-size: 15px; }
           body.live-map-fs-active .site-header {
             display: none !important;
           }
-          #live-map { width: 100%; height: 100%; }
+          #live-map { width: 100%; height: 100%; background: #484E66; }
+          /* A térkép-háttér PONTOSAN a TsMap csempe alapszíne (#484E66). Így a
+             csempén túli üres rész ÉS a hiányzó/hibás csempék helye is ugyanabba
+             a színbe olvad — sehol nincs fehér vagy látható kocka-határ, a térkép
+             és a háttér egybefüggő felületként jelenik meg. */
+          #live-map .leaflet-container { background: #484E66; }
           #live-map-fullscreen-btn, #live-map-close-btn {
             position: absolute; z-index: 1001; top: 14px; left: 60px;
             width: 34px; height: 34px; border-radius: 8px;
@@ -13561,10 +13566,14 @@ function initLiveTerkep() {
     attributionControl: false,
   });
 
+  // A csempe réteg visszakerül, DE a hiányzó/üres csempéknél nincs fehér/kocka:
+  // az errorTileUrl egy teljesen átlátszó pixel, így a hiányzó csempék helyén a
+  // térkép szürke háttere (#3a4151) látszik át, és a csempe egybeolvad a háttérrel.
   liveTileLayer = L.tileLayer(ETS2_TILES, {
     minZoom: 2, maxZoom: 8,
     tileSize: 256,
     noWrap: true,
+    // Átlátszó 1x1 px: hiányzó csempénél a szürke háttér látszik, nem fehér kocka.
     errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
   }).addTo(liveMap);
 
@@ -13618,6 +13627,7 @@ function setLiveTerkepJatek(jatek) {
   document.getElementById('live-btn-ets2').classList.toggle('active', jatek === 'ets2');
   document.getElementById('live-btn-ats').classList.toggle('active', jatek === 'ats');
 
+  // Nincs csempe-réteg, így játékváltáskor sincs mit frissíteni (egységes szürke háttér).
   if (liveMapInitialized && liveTileLayer) {
     liveTileLayer.setUrl(jatek === 'ets2' ? ETS2_TILES : ATS_TILES);
   }
