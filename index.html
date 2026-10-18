@@ -12997,18 +12997,19 @@ function drawRouteUpTo(idx) {
 // ETS2 térkép tile server — saját generálású TsMap csempe (ETS2 1.61, minden DLC-vel),
 // a GitHub Pages / srt-trans.hu domain alól kiszolgálva. A csempe 256px-es (TsMap alap).
 const ETS2_TILES = `https://srt-trans.hu/tiles/ets2/{z}/{x}/{y}.png`;
-const ATS_TILES  = `https://srt-trans.hu/tiles/ets2/{z}/{x}/{y}.png`;
+const ATS_TILES  = `https://srt-trans.hu/tiles/ats/{z}/{x}/{y}.png`;
 
-// Kalibrációs konstansok a saját TsMap csempéhez, a generálás TileMapInfo.json-jából
+// Kalibrációs konstansok a saját TsMap csempékhez, a generálás TileMapInfo.json-jából
 // számolva. A térkép teljes mérete maxZoom=8 szinten 256*2^8 = 65536 px.
 //   pointsPerPixel = (x2 - x1) / 65536
 //   multipliers.x  = -x1 / pointsPerPixel  (a játék 0,0 pixelpozíciója)
 //   multipliers.y  = -y1 / pointsPerPixel
-// TileMapInfo: x1=-113177.313 x2=97925.625 y1=-122648.086 y2=88454.85
+// ETS2 TileMapInfo: x1=-113177.313 x2=97925.625 y1=-122648.086 y2=88454.85
+// ATS  TileMapInfo: x1=-120098.891 x2=41144.0938 y1=-79127.37 y2=82115.62
 // A csempeszerver Leaflet CRS.Simple pixel-koordinátát vár (map.unproject()).
 const MAP_CONFIG = {
   ets2: { pointsPerPixel: 3.221181, multipliers: { x: 35135.7, y: 38075.5 }, maxZoom: 8 },
-  ats:  { pointsPerPixel: 3.221181, multipliers: { x: 35135.7, y: 38075.5 }, maxZoom: 8 },
+  ats:  { pointsPerPixel: 2.460397, multipliers: { x: 48812.9, y: 32160.5 }, maxZoom: 8 },
 };
 
 // ETS2/ATS játékkoordináta (x, z) → Leaflet LatLng, az adott Leaflet map példányhoz kötve
@@ -13715,18 +13716,29 @@ async function refreshLiveDrivers() {
         return gameMatch;
       });
 
-    // Deduplikálás: névenkénti legjobb (legfrissebb) bejegyzés megtartása
+    // Deduplikálás: névenkénti legjobb bejegyzés megtartása.
+    // FONTOS: ugyanaz a sofőr két külön kulcs alatt is szerepel a Firebase-ben:
+    //   - "Attipapi"  → type:"telemetry_update"  (TELJES adat: üzemanyag, rakomány, truck)
+    //   - "attipapi"  → type:"route_point"       (CSAK pozíció, nincs truck/job!)
+    // A kisbetűsített név miatt mindkettő ugyanabba a dedup-vödörbe esik, és
+    // korábban a frissebb (sokszor a route_point) nyert → ilyenkor eltűnt az
+    // üzemanyag és a rakomány ("egyszer írja, egyszer nem").
+    // Megoldás: a telemetry_update MINDIG erősebb a route_point-nál. Két azonos
+    // típus között pedig a frissebb nyer, mint eddig.
+    const isTelemetry = d => (d.type !== 'route_point') && !!d.truck;
+    const frissMsOf = d => d.frissitve
+      ? (typeof d.frissitve === 'number' ? d.frissitve : new Date(d.frissitve).getTime())
+      : 0;
     const nevMap = new Map();
     rawDrivers.forEach(d => {
       const nev = resolveNev(d).toLowerCase();
-      const frissMs = d.frissitve
-        ? (typeof d.frissitve === 'number' ? d.frissitve : new Date(d.frissitve).getTime())
-        : 0;
       const meglevo = nevMap.get(nev);
-      const meglesoFriss = meglevo ? (meglevo.frissitve
-        ? (typeof meglevo.frissitve === 'number' ? meglevo.frissitve : new Date(meglevo.frissitve).getTime())
-        : 0) : -1;
-      if (!meglevo || frissMs > meglesoFriss) nevMap.set(nev, d);
+      if (!meglevo) { nevMap.set(nev, d); return; }
+      const ujTelem = isTelemetry(d), regiTelem = isTelemetry(meglevo);
+      // 1) Ha típusban különböznek, a telemetria mindig nyer a route_point felett.
+      if (ujTelem !== regiTelem) { if (ujTelem) nevMap.set(nev, d); return; }
+      // 2) Azonos típusnál a frissebb nyer.
+      if (frissMsOf(d) > frissMsOf(meglevo)) nevMap.set(nev, d);
     });
     const drivers = Array.from(nevMap.values());
 
@@ -13817,8 +13829,10 @@ async function refreshLiveDrivers() {
         liveDriverMarkers[d.key] = marker;
       }
 
-      // Ha ez a kiválasztott sofőr, frissítjük az info panelt is
-      if (liveSelectedDriver === d.key) {
+      // Ha ez a kiválasztott sofőr, frissítjük az info panelt is.
+      // Névalapú egyezés (nem nyers kulcs), hogy a kis/nagybetűs kulcs-párok
+      // (pl. "Attipapi"/"attipapi") ne akadályozzák a panel frissülését.
+      if (liveSelectedDriver === resolveNev(d).toLowerCase()) {
         showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName, maxWear);
       }
 
@@ -13880,12 +13894,21 @@ async function refreshLiveDrivers() {
 }
 
 function showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName, maxWear) {
-  liveSelectedDriver = d.key;
+  // A kiválasztást a FELOLDOTT NÉVHEZ kötjük (kisbetűsítve), nem a nyers kulcshoz.
+  // Ugyanaz a sofőr két kulcs alatt is lehet ("Attipapi" telemetria + "attipapi"
+  // route_point); ha a panel a route_point kulcshoz tapadt, örökké "—"-t mutatott.
+  liveSelectedDriver = resolveNev(d).toLowerCase();
   const panel = document.getElementById('live-map-driver-info');
   panel.style.display = 'block';
   document.getElementById('live-info-nev').textContent = '🚛 ' + nev + (d.paused ? ' ⏸ Szünetelve' : ' ● Aktív');
   document.getElementById('live-info-speed').textContent = speed + ' km/h';
-  document.getElementById('live-info-fuel').textContent = getLiveFuel(d.truck).text;
+  // Üzemanyag: ha a liter 0, de van hatótáv (fuelRange) — ami álló motornál a
+  // tipikus eset a SCS SDK-nál —, akkor a hatótávat mutatjuk, mint a popupban.
+  const _fi = getLiveFuel(d.truck);
+  document.getElementById('live-info-fuel').textContent =
+    (_fi.liters === 0 && d.truck && d.truck.fuelRange > 0)
+      ? Math.round(d.truck.fuelRange) + ' km hatótáv'
+      : _fi.text;
   document.getElementById('live-info-cargo').textContent = cargo;
   document.getElementById('live-info-dest').textContent = dest;
   document.getElementById('live-info-navdist').textContent = navDist;
