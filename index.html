@@ -3524,6 +3524,7 @@ body { font-size: 15px; }
             <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px;" id="live-info-nev">—</div>
             <div class="driver-info-row"><span class="driver-info-label">⚡ Sebesség</span><span class="driver-info-value" id="live-info-speed">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">⛽ Üzemanyag</span><span class="driver-info-value" id="live-info-fuel">—</span></div>
+            <div class="driver-info-row"><span class="driver-info-label">📊 Átlagfogyasztás</span><span class="driver-info-value" id="live-info-fuelavg">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">📦 Rakomány</span><span class="driver-info-value" id="live-info-cargo">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">🎯 Cél</span><span class="driver-info-value" id="live-info-dest">—</span></div>
             <div class="driver-info-row"><span class="driver-info-label">📏 Hátralévő</span><span class="driver-info-value" id="live-info-navdist">—</span></div>
@@ -13807,6 +13808,7 @@ async function refreshLiveDrivers() {
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;">
             <span style="color:#9ca3af;">⚡ Sebesség</span><span>${speed} km/h</span>
             <span style="color:#9ca3af;">⛽ Üzemanyag</span><span>${fuelDisplay}</span>
+            <span style="color:#9ca3af;">📊 Átlagfogy.</span><span>${(d.truck && d.truck.fuelAvgL100 > 0) ? d.truck.fuelAvgL100.toFixed(1) + ' l/100km' : '—'}</span>
             <span style="color:#9ca3af;">📦 Rakomány</span><span>${cargo}</span>
             <span style="color:#9ca3af;">🎯 Cél</span><span>${dest}</span>
             <span style="color:#9ca3af;">📏 Hátralévő</span><span>${navDist}</span>
@@ -13909,6 +13911,11 @@ function showLiveDriverInfo(d, nev, speed, fuel, cargo, dest, navDist, truckName
     (_fi.liters === 0 && d.truck && d.truck.fuelRange > 0)
       ? Math.round(d.truck.fuelRange) + ' km hatótáv'
       : _fi.text;
+  // Átlagfogyasztás (l/100km): a játék csak vezetés közben számolja, állva 0-t
+  // ad — ilyenkor "—"-t mutatunk, mert a "0 l/100km" félrevezető lenne.
+  const _avg = (d.truck && typeof d.truck.fuelAvgL100 === 'number') ? d.truck.fuelAvgL100 : 0;
+  document.getElementById('live-info-fuelavg').textContent =
+    _avg > 0 ? _avg.toFixed(1) + ' l/100km' : '—';
   document.getElementById('live-info-cargo').textContent = cargo;
   document.getElementById('live-info-dest').textContent = dest;
   document.getElementById('live-info-navdist').textContent = navDist;
