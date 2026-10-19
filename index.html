@@ -13014,6 +13014,22 @@ const MAP_CONFIG = {
   ats:  { pointsPerPixel: 2.460397, multipliers: { x: 48812.9, y: 32160.5 }, maxZoom: 8 },
 };
 
+// ── Brackenreach (Halloween sziget) kép-kalibráció ───────────────────────
+// A kép sarkainak JÁTÉKKOORDINÁTÁI, két élőben mért pontból számolva:
+//   Város:  x=-138499, z=97701  → kép ~64% vízszint, ~62% függőleges
+//   Csiga:  x=-138729, z=97916  → kép ~8%  vízszint, ~40% függőleges
+// A sziget nagyon kicsi (a két pont alig ~230 egységre van), de a kép erősen
+// felnagyítva mutatja. A kép sarkait a gameToLatLng-gel tesszük le, és a markert
+// is azzal — így a kettő pontosan együtt mozog. Ha a kép függőlegesen tükrözve
+// jelenne meg, cseréld fel a zTop és zBottom értéket.
+// A kalibrált alapértékek (a jel pontosan az úton van ezekkel). A képet és a
+// marker-vetítést ebből egy közös nagyítással (BR_SCALE) tágítjuk, a sziget
+// középpontja körül — így a sziget NAGYOBB lesz a térképen (kevesebbet kell
+// zoomolni), de a belső arányok és a jel-pozíció pontossága megmarad.
+// A Brackenreach kép sarkainak játékkoordinátái (nagy méret + pontos pozíció,
+// a nagyított képen 2-pontos kalibrációval beállítva).
+const BR_CALIB = { xLeft: -138866, xRight: -137086, zTop: 97178, zBottom: 98905 };
+
 // ETS2/ATS játékkoordináta (x, z) → Leaflet LatLng, az adott Leaflet map példányhoz kötve
 function gameToLatLng(map, x, z, jatek) {
   const cfg = MAP_CONFIG[jatek === 'ats' ? 'ats' : 'ets2'];
@@ -13523,6 +13539,8 @@ let liveMap = null;
 let liveMapInitialized = false;
 let liveMapJatek = 'ets2';
 let liveTileLayer = null;
+// Halloween/Brackenreach sziget image-overlay (csak ETS2 nézetben látszik).
+let liveBrackenreachOverlay = null;
 let liveDriverMarkers = {};
 // Sofőrönként (feloldott, kisbetűs név szerint) az utolsó ÉRVÉNYES (>0)
 // átlagfogyasztás. A játék időnként 0-t ad erre a csatornára (pl. lassításkor,
@@ -13593,7 +13611,7 @@ function initLiveTerkep() {
   liveMap = L.map('live-map', {
     crs: L.CRS.Simple,
     minZoom: 2,
-    maxZoom: 8,
+    maxZoom: 12,
     zoom: 3,
     center: [0, 0],
     zoomControl: true,
@@ -13604,12 +13622,41 @@ function initLiveTerkep() {
   // az errorTileUrl egy teljesen átlátszó pixel, így a hiányzó csempék helyén a
   // térkép szürke háttere (#3a4151) látszik át, és a csempe egybeolvad a háttérrel.
   liveTileLayer = L.tileLayer(ETS2_TILES, {
-    minZoom: 2, maxZoom: 8,
+    minZoom: 2, maxZoom: 8, maxNativeZoom: 8,
     tileSize: 256,
     noWrap: true,
     // Átlátszó 1x1 px: hiányzó csempénél a szürke háttér látszik, nem fehér kocka.
     errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
   }).addTo(liveMap);
+
+  // ── HALLOWEEN / BRACKENREACH SZIGET KÉP ───────────────────────────
+  // A Halloween event ("Brackenreach") pályája egy külön, a fő ETS2 térképtől
+  // messze (bal-alul, a sofőrök x≈-138700 z≈98000 koordinátáin) elhelyezkedő
+  // sziget, amit a TsMap nem renderel. Ezért a játékbeli térképének képét
+  // (media/halloween_brackenreach.png) image-overlayként tesszük pontosan oda,
+  // ahol a sofőrök koordinátái vannak — így a Halloween-fuvaros sofőrök markerei
+  // a sziget képére esnek (nem a térképen kívüli üres szürkeségbe).
+  // A sarkok játékkoordinátái (a kalibrációt a BRACKENREACH_BOUNDS-ban lehet
+  // finomhangolni, ha a marker nem pontosan a helyére esik).
+  // A Brackenreach térkép-kép sarkainak JÁTÉKKOORDINÁTÁI, két élőben mért
+  // pontból kalibrálva (város + csiga/kezdőpont). FONTOS: ezen a képen a z-tengely
+  // fordított a fő térképhez képest (nagyobb z = feljebb a képen), ezért a kép
+  // felső élénél van a NAGYOBB z. A markert ugyanezekkel az értékekkel tesszük a
+  // helyére (lásd brackenreachToLatLng), így kép és marker együtt, pontosan mozog.
+  // Finomhangolás: elég ezt a 4 számot állítani (xLeft/xRight/zTop/zBottom).
+  const brTopLeft     = gameToLatLng(liveMap, BR_CALIB.xLeft,  BR_CALIB.zTop,    'ets2'); // bal-felső (x min, z max)
+  const brBottomRight = gameToLatLng(liveMap, BR_CALIB.xRight, BR_CALIB.zBottom, 'ets2'); // jobb-alsó (x max, z min)
+  liveBrackenreachOverlay = L.imageOverlay(
+    'media/Brackenreach_map.png',
+    L.latLngBounds(brTopLeft, brBottomRight),
+    { opacity: 1, interactive: false, className: 'brackenreach-overlay' }
+  ).addTo(liveMap);
+
+
+
+
+
+
 
   // Kezdő nézet: az ETS2 térkép nagyjából középső régiójára (Németország táján) igazítva,
   // amíg meg nem érkezik az első élő sofőr-adat (utána automatikusan rááll a sofőrökre).
@@ -13665,6 +13712,15 @@ function setLiveTerkepJatek(jatek) {
   if (liveMapInitialized && liveTileLayer) {
     liveTileLayer.setUrl(jatek === 'ets2' ? ETS2_TILES : ATS_TILES);
   }
+  // A Brackenreach (Halloween) sziget csak az ETS2 nézethez tartozik — ATS-re
+  // váltáskor elrejtjük, vissza ETS2-re megjelenítjük.
+  if (liveBrackenreachOverlay) {
+    if (jatek === 'ets2') {
+      if (!liveMap.hasLayer(liveBrackenreachOverlay)) liveBrackenreachOverlay.addTo(liveMap);
+    } else {
+      if (liveMap.hasLayer(liveBrackenreachOverlay)) liveMap.removeLayer(liveBrackenreachOverlay);
+    }
+  }
   if (liveMapInitialized) {
     // Játékváltáskor sem rajzolunk külön városnév-réteget: a csempe tartalmazza a neveket.
     if (liveCityLayer) { liveMap.removeLayer(liveCityLayer); liveCityLayer = null; }
@@ -13673,7 +13729,31 @@ function setLiveTerkepJatek(jatek) {
 }
 
 function toLatLng(x, y, z, jatek) {
+  // Ha a sofőr a Brackenreach (Halloween) szigeten van, a markert a kép SAJÁT
+  // kalibrációjával (BR_CALIB) tesszük a helyére — ugyanazzal, amivel a képet is.
+  // Enélkül a marker a fő térkép szorzóival ment, a kép a BR_CALIB-bal → nem egyeztek.
+  if ((jatek !== 'ats') && brackenreachBenne(x, z)) {
+    window._brLastPos = { x, z };  // a kalibrálóhoz: utolsó szigeti pozíció
+    return brackenreachToLatLng(liveMap, x, z);
+  }
   return gameToLatLng(liveMap, x, z, jatek);
+}
+
+// A sofőr a Brackenreach sziget koordináta-tartományában van-e?
+function brackenreachBenne(x, z) {
+  // A sofőr VALÓS koordináta-tartománya a szigeten (a base kalibráció köré egy
+  // bőséges ráhagyással). NEM a nagyított kép határai — a sofőr sosem megy el
+  // ilyen messze valójában, a kép csak nagyítva jelenik meg.
+  return x > -140000 && x < -135500 && z > 95500 && z < 100500;
+}
+
+// Brackenreach kép-koordináta → Leaflet LatLng (ugyanaz a vetítés, mint a képnél).
+function brackenreachToLatLng(map, x, z) {
+  const tl = gameToLatLng(map, BR_CALIB.xLeft,  BR_CALIB.zTop,    'ets2');
+  const br = gameToLatLng(map, BR_CALIB.xRight, BR_CALIB.zBottom, 'ets2');
+  const fx = (x - BR_CALIB.xLeft) / (BR_CALIB.xRight - BR_CALIB.xLeft);
+  const fz = (z - BR_CALIB.zTop)  / (BR_CALIB.zBottom - BR_CALIB.zTop);
+  return L.latLng(tl.lat + (br.lat - tl.lat) * fz, tl.lng + (br.lng - tl.lng) * fx);
 }
 
 // Üzemanyag kiolvasása a telemetriából – többféle adatformát is kezel:
@@ -13978,9 +14058,11 @@ function focusLiveDriver(key) {
   liveFollowedDriver = key;
   liveMapUserPanned = false;
   frissitKovetesGombot();
-  // Teljesen ráközelítünk (max zoom szint) és odaugrunk, majd innentől minden
-  // frissítésnél (lásd refreshLiveDrivers) automatikusan követjük a mozgását.
-  liveMap.setView(marker.getLatLng(), liveMap.getMaxZoom(), { animate: true });
+  // Ráközelítünk egy ésszerű (nem maximális) zoom szintre és odaugrunk, majd
+  // innentől minden frissítésnél (lásd refreshLiveDrivers) automatikusan követjük.
+  // FONTOS: NEM getMaxZoom (ami a Halloween sziget miatt 12 — az túlzoomolna a
+  // fő térképen), hanem fix 7-es szint, ami jó a normál térképen.
+  liveMap.setView(marker.getLatLng(), 7, { animate: true });
   marker.openPopup();
 }
 
@@ -13993,8 +14075,8 @@ function kovessSofortLiveTerkep() {
   if (!liveMap) return;
 
   if (liveFollowedDriver && liveDriverMarkers[liveFollowedDriver]) {
-    // Van kijelölt/követett sofőr — arra igazítunk vissza, teljes ráközelítéssel.
-    liveMap.setView(liveDriverMarkers[liveFollowedDriver].getLatLng(), liveMap.getMaxZoom(), { animate: true });
+    // Van kijelölt/követett sofőr — arra igazítunk vissza, ésszerű zoommal (nem max).
+    liveMap.setView(liveDriverMarkers[liveFollowedDriver].getLatLng(), 7, { animate: true });
   } else if (Object.keys(liveDriverMarkers).length > 0) {
     const group = L.featureGroup(Object.values(liveDriverMarkers));
     liveMap.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 7 });
