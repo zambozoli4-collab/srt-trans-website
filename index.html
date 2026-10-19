@@ -13034,7 +13034,12 @@ const MAP_CONFIG = {
 // és a markert ugyanerre a nagyított bounds-ra vetítjük — így az arányok, és így a
 // pozíció, VÁLTOZATLAN marad, csak a megjelenített méret nő.
 const BR_CALIB = { xLeft: -138876, xRight: -137070, zTop: 97203, zBottom: 98875 };
+// ATS kalibráció (ugyanaz a Brackenreach kép, de az ATS más koordináta-rendszert
+// használ). Kezdőérték — a kalibráló panellel ATS nézetben pontosítható.
+let BR_CALIB_ATS = { xLeft: -138792, xRight: -137028, zTop: 97283, zBottom: 99008 };  // ATS Brackenreach, 2-pontos kalibrációval beállítva
 const BR_NAGYITAS = 20;  // a sziget ennyiszer nagyobb a térképen (a pozíció NEM csúszik)
+// Az aktuális játékhoz tartozó Brackenreach kalibráció.
+function brCalibAktualis() { return (liveMapJatek === 'ats') ? BR_CALIB_ATS : BR_CALIB; }
 
 // ETS2/ATS játékkoordináta (x, z) → Leaflet LatLng, az adott Leaflet map példányhoz kötve
 function gameToLatLng(map, x, z, jatek) {
@@ -13717,14 +13722,12 @@ function setLiveTerkepJatek(jatek) {
   if (liveMapInitialized && liveTileLayer) {
     liveTileLayer.setUrl(jatek === 'ets2' ? ETS2_TILES : ATS_TILES);
   }
-  // A Brackenreach (Halloween) sziget csak az ETS2 nézethez tartozik — ATS-re
-  // váltáskor elrejtjük, vissza ETS2-re megjelenítjük.
+  // A Brackenreach (Halloween) sziget MINDKÉT játékban megjelenik (ugyanaz a kép),
+  // de külön kalibrációval (ETS2: BR_CALIB, ATS: BR_CALIB_ATS). Játékváltáskor a
+  // kép bounds-át az aktuális játék kalibrációjára frissítjük.
   if (liveBrackenreachOverlay) {
-    if (jatek === 'ets2') {
-      if (!liveMap.hasLayer(liveBrackenreachOverlay)) liveBrackenreachOverlay.addTo(liveMap);
-    } else {
-      if (liveMap.hasLayer(liveBrackenreachOverlay)) liveMap.removeLayer(liveBrackenreachOverlay);
-    }
+    if (!liveMap.hasLayer(liveBrackenreachOverlay)) liveBrackenreachOverlay.addTo(liveMap);
+    liveBrackenreachOverlay.setBounds(brNagyitottBounds());
   }
   if (liveMapInitialized) {
     // Játékváltáskor sem rajzolunk külön városnév-réteget: a csempe tartalmazza a neveket.
@@ -13734,10 +13737,10 @@ function setLiveTerkepJatek(jatek) {
 }
 
 function toLatLng(x, y, z, jatek) {
-  // Ha a sofőr a Brackenreach (Halloween) szigeten van, a markert a kép SAJÁT
-  // kalibrációjával (BR_CALIB) tesszük a helyére — ugyanazzal, amivel a képet is.
-  // Enélkül a marker a fő térkép szorzóival ment, a kép a BR_CALIB-bal → nem egyeztek.
-  if ((jatek !== 'ats') && brackenreachBenne(x, z)) {
+  // Ha a sofőr a Brackenreach (Halloween) szigeten van (ETS2 VAGY ATS), a markert
+  // a kép SAJÁT kalibrációjával tesszük a helyére — ugyanazzal, amivel a képet is.
+  const ats = (jatek === 'ats');
+  if (brackenreachBenne(x, z, ats)) {
     window._brLastPos = { x, z };  // a kalibrálóhoz: utolsó szigeti pozíció
     return brackenreachToLatLng(liveMap, x, z);
   }
@@ -13745,70 +13748,27 @@ function toLatLng(x, y, z, jatek) {
 }
 
 // A sofőr a Brackenreach sziget koordináta-tartományában van-e?
-function brackenreachBenne(x, z) {
-  // A sofőr VALÓS koordináta-tartománya a szigeten (a base kalibráció köré egy
-  // bőséges ráhagyással). NEM a nagyított kép határai — a sofőr sosem megy el
-  // ilyen messze valójában, a kép csak nagyítva jelenik meg.
-  return x > -140000 && x < -136000 && z > 96000 && z < 100000;
-}
-
-// ── IDEIGLENES: 2-pontos kalibráló (a nagy képen a pontos pozícióhoz) ──
-let brKalP1 = null, brKalP2 = null;
-function brKalibraloPanel() {
-  if (document.getElementById('br-kalib')) return;
-  const panel = document.createElement('div');
-  panel.id = 'br-kalib';
-  panel.style.cssText = 'position:absolute;top:10px;right:10px;z-index:1500;background:rgba(10,15,25,0.96);border:1px solid #f97316;border-radius:10px;padding:12px;color:#fff;font:12px sans-serif;width:250px;box-shadow:0 4px 16px rgba(0,0,0,0.6);';
-  panel.innerHTML =
-    '<div style="font-weight:700;color:#f97316;margin-bottom:6px;">🎃 2-pontos kalibrálás</div>' +
-    '<div style="font-size:11px;color:#cbd5e1;margin-bottom:8px;line-height:1.4;">Állj ismert pontra, húzd a térképet, hogy az a pont a + alá kerüljön, majd nyomj gombot.</div>' +
-    '<button id="brk-p1" style="width:100%;padding:6px;margin-bottom:4px;background:#2563eb;border:none;border-radius:6px;color:#fff;font-weight:700;cursor:pointer;">1. pont</button>' +
-    '<div id="brk-p1v" style="font-size:10px;color:#93c5fd;margin-bottom:6px;">—</div>' +
-    '<button id="brk-p2" style="width:100%;padding:6px;margin-bottom:4px;background:#2563eb;border:none;border-radius:6px;color:#fff;font-weight:700;cursor:pointer;">2. pont (távoli)</button>' +
-    '<div id="brk-p2v" style="font-size:10px;color:#93c5fd;margin-bottom:6px;">—</div>' +
-    '<button id="brk-calc" style="width:100%;padding:7px;background:#16a34a;border:none;border-radius:6px;color:#fff;font-weight:700;cursor:pointer;">✅ Kiszámít + kiír</button>';
-  (document.getElementById('live-map-container') || document.body).appendChild(panel);
-  const cont = document.getElementById('live-map-container') || document.body;
-  const cross = document.createElement('div');
-  cross.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1499;width:24px;height:24px;pointer-events:none;';
-  cross.innerHTML = '<div style="position:absolute;left:11px;top:0;width:2px;height:24px;background:#ef4444;"></div><div style="position:absolute;top:11px;left:0;height:2px;width:24px;background:#ef4444;"></div>';
-  cont.appendChild(cross);
-  function kozepPxPct() {
-    const c = liveMap.getCenter(), b = liveBrackenreachOverlay.getBounds();
-    const nw = b.getNorthWest(), se = b.getSouthEast();
-    return { fx: (c.lng - nw.lng) / (se.lng - nw.lng), fy: (c.lat - nw.lat) / (se.lat - nw.lat) };
+// (ETS2 és ATS más koordináta-tartomány; a kalibrálás során finomítható.)
+function brackenreachBenne(x, z, ats) {
+  if (ats) {
+    // ATS Brackenreach tartomány — a BR_CALIB_ATS köré bőséges ráhagyással.
+    const c = BR_CALIB_ATS;
+    const minX = Math.min(c.xLeft, c.xRight) - 3000, maxX = Math.max(c.xLeft, c.xRight) + 3000;
+    const minZ = Math.min(c.zTop, c.zBottom) - 3000, maxZ = Math.max(c.zTop, c.zBottom) + 3000;
+    return x > minX && x < maxX && z > minZ && z < maxZ;
   }
-  document.getElementById('brk-p1').onclick = () => {
-    const p = window._brLastPos; if (!p) { alert('Nincs élő pozíció (vezess a szigeten).'); return; }
-    brKalP1 = { x: p.x, z: p.z, ...kozepPxPct() };
-    document.getElementById('brk-p1v').textContent = 'x=' + Math.round(p.x) + ' z=' + Math.round(p.z) + ' | ' + Math.round(brKalP1.fx*100) + '%,' + Math.round(brKalP1.fy*100) + '%';
-  };
-  document.getElementById('brk-p2').onclick = () => {
-    const p = window._brLastPos; if (!p) { alert('Nincs élő pozíció (vezess a szigeten).'); return; }
-    brKalP2 = { x: p.x, z: p.z, ...kozepPxPct() };
-    document.getElementById('brk-p2v').textContent = 'x=' + Math.round(p.x) + ' z=' + Math.round(p.z) + ' | ' + Math.round(brKalP2.fx*100) + '%,' + Math.round(brKalP2.fy*100) + '%';
-  };
-  document.getElementById('brk-calc').onclick = () => {
-    if (!brKalP1 || !brKalP2) { alert('Előbb mindkét pontot rögzítsd!'); return; }
-    const dFx = brKalP2.fx - brKalP1.fx, dFy = brKalP2.fy - brKalP1.fy;
-    if (Math.abs(dFx) < 0.02 || Math.abs(dFy) < 0.02) { alert('A két pont túl közel van a képen — vigyél messzebbre!'); return; }
-    const totalW = (brKalP2.x - brKalP1.x) / dFx, totalH = (brKalP2.z - brKalP1.z) / dFy;
-    const xLeft = brKalP1.x - brKalP1.fx * totalW, xRight = xLeft + totalW;
-    const zTop = brKalP1.z - brKalP1.fy * totalH, zBottom = zTop + totalH;
-    BR_CALIB.xLeft = xLeft; BR_CALIB.xRight = xRight; BR_CALIB.zTop = zTop; BR_CALIB.zBottom = zBottom;
-    liveBrackenreachOverlay.setBounds(L.latLngBounds(gameToLatLng(liveMap, xLeft, zTop, 'ets2'), gameToLatLng(liveMap, xRight, zBottom, 'ets2')));
-    const s = 'const BR_CALIB = { xLeft: ' + Math.round(xLeft) + ', xRight: ' + Math.round(xRight) + ', zTop: ' + Math.round(zTop) + ', zBottom: ' + Math.round(zBottom) + ' };';
-    console.log(s); navigator.clipboard && navigator.clipboard.writeText(s);
-    alert('KÉSZ! Beállítva + vágólapra:\n\n' + s);
-  };
+  // ETS2: a sofőr valós koordináta-tartománya a szigeten (bőséges ráhagyással).
+  return x > -140000 && x < -136000 && z > 96000 && z < 100000;
 }
 
 // A BR_CALIB (pontos kalibráció) sarkaiból Leaflet-bounds, majd a KÖZÉPPONT körül
 // BR_NAGYITAS-szor nagyítva a lat/lng térben. Ezt használja a KÉP és a MARKER is,
 // így az arányok (és a pozíció) azonosak maradnak, csak a méret nő.
 function brNagyitottBounds() {
-  const tl = gameToLatLng(liveMap, BR_CALIB.xLeft,  BR_CALIB.zTop,    'ets2');
-  const br = gameToLatLng(liveMap, BR_CALIB.xRight, BR_CALIB.zBottom, 'ets2');
+  const c = brCalibAktualis();
+  const j = (liveMapJatek === 'ats') ? 'ats' : 'ets2';
+  const tl = gameToLatLng(liveMap, c.xLeft,  c.zTop,    j);
+  const br = gameToLatLng(liveMap, c.xRight, c.zBottom, j);
   const cLat = (tl.lat + br.lat) / 2, cLng = (tl.lng + br.lng) / 2;
   const n = BR_NAGYITAS;
   return L.latLngBounds(
@@ -13817,12 +13777,12 @@ function brNagyitottBounds() {
   );
 }
 
-// Brackenreach kép-koordináta → Leaflet LatLng. A sofőr arányát a BR_CALIB-ban
-// számoljuk, és a NAGYÍTOTT bounds-ra vetítjük (ugyanaz, amire a kép is rajzolódik),
-// így a jel pontosan a kép megfelelő pontjára esik, bármekkora is a nagyítás.
+// Brackenreach kép-koordináta → Leaflet LatLng. A sofőr arányát az AKTUÁLIS játék
+// kalibrációjában számoljuk, és a NAGYÍTOTT bounds-ra vetítjük.
 function brackenreachToLatLng(map, x, z) {
-  const fx = (x - BR_CALIB.xLeft) / (BR_CALIB.xRight - BR_CALIB.xLeft);
-  const fz = (z - BR_CALIB.zTop)  / (BR_CALIB.zBottom - BR_CALIB.zTop);
+  const c = brCalibAktualis();
+  const fx = (x - c.xLeft) / (c.xRight - c.xLeft);
+  const fz = (z - c.zTop)  / (c.zBottom - c.zTop);
   const b = brNagyitottBounds();
   const nw = b.getNorthWest(), se = b.getSouthEast();
   return L.latLng(nw.lat + (se.lat - nw.lat) * fz, nw.lng + (se.lng - nw.lng) * fx);
