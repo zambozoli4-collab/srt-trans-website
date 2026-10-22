@@ -6193,10 +6193,10 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         jobs.forEach(j => { const o = okMagyar(j.buntetesOka); if (o) okStat[o] = (okStat[o] || 0) + 1; });
         const okLista = Object.entries(okStat).sort((a,b) => b[1]-a[1]);
 
-        // Legkisebb / átlag sebesség (csak kitöltött DLL-fuvarokból)
-        const minSebek = jobs.map(j => Number(j.minSebesseg)).filter(v => v > 0);
+        // Átlagsebesség (a Trucky adja; a minimumot kivettük, mert a DLL
+        // rövid/belvárosi fuvaroknál 0 km miatt nem méri, a Trucky pedig nem
+        // adja — így az örökös "–" helyett nem jelenítjük meg).
         const atlSebek = jobs.map(j => Number(j.atlagSebesseg)).filter(v => v > 0);
-        const legkisebbSeb = minSebek.length ? Math.min.apply(null, minSebek) : null;
         const atlagSeb = atlSebek.length ? Math.round(atlSebek.reduce((s,v)=>s+v,0)/atlSebek.length) : null;
 
         // Határidő: hány fuvar van kesett adattal, ebből hány késett
@@ -6204,13 +6204,13 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         const kesettDb = jobs.filter(j => j.kesett === true).length;
         const idobenDb = jobs.filter(j => j.kesett === false).length;
 
-        const vanDllAdat = okLista.length || legkisebbSeb != null || atlagSeb != null || hataridosFuvarok.length;
+        const vanDllAdat = okLista.length || atlagSeb != null || hataridosFuvarok.length;
         if (!vanDllAdat) {
           // Nincs még egyetlen új launcheres fuvar sem — marad a magyarázat.
           return `
           <div class="dstat-h">DLL plugin statisztika</div>
           <div class="dstat-grid">
-            <div class="dstat-card dstat-missing"><div class="dstat-label">Büntetés oka, legkisebb sebesség, késés</div><div class="dstat-note">Ezeket az ÚJ launcher (DLL) méri. Amint egy fuvart az új launcherrel adsz le, itt megjelennek. A régi fuvarokhoz nem pótolhatók.</div></div>
+            <div class="dstat-card dstat-missing"><div class="dstat-label">Büntetés oka, átlagsebesség, késés</div><div class="dstat-note">Ezeket az ÚJ launcher (DLL) / Trucky méri. Amint egy fuvart leadsz, itt megjelennek. A régi fuvarokhoz nem pótolhatók.</div></div>
             <div class="dstat-card dstat-missing"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div class="dstat-note">Ezt a játék telemetriája nem adja meg; helyette a „Fuvar típusa” mutatja a piaci / WoT / pickup arányt.</div></div>
           </div>`;
         }
@@ -6229,7 +6229,6 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
           <div class="dstat-h">DLL plugin statisztika (új launcher)</div>
           <div class="dstat-grid">
             ${card('Büntetések oka', okErtek, okLista.length ? 'szabálysértés-típusonként' : null, okLista.length ? 'dstat-red' : 'dstat-green')}
-            ${card('Legkisebb sebesség', legkisebbSeb != null ? legkisebbSeb + ' km/h' : '–', 'mozgás közbeni minimum', 'dstat-blue')}
             ${card('Átlagsebesség', atlagSeb != null ? atlagSeb + ' km/h' : '–', 'fuvarok átlaga', 'dstat-blue')}
             ${card('Határidő pontosság', hataridoErtek, hataridoNote)}
             <div class="dstat-card dstat-missing"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div class="dstat-note">Ez fuvaronként/sofőrönként nem nyerhető ki megbízhatóan. A cég ÖSSZESÍTETT saját/céges aránya a „Teljesítmény” mutatóknál látható.</div></div>
@@ -11535,7 +11534,6 @@ function openJobInfo(game, driverName, index, datum) {
     // ── ÚJ (launcher SHM v3): átlag- és legkisebb sebesség ──
     // Csak az új (DLL v3) fuvaroknál van kitöltve; a régieknél null → "-".
     html += srtCard('Átlagsebesség', (j.atlagSebesseg != null) ? srtEsc(j.atlagSebesseg + ' km/h') : '-');
-    html += srtCard('Legkisebb sebesség', (j.minSebesseg != null) ? srtEsc(j.minSebesseg + ' km/h') : '-');
     html += srtCard('Felvétel ideje', srtEsc(j.felvételIdeje || j.datumFormazva || '-'));
     html += srtCard('Leadás ideje', srtEsc(j.leadásIdeje || '-'));
     // ── ÚJ (launcher SHM v3): határidő-pontosság (késett-e) ──
@@ -11579,7 +11577,7 @@ function openJobInfo(game, driverName, index, datum) {
       .replace(/[^a-z0-9_]/g, '') || 'ismeretlen';
     const jobDatum = j.felvetelIdoMs || (j.datum ? new Date(j.datum).getTime() : null);
     html += '<div style="grid-column:1/-1;margin-top:10px;">' +
-      '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\')" ' +
+      '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\', ' + (Number(j.maxSebesseg) || 0) + ')" ' +
       'style="width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
       '🗺️ Útvonal visszajátszása' +
       '</button></div>';
@@ -13006,7 +13004,7 @@ function tulsebessegLimit(game) {
 }
 let routeSpeedMarkers = [];
 
-async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo) {
+async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo, fuvarMaxSeb) {
   routeGame = (game === 'ats') ? 'ats' : 'ets2';
   const modal = document.getElementById('route-playback-modal');
   modal.style.display = 'flex';
@@ -13133,22 +13131,37 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     const routeData = allRoutes[bestJobId];
     const meta = routeData._meta || {};
 
-    // ÚJ: a launcher "route_point_skip" jelzést küld (nincs rögzített
-    // pontlista, csak ez a _meta), ha a fuvar teljes ideje alatt a sebesség
-    // sosem lépte át a játékonkénti limitet (100 km/h ETS2-nél, 130 km/h
-    // ATS-nél — lásd MainForm.cs ROUTE_SEBESSEG_KUSZOB_*). Eddig ezt a
-    // weboldal nem különböztette meg az "üres útvonal"/"nincs launcher"
-    // esettől, holott ez valójában jó hír: nem volt gyors hajtás.
-    if (meta.skipped) {
+    // ── JAVÍTVA: a _meta.skipped jelzőre NEM hagyatkozunk vakon. Előfordul,
+    // hogy a fuvar elején lassan indulsz (0. pont lassú → skipped=true íródik),
+    // majd később 100+ km/h-val mész, és azok a pontok RÖGZÜLNEK. Ha a pontok
+    // kusza sorrendben érkeznek (fallback-kötegelés), a skipped jelző beragadhat
+    // true-n, holott VANNAK rögzített pontok. Ezért itt megszámoljuk a tényleges
+    // (nem _meta) pontokat: ha van legalább 2 valódi pont, VAN visszajátszható
+    // útvonal → a skipped-ágat kihagyjuk, és a normál felrajzolás fut. ──
+    const valodiPontokSzama = Object.keys(routeData).filter(k => k !== '_meta').length;
+
+    if (meta.skipped && valodiPontokSzama < 2) {
       const fromS = meta.from || fallbackFrom || '?';
       const toS   = meta.to   || fallbackTo   || '?';
       const limitS = tulsebessegLimit((meta.game || routeGame || '').toLowerCase() === 'ats' ? 'ats' : 'ets2');
-      const maxSeb = Math.round(meta.maxSpeedKmh || 0);
+      // A route-pont meta max sebessége (a DLL méréséből). Ez 0 lehet, ha a
+      // launcher a fuvar alatt 0 km-t mért (rövid/belvárosi fuvar, vagy a
+      // launcher menet közben indult) — ilyenkor a fuvar TÉNYLEGES max
+      // sebességét (Trucky: maxSebesseg) használjuk, amit paraméterként kapunk.
+      const metaMax   = Math.round(meta.maxSpeedKmh || 0);
+      const valosMax  = Math.round(Number(fuvarMaxSeb) || 0);
+      const maxSeb    = Math.max(metaMax, valosMax);
       document.getElementById('route-playback-title').textContent = `${fromS} → ${toS}`;
       document.getElementById('route-progress-label').textContent =
         `Legnagyobb sebesség: ${maxSeb} km/h (limit: ${limitS} km/h)`;
 
-      // Sötét overlay a térkép helyett
+      // Két eset:
+      //  (A) a fuvar tényleg lassú volt (valós max < limit) → "nem volt gyors hajtás"
+      //  (B) a fuvar gyors volt (valós max >= limit), de az útvonalpontok nem
+      //      lettek rögzítve (a DLL 0 km-t mért) → az útvonal nem elérhető, de
+      //      NEM igaz, hogy nem volt gyors hajtás.
+      const gyorsVolt = valosMax >= limitS;
+
       const mapEl = document.getElementById('route-map');
       mapEl.innerHTML = '';
       mapEl.style.display = 'flex';
@@ -13156,7 +13169,20 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       mapEl.style.justifyContent = 'center';
       mapEl.style.background = 'rgba(7,13,24,1)';
       mapEl.style.minHeight = '320px';
-      mapEl.innerHTML = `
+      mapEl.innerHTML = gyorsVolt
+        ? `
+        <div style="text-align:center;padding:32px 24px;max-width:420px;">
+          <div style="font-size:56px;margin-bottom:16px;">🗺️</div>
+          <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:10px;">Útvonal nem rögzült</div>
+          <div style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.6;">
+            Ennél a fuvarnál a maximális sebesség
+            <strong style="color:#f97316;">${maxSeb} km/h</strong> volt
+            (átlépte a <strong style="color:#f97316;">${limitS} km/h</strong> határt),
+            de a launcher a fuvar alatt nem rögzített útvonalpontokat, ezért a
+            térképes visszajátszás nem elérhető.
+          </div>
+        </div>`
+        : `
         <div style="text-align:center;padding:32px 24px;max-width:400px;">
           <div style="font-size:56px;margin-bottom:16px;">🐢</div>
           <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:10px;">Nem volt gyors hajtás</div>
