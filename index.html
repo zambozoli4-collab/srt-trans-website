@@ -11513,7 +11513,12 @@ function openJobInfo(game, driverName, index, datum) {
     if (subtitle) subtitle.textContent = driverName + ' · ' + gameName;
 
     let fuel = j.avgFuelJob ? j.avgFuelJob + ' L/100 km' : (j.üzemanyag != null ? j.üzemanyag + ' L' : '-');
-    let speedType = (j.sebessegTipus || j.sebességTípus) === 'verseny' ? '🏁 Verseny' : '✅ Valós';
+    // A gyorshajtást a launcher/DLL által mért tényleges max sebesség dönti el,
+    // ugyanúgy mint a fuvar-táblázatban: ETS2 100 km/h, ATS 130 km/h felett verseny.
+    var speedKuszob = game === 'ats' ? 130 : 100;
+    var isVersenyReszlet = (j.sebessegTipus || j.sebességTípus) === 'verseny'
+      || (j.maxSebesseg && j.maxSebesseg > speedKuszob);
+    let speedType = isVersenyReszlet ? '🏁 Verseny' : '✅ Valós';
     let truck = j.kamion || '-';
     let jobType = j.fuvarTipus || j.piacTipus || '-';
     let fine = j.büntFt > 0 ? '⚠️ ' + srtFt(j.büntFt) : '0 Ft';
