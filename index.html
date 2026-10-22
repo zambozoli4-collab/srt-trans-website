@@ -6165,12 +6165,77 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
             <div class="dstat-card"><div class="dstat-label">📋 Fuvar típusa</div>${bars(tipusok, '#f59e0b')}</div>
           </div>
 
-          <div class="dstat-h">Még nem mérhető (a bot jelenleg nem rögzíti)</div>
+          ${dllStatBlokk(jobs)}`;
+      }
+
+      // ── ÚJ (launcher SHM v3): a DLL plugin által mért plusz statisztikák.
+      // Csak azoknál a fuvaroknál van adat, amiket az ÚJ launcherrel adtak le;
+      // a régi/Trucky-only fuvaroknál ezek a mezők hiányoznak. A blokk csak
+      // akkor jelenik meg, ha van legalább egy fuvar érvényes DLL-adattal —
+      // különben a régi "még nem mérhető" magyarázó szöveget mutatjuk.
+      function dllStatBlokk(jobs) {
+        const esc2 = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+        const card = (label, val, note, cls) => `<div class="dstat-card"><div class="dstat-label">${label}</div><div class="dstat-val ${cls || ''}">${val}</div>${note ? `<div class="dstat-note">${note}</div>` : ''}</div>`;
+
+        // Büntetés okok összegzése (buntetesOka mezőből)
+        const okMap = {
+          'speeding':'Gyorshajtás','speeding_camera':'Gyorshajtás (traffipax)',
+          'crash':'Ütközés / karambol','collision':'Ütközés / karambol',
+          'wrong_way':'Rossz irányban haladás','red_signal':'Piros lámpán áthajtás',
+          'red_light':'Piros lámpán áthajtás','no_lights':'Világítás hiánya',
+          'illegal_trailer':'Tiltott pótkocsi','avoid_sleeping':'Pihenő kihagyása',
+          'wrong_lane':'Rossz sáv / leállósáv','hard_shoulder':'Leállósávon haladás',
+          'illegal_border_crossing':'Tiltott határátlépés','generic':'Egyéb szabálysértés'
+        };
+        const okMagyar = (ok) => ok ? (okMap[String(ok).trim().toLowerCase()] || String(ok).trim()) : null;
+
+        const okStat = {};
+        jobs.forEach(j => { const o = okMagyar(j.buntetesOka); if (o) okStat[o] = (okStat[o] || 0) + 1; });
+        const okLista = Object.entries(okStat).sort((a,b) => b[1]-a[1]);
+
+        // Legkisebb / átlag sebesség (csak kitöltött DLL-fuvarokból)
+        const minSebek = jobs.map(j => Number(j.minSebesseg)).filter(v => v > 0);
+        const atlSebek = jobs.map(j => Number(j.atlagSebesseg)).filter(v => v > 0);
+        const legkisebbSeb = minSebek.length ? Math.min.apply(null, minSebek) : null;
+        const atlagSeb = atlSebek.length ? Math.round(atlSebek.reduce((s,v)=>s+v,0)/atlSebek.length) : null;
+
+        // Határidő: hány fuvar van kesett adattal, ebből hány késett
+        const hataridosFuvarok = jobs.filter(j => j.kesett === true || j.kesett === false);
+        const kesettDb = jobs.filter(j => j.kesett === true).length;
+        const idobenDb = jobs.filter(j => j.kesett === false).length;
+
+        const vanDllAdat = okLista.length || legkisebbSeb != null || atlagSeb != null || hataridosFuvarok.length;
+        if (!vanDllAdat) {
+          // Nincs még egyetlen új launcheres fuvar sem — marad a magyarázat.
+          return `
+          <div class="dstat-h">DLL plugin statisztika</div>
           <div class="dstat-grid">
-            <div class="dstat-card dstat-missing"><div class="dstat-label">Büntetés oka (ütközés / gyorshajtás)</div><div class="dstat-note">Csak a bírság összege van mentve, a típusa nem.</div></div>
-            <div class="dstat-card dstat-missing"><div class="dstat-label">Legkisebb sebesség</div><div class="dstat-note">Csak a csúcssebesség (maxSebesseg) van mentve.</div></div>
-            <div class="dstat-card dstat-missing"><div class="dstat-label">Határidő pontosság (késett-e)</div><div class="dstat-note">A késés ténye nincs a fuvar adatai között.</div></div>
-            <div class="dstat-card dstat-missing"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div class="dstat-note">Nincs ilyen mező; helyette a „Fuvar típusa” mutatja a piaci / WoT / pickup arányt.</div></div>
+            <div class="dstat-card dstat-missing"><div class="dstat-label">Büntetés oka, legkisebb sebesség, késés</div><div class="dstat-note">Ezeket az ÚJ launcher (DLL) méri. Amint egy fuvart az új launcherrel adsz le, itt megjelennek. A régi fuvarokhoz nem pótolhatók.</div></div>
+            <div class="dstat-card dstat-missing"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div class="dstat-note">Ezt a játék telemetriája nem adja meg; helyette a „Fuvar típusa” mutatja a piaci / WoT / pickup arányt.</div></div>
+          </div>`;
+        }
+
+        const okErtek = okLista.length
+          ? okLista.map(([n,c]) => `${esc2(n)}: ${c}×`).join('<br>')
+          : 'Nincs büntetés 👏';
+        const hataridoErtek = hataridosFuvarok.length
+          ? `✅ Időben: ${idobenDb} · ⏰ Késett: ${kesettDb}`
+          : '–';
+        const hataridoNote = hataridosFuvarok.length
+          ? Math.round(idobenDb / hataridosFuvarok.length * 100) + '% időben ért célba'
+          : 'Nincs határidő-adat';
+
+        return `
+          <div class="dstat-h">DLL plugin statisztika (új launcher)</div>
+          <div class="dstat-grid">
+            ${card('Büntetések oka', okErtek, okLista.length ? 'szabálysértés-típusonként' : null, okLista.length ? 'dstat-red' : 'dstat-green')}
+            ${card('Legkisebb sebesség', legkisebbSeb != null ? legkisebbSeb + ' km/h' : '–', 'mozgás közbeni minimum', 'dstat-blue')}
+            ${card('Átlagsebesség', atlagSeb != null ? atlagSeb + ' km/h' : '–', 'fuvarok átlaga', 'dstat-blue')}
+            ${card('Határidő pontosság', hataridoErtek, hataridoNote)}
+          </div>
+          <div class="dstat-h">Még nem mérhető</div>
+          <div class="dstat-grid">
+            <div class="dstat-card dstat-missing"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div class="dstat-note">Ezt a játék telemetriája nem adja meg; helyette a „Fuvar típusa” mutatja a piaci / WoT / pickup arányt.</div></div>
           </div>`;
       }
 
@@ -11192,6 +11257,23 @@ function srtCard(label, value, wide) {
     '<div class="job-info-value">' + value + '</div>' +
     '</div>';
 }
+// ── ÚJ (launcher SHM v3): a büntetés okának magyarítása a fuvar-részleteknél.
+// A nyers játék-kód (speeding/crash/...) → magyar szöveg. Ismeretlen/már magyar
+// érték változatlanul visszaadva.
+function srtBuntetesOka(ok) {
+  if (!ok) return '-';
+  var map = {
+    'speeding':'Gyorshajtás','speeding_camera':'Gyorshajtás (traffipax)',
+    'crash':'Ütközés / karambol','collision':'Ütközés / karambol',
+    'wrong_way':'Rossz irányban haladás','red_signal':'Piros lámpán áthajtás',
+    'red_light':'Piros lámpán áthajtás','no_lights':'Világítás hiánya',
+    'illegal_trailer':'Tiltott pótkocsi','avoid_sleeping':'Pihenő kihagyása',
+    'wrong_lane':'Rossz sáv / leállósáv','hard_shoulder':'Leállósávon haladás',
+    'illegal_border_crossing':'Tiltott határátlépés','generic':'Egyéb szabálysértés'
+  };
+  var kulcs = String(ok).trim().toLowerCase();
+  return map[kulcs] || String(ok).trim();
+}
 // Csak a Fuvar részletei ablakban fordítjuk magyarra a rakomány nevét.
 // A Fuvarok táblázatban megjelenő rakományképekhez és azok felirataihoz nem nyúlunk.
 function srtCargoHu(name) {
@@ -11440,10 +11522,24 @@ function openJobInfo(game, driverName, index, datum) {
     html += srtCard('Fogyasztás', srtEsc(fuel));
     html += srtCard('Sebesség mód', srtEsc(speedType));
     html += srtCard('Maximális sebesség', j.maxSebesseg ? srtEsc(j.maxSebesseg + ' km/h') : '-');
+    // ── ÚJ (launcher SHM v3): átlag- és legkisebb sebesség ──
+    // Csak az új (DLL v3) fuvaroknál van kitöltve; a régieknél null → "-".
+    html += srtCard('Átlagsebesség', (j.atlagSebesseg != null) ? srtEsc(j.atlagSebesseg + ' km/h') : '-');
+    html += srtCard('Legkisebb sebesség', (j.minSebesseg != null) ? srtEsc(j.minSebesseg + ' km/h') : '-');
     html += srtCard('Felvétel ideje', srtEsc(j.felvételIdeje || j.datumFormazva || '-'));
     html += srtCard('Leadás ideje', srtEsc(j.leadásIdeje || '-'));
+    // ── ÚJ (launcher SHM v3): határidő-pontosság (késett-e) ──
+    if (j.kesett === true) {
+      html += srtCard('Határidő', '⏰ Késett' + (j.kesesPerc ? ' (' + j.kesesPerc + ' perc)' : ''));
+    } else if (j.kesett === false) {
+      html += srtCard('Határidő', '✅ Időben');
+    } else {
+      html += srtCard('Határidő', '-');
+    }
     html += srtCard('Bevétel', srtFt(j.bevételFt));
     html += srtCard('Büntetés', fine);
+    // ── ÚJ (launcher SHM v3): büntetés oka (magyarítva) ──
+    html += srtCard('Büntetés oka', j.buntetesOka ? srtEsc(srtBuntetesOka(j.buntetesOka)) : '-');
     html += srtCard('Fuvar típusa', srtEsc(jobType));
     html += srtCard('Rögzítés dátuma', srtEsc(j.datum || '-'));
     if (j.truckyUrl) {
