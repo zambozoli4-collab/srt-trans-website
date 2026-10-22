@@ -6204,12 +6204,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         const kesettDb = jobs.filter(j => j.kesett === true).length;
         const idobenDb = jobs.filter(j => j.kesett === false).length;
 
-        // ── ÚJ: saját pótkocsi vs céges (vállalkozói) arány ──
-        const potkocsisFuvarok = jobs.filter(j => j.sajatPotkocsi === true || j.sajatPotkocsi === false);
-        const sajatDb = jobs.filter(j => j.sajatPotkocsi === true).length;
-        const cegesDb = jobs.filter(j => j.sajatPotkocsi === false).length;
-
-        const vanDllAdat = okLista.length || legkisebbSeb != null || atlagSeb != null || hataridosFuvarok.length || potkocsisFuvarok.length;
+        const vanDllAdat = okLista.length || legkisebbSeb != null || atlagSeb != null || hataridosFuvarok.length;
         if (!vanDllAdat) {
           // Nincs még egyetlen új launcheres fuvar sem — marad a magyarázat.
           return `
@@ -6230,14 +6225,6 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
           ? Math.round(idobenDb / hataridosFuvarok.length * 100) + '% időben ért célba'
           : 'Nincs határidő-adat';
 
-        // ── Saját pótkocsi vs céges kártya tartalma ──
-        const potkocsiErtek = potkocsisFuvarok.length
-          ? `🚛 Saját: ${sajatDb} · 🏢 Céges: ${cegesDb}`
-          : '–';
-        const potkocsiNote = potkocsisFuvarok.length
-          ? Math.round(sajatDb / potkocsisFuvarok.length * 100) + '% saját pótkocsival'
-          : 'Nincs pótkocsi-adat';
-
         return `
           <div class="dstat-h">DLL plugin statisztika (új launcher)</div>
           <div class="dstat-grid">
@@ -6245,7 +6232,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
             ${card('Legkisebb sebesség', legkisebbSeb != null ? legkisebbSeb + ' km/h' : '–', 'mozgás közbeni minimum', 'dstat-blue')}
             ${card('Átlagsebesség', atlagSeb != null ? atlagSeb + ' km/h' : '–', 'fuvarok átlaga', 'dstat-blue')}
             ${card('Határidő pontosság', hataridoErtek, hataridoNote)}
-            ${card('Saját pótkocsi vs céges', potkocsiErtek, potkocsiNote)}
+            <div class="dstat-card dstat-missing"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div class="dstat-note">Ez fuvaronként/sofőrönként nem nyerhető ki megbízhatóan. A cég ÖSSZESÍTETT saját/céges aránya a „Teljesítmény” mutatóknál látható.</div></div>
           </div>`;
       }
 
@@ -8693,6 +8680,19 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         ['Átl. távolság', t.atlagTavolsag ? `${szamFormaz(t.atlagTavolsag)} km` : '–'],
         ['Késett fuvarok', szamFormaz(t.keslekedettFuvarok)],
       ];
+      // ── ÚJ: saját pótkocsi vs céges (vállalkozói) — a cég összesített
+      // bontása. Csak akkor jelenítjük meg, ha van rá adat. ──
+      if (t.sajatPotkocsisFuvarok != null || t.cegesPotkocsisFuvarok != null) {
+        const sajat = Number(t.sajatPotkocsisFuvarok) || 0;
+        const ceges = Number(t.cegesPotkocsisFuvarok) || 0;
+        const ossz = sajat + ceges;
+        const sajatSzaz = ossz > 0 ? Math.round(sajat / ossz * 100) : 0;
+        adat.push(['Saját pótkocsis fuvarok', `${szamFormaz(sajat)} (${sajatSzaz}%)`]);
+        adat.push(['Céges pótkocsis fuvarok', szamFormaz(ceges)]);
+      }
+      if (t.wotrSzerzodesek != null) {
+        adat.push(['WoTr szerződések', szamFormaz(t.wotrSzerzodesek)]);
+      }
       document.getElementById('teljesitmeny-grid').innerHTML = adat.map(([cimke, ertek]) => `
         <div style="background:var(--surface);border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:16px;font-weight:800;color:#fff;">${ertek}</div>
@@ -11551,8 +11551,6 @@ function openJobInfo(game, driverName, index, datum) {
     // ── ÚJ (launcher SHM v3): büntetés oka (magyarítva) ──
     html += srtCard('Büntetés oka', j.buntetesOka ? srtEsc(srtBuntetesOka(j.buntetesOka)) : '-');
     html += srtCard('Fuvar típusa', srtEsc(jobType));
-    // ── ÚJ: saját pótkocsi vs céges (Trucky owned_trailer_id alapján) ──
-    html += srtCard('Pótkocsi', j.sajatPotkocsi === true ? '🚛 Saját' : (j.sajatPotkocsi === false ? '🏢 Céges (vállalkozói)' : '-'));
     html += srtCard('Rögzítés dátuma', srtEsc(j.datum || '-'));
     if (j.truckyUrl) {
       html += srtCard('Trucky', '<a href="' + srtEsc(j.truckyUrl) + '" target="_blank" rel="noopener" style="color:#60a5fa;">Fuvar megnyitása ↗</a>', true);
