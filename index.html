@@ -6204,7 +6204,12 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         const kesettDb = jobs.filter(j => j.kesett === true).length;
         const idobenDb = jobs.filter(j => j.kesett === false).length;
 
-        const vanDllAdat = okLista.length || legkisebbSeb != null || atlagSeb != null || hataridosFuvarok.length;
+        // ── ÚJ: saját pótkocsi vs céges (vállalkozói) arány ──
+        const potkocsisFuvarok = jobs.filter(j => j.sajatPotkocsi === true || j.sajatPotkocsi === false);
+        const sajatDb = jobs.filter(j => j.sajatPotkocsi === true).length;
+        const cegesDb = jobs.filter(j => j.sajatPotkocsi === false).length;
+
+        const vanDllAdat = okLista.length || legkisebbSeb != null || atlagSeb != null || hataridosFuvarok.length || potkocsisFuvarok.length;
         if (!vanDllAdat) {
           // Nincs még egyetlen új launcheres fuvar sem — marad a magyarázat.
           return `
@@ -6225,6 +6230,14 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
           ? Math.round(idobenDb / hataridosFuvarok.length * 100) + '% időben ért célba'
           : 'Nincs határidő-adat';
 
+        // ── Saját pótkocsi vs céges kártya tartalma ──
+        const potkocsiErtek = potkocsisFuvarok.length
+          ? `🚛 Saját: ${sajatDb} · 🏢 Céges: ${cegesDb}`
+          : '–';
+        const potkocsiNote = potkocsisFuvarok.length
+          ? Math.round(sajatDb / potkocsisFuvarok.length * 100) + '% saját pótkocsival'
+          : 'Nincs pótkocsi-adat';
+
         return `
           <div class="dstat-h">DLL plugin statisztika (új launcher)</div>
           <div class="dstat-grid">
@@ -6232,10 +6245,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
             ${card('Legkisebb sebesség', legkisebbSeb != null ? legkisebbSeb + ' km/h' : '–', 'mozgás közbeni minimum', 'dstat-blue')}
             ${card('Átlagsebesség', atlagSeb != null ? atlagSeb + ' km/h' : '–', 'fuvarok átlaga', 'dstat-blue')}
             ${card('Határidő pontosság', hataridoErtek, hataridoNote)}
-          </div>
-          <div class="dstat-h">Még nem mérhető</div>
-          <div class="dstat-grid">
-            <div class="dstat-card dstat-missing"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div class="dstat-note">Ezt a játék telemetriája nem adja meg; helyette a „Fuvar típusa” mutatja a piaci / WoT / pickup arányt.</div></div>
+            ${card('Saját pótkocsi vs céges', potkocsiErtek, potkocsiNote)}
           </div>`;
       }
 
@@ -11541,6 +11551,8 @@ function openJobInfo(game, driverName, index, datum) {
     // ── ÚJ (launcher SHM v3): büntetés oka (magyarítva) ──
     html += srtCard('Büntetés oka', j.buntetesOka ? srtEsc(srtBuntetesOka(j.buntetesOka)) : '-');
     html += srtCard('Fuvar típusa', srtEsc(jobType));
+    // ── ÚJ: saját pótkocsi vs céges (Trucky owned_trailer_id alapján) ──
+    html += srtCard('Pótkocsi', j.sajatPotkocsi === true ? '🚛 Saját' : (j.sajatPotkocsi === false ? '🏢 Céges (vállalkozói)' : '-'));
     html += srtCard('Rögzítés dátuma', srtEsc(j.datum || '-'));
     if (j.truckyUrl) {
       html += srtCard('Trucky', '<a href="' + srtEsc(j.truckyUrl) + '" target="_blank" rel="noopener" style="color:#60a5fa;">Fuvar megnyitása ↗</a>', true);
