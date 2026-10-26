@@ -13252,16 +13252,35 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     // ÚJ: sebességtúllépés jelölése — minden rögzített pontot megjelölünk,
     // ahol a sofőr TULSEBESSEG_LIMIT_KMH (100 km/h) fölött ment. Kattintva
     // a pontra kiírja a pontos, aznapi rögzített sebességet.
+    // ── SEBESSÉGTÚLLÉPÉS JELÖLÉSE ──
+    // Piros pont minden olyan helyre, ahol a sofőr átlépte a határt. A km/h
+    // értéket közvetlenül a pont mellé is kiírjuk (nem csak kattintásra), hogy
+    // a térképen rögtön látszódjon, hol és mennyivel ment gyorsabban.
+    // Ha sok egymást követő gyors pont van, csak a "csúcsokat" (helyi maximum)
+    // címkézzük fel, hogy ne legyen olvashatatlanul zsúfolt — de MINDEN gyors
+    // pont piros marad.
     const sebessegLimit = tulsebessegLimit(routeGame);
     routePoints.forEach((p, i) => {
-      const sebesseg = p.s || 0;
+      const sebesseg = Math.round(p.s || 0);
       if (sebesseg > sebessegLimit) {
+        const elozo = Math.round((routePoints[i-1] && routePoints[i-1].s) || 0);
+        const kovetkezo = Math.round((routePoints[i+1] && routePoints[i+1].s) || 0);
+        // Címkét akkor mutatunk, ha ez a pont (gyenge) helyi csúcs, vagy a gyors
+        // szakasz eleje — így nem minden szomszédos pontra kerül szám.
+        const feliratKell = (sebesseg >= elozo && sebesseg >= kovetkezo) || elozo <= sebessegLimit;
+        const feliratHtml = feliratKell
+          ? `<div style="position:absolute;left:14px;top:-6px;background:rgba(239,68,68,0.92);color:#fff;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.6);">${sebesseg} km/h</div>`
+          : '';
         const m = L.marker(allLatLngs[i], {
           icon: L.divIcon({
-            html: '<div style="width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.7);"></div>',
+            html: '<div style="position:relative;width:11px;height:11px;">'
+                + '<div style="width:11px;height:11px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.7);"></div>'
+                + feliratHtml
+                + '</div>',
             className: '', iconSize: [11,11], iconAnchor: [5,5]
-          })
-        }).addTo(routeMap).bindPopup(`🚨 Sebességtúllépés: ${Math.round(sebesseg)} km/h`);
+          }),
+          zIndexOffset: 500
+        }).addTo(routeMap).bindPopup(`🚨 Sebességtúllépés: ${sebesseg} km/h`);
         routeSpeedMarkers.push(m);
       }
     });
