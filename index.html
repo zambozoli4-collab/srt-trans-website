@@ -12953,7 +12953,7 @@ function srtJobTruckId(j) {
       <button onclick="closeRoutePlayback()" style="background:rgba(255,255,255,0.08);border:none;border-radius:8px;color:#fff;font-size:20px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
     <!-- Térkép -->
-    <div id="route-map" style="flex:1;min-height:420px;"></div>
+    <div id="route-map" style="flex:none;width:100%;height:min(58vh,520px);min-height:320px;position:relative;"></div>
     <!-- Pozíció (tekerő) sáv -->
     <div style="padding:12px 20px 0 20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;flex-shrink:0;">
       <input id="route-seek-slider" type="range" min="0" max="0" value="0" step="1" style="flex:1;accent-color:var(--orange);" oninput="seekRoute(this.value)">
@@ -13009,6 +13009,32 @@ function tulsebessegLimit(game) {
 }
 let routeSpeedMarkers = [];
 
+// Térkép HELYETT üzenetet mutat (pl. ha nem történt gyorshajtás)
+function showRouteMapMessage(icon, cim, szoveg) {
+  const mapEl = document.getElementById('route-map');
+  mapEl.innerHTML = `
+    <div style="height:100%;display:flex;align-items:center;justify-content:center;background:rgba(7,13,24,1);">
+      <div style="text-align:center;padding:32px 24px;max-width:420px;">
+        <div style="font-size:56px;margin-bottom:16px;">${icon}</div>
+        <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:10px;">${cim}</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.6;">${szoveg}</div>
+      </div>
+    </div>`;
+  document.getElementById('route-seek-slider').disabled = true;
+  document.getElementById('route-play-btn').disabled = true;
+}
+function resetRouteMapArea() {
+  // Ha előzőleg üzenet volt a térkép helyén, a Leaflet konténert újra kell építeni
+  const mapEl = document.getElementById('route-map');
+  if (mapEl.querySelector('.leaflet-container') === null && routeMapInit) {
+    try { routeMap.remove(); } catch(e) {}
+    routeMap = null; routeMapInit = false;
+    mapEl.innerHTML = '';
+  }
+  document.getElementById('route-seek-slider').disabled = false;
+  document.getElementById('route-play-btn').disabled = false;
+}
+
 async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo, fuvarMaxSeb) {
   routeGame = (game === 'ats') ? 'ats' : 'ets2';
   const modal = document.getElementById('route-playback-modal');
@@ -13049,6 +13075,8 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
   mapElReset.style.background = '';
   mapElReset.style.minHeight = '';
 
+  resetRouteMapArea();
+
   // Térkép inicializálás
   if (!routeMapInit) {
     if (typeof L === 'undefined') {
@@ -13078,7 +13106,8 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     const allRoutes = await resp.json();
 
     if (!allRoutes || typeof allRoutes !== 'object') {
-      document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
+      document.getElementById('route-playback-title').textContent = `${fallbackFrom || '?'} → ${fallbackTo || '?'}`;
+      showRouteMapMessage('✅', 'Nem történt gyorshajtás!', 'Ehhez a fuvarhoz nincs rögzített útvonal (útvonalat csak gyorshajtás esetén mentünk, vagy nem futott a launcher).');
       return;
     }
 
@@ -13129,7 +13158,8 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     }
 
     if (!bestJobId || !allRoutes[bestJobId] || (bestDiff !== Infinity && bestDiff > MAX_MATCH_DIFF_MS)) {
-      document.getElementById('route-playback-title').textContent = '⚠️ Ehhez a fuvarhoz nem volt bekapcsolt launcher — útvonal nem rögzítve';
+      document.getElementById('route-playback-title').textContent = `${fallbackFrom || '?'} → ${fallbackTo || '?'}`;
+      showRouteMapMessage('✅', 'Nem történt gyorshajtás!', 'Ehhez a fuvarhoz nincs rögzített útvonal (útvonalat csak gyorshajtás esetén mentünk, vagy nem futott a launcher).');
       return;
     }
 
@@ -13167,36 +13197,16 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       //      NEM igaz, hogy nem volt gyors hajtás.
       const gyorsVolt = valosMax >= limitS;
 
-      const mapEl = document.getElementById('route-map');
-      mapEl.innerHTML = '';
-      mapEl.style.display = 'flex';
-      mapEl.style.alignItems = 'center';
-      mapEl.style.justifyContent = 'center';
-      mapEl.style.background = 'rgba(7,13,24,1)';
-      mapEl.style.minHeight = '320px';
-      mapEl.innerHTML = gyorsVolt
-        ? `
-        <div style="text-align:center;padding:32px 24px;max-width:420px;">
-          <div style="font-size:56px;margin-bottom:16px;">🗺️</div>
-          <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:10px;">Útvonal nem rögzült</div>
-          <div style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.6;">
-            Ennél a fuvarnál a maximális sebesség
-            <strong style="color:#f97316;">${maxSeb} km/h</strong> volt
-            (átlépte a <strong style="color:#f97316;">${limitS} km/h</strong> határt),
-            de a launcher a fuvar alatt nem rögzített útvonalpontokat, ezért a
-            térképes visszajátszás nem elérhető.
-          </div>
-        </div>`
-        : `
-        <div style="text-align:center;padding:32px 24px;max-width:400px;">
-          <div style="font-size:56px;margin-bottom:16px;">🐢</div>
-          <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:10px;">Nem volt gyors hajtás</div>
-          <div style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.6;">
-            Ez a fuvar visszajátszása nem elérhető —<br>
-            a maximális sebesség (<strong style="color:#f97316;">${maxSeb} km/h</strong>)
-            nem érte el a rögzítési határt (<strong style="color:#f97316;">${limitS} km/h</strong>).
-          </div>
-        </div>`;
+      if (gyorsVolt) {
+        showRouteMapMessage('🗺️', 'Útvonal nem rögzült',
+          `Ennél a fuvarnál a maximális sebesség <strong style="color:#f97316;">${maxSeb} km/h</strong> volt `
+          + `(átlépte a <strong style="color:#f97316;">${limitS} km/h</strong> határt), de a launcher nem rögzített útvonalpontokat, `
+          + `ezért a térképes visszajátszás nem elérhető.`);
+      } else {
+        showRouteMapMessage('✅', 'Nem történt gyorshajtás!',
+          `A legnagyobb sebesség <strong style="color:#4ade80;">${maxSeb} km/h</strong> volt `
+          + `(határ: ${limitS} km/h).`);
+      }
       return;
     }
 
@@ -13219,6 +13229,18 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     if (routePoints.length === 0) {
       document.getElementById('route-playback-title').textContent = '❌ Üres útvonal';
       return;
+    }
+
+    {
+      const _lim = tulsebessegLimit(routeGame);
+      const _voltGyors = routePoints.some(p => Math.round(p.s || 0) >= _lim);
+      if (!_voltGyors) {
+        showRouteMapMessage('✅', 'Nem történt gyorshajtás!',
+          `A legnagyobb sebesség nem érte el a <strong style="color:#f97316;">${_lim} km/h</strong> határt.`);
+        document.getElementById('route-progress-label').textContent = '';
+        document.getElementById('route-speed-cur').textContent = '';
+        return;
+      }
     }
 
     // Régi rétegek törlése
@@ -13262,12 +13284,12 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     const sebessegLimit = tulsebessegLimit(routeGame);
     routePoints.forEach((p, i) => {
       const sebesseg = Math.round(p.s || 0);
-      if (sebesseg > sebessegLimit) {
+      if (sebesseg >= sebessegLimit) {
         const elozo = Math.round((routePoints[i-1] && routePoints[i-1].s) || 0);
         const kovetkezo = Math.round((routePoints[i+1] && routePoints[i+1].s) || 0);
         // Címkét akkor mutatunk, ha ez a pont (gyenge) helyi csúcs, vagy a gyors
         // szakasz eleje — így nem minden szomszédos pontra kerül szám.
-        const feliratKell = (sebesseg >= elozo && sebesseg >= kovetkezo) || elozo <= sebessegLimit;
+        const feliratKell = (sebesseg >= elozo && sebesseg >= kovetkezo) || elozo < sebessegLimit;
         const feliratHtml = feliratKell
           ? `<div style="position:absolute;left:14px;top:-6px;background:rgba(239,68,68,0.92);color:#fff;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.6);">${sebesseg} km/h</div>`
           : '';
@@ -13293,6 +13315,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     routeMarker = L.marker(allLatLngs[0], { icon: truckIcon }).addTo(routeMap);
 
     // Térkép igazítása az útvonalra
+    routeMap.invalidateSize();
     routeMap.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
 
     // Automatikus lejátszás indítása
