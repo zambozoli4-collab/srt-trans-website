@@ -6173,7 +6173,27 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       // a régi/Trucky-only fuvaroknál ezek a mezők hiányoznak. A blokk csak
       // akkor jelenik meg, ha van legalább egy fuvar érvényes DLL-adattal —
       // különben a régi "még nem mérhető" magyarázó szöveget mutatjuk.
+      // Saját vs céges pótkocsi — a cég ÖSSZESÍTETT adata (sofőrönként nem mérhető)
+      window.srtPotkocsiKartya = function () {
+        const el = document.getElementById('dstat-potkocsi-body');
+        if (!el) return;
+        const t = window.__teljesitmeny;
+        if (!t || (t.sajatPotkocsisFuvarok == null && t.cegesPotkocsisFuvarok == null)) {
+          el.innerHTML = '<div class="dstat-note">Még nincs adat.</div>';
+          return;
+        }
+        const sajat = Number(t.sajatPotkocsisFuvarok) || 0;
+        const ceges = Number(t.cegesPotkocsisFuvarok) || 0;
+        const ossz = sajat + ceges;
+        const sSz = ossz > 0 ? Math.round(sajat / ossz * 100) : 0;
+        const f = (n) => Number(n).toLocaleString('hu-HU');
+        el.innerHTML =
+          '<div class="dstat-val dstat-blue">' + f(sajat) + ' · ' + f(ceges) + '</div>'
+          + '<div style="height:8px;border-radius:4px;background:rgba(139,92,246,0.25);overflow:hidden;margin:8px 0 6px;"><i style="display:block;height:100%;width:' + sSz + '%;background:#3b82f6;"></i></div>'
+          + '<div class="dstat-note">Saját: ' + f(sajat) + ' (' + sSz + '%) · Céges: ' + f(ceges) + ' (' + (100 - sSz) + '%)<br>a cég összesített adata, nem sofőrönkénti</div>';
+      };
       function dllStatBlokk(jobs) {
+        setTimeout(function () { window.srtPotkocsiKartya && window.srtPotkocsiKartya(); }, 0);
         const esc2 = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
         const card = (label, val, note, cls) => `<div class="dstat-card"><div class="dstat-label">${label}</div><div class="dstat-val ${cls || ''}">${val}</div>${note ? `<div class="dstat-note">${note}</div>` : ''}</div>`;
 
@@ -6226,7 +6246,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
           <div class="dstat-h">DLL plugin statisztika</div>
           <div class="dstat-grid">
             <div class="dstat-card dstat-missing"><div class="dstat-label">Büntetés oka, átlagsebesség, késés</div><div class="dstat-note">Ezeket az ÚJ launcher (DLL) / Trucky méri. Amint egy fuvart leadsz, itt megjelennek. A régi fuvarokhoz nem pótolhatók.</div></div>
-            <div class="dstat-card dstat-missing"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div class="dstat-note">Ezt a játék telemetriája nem adja meg; helyette a „Fuvar típusa” mutatja a piaci / WoT / pickup arányt.</div></div>
+            <div class="dstat-card" id="dstat-potkocsi-card"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div id="dstat-potkocsi-body"><div class="dstat-note">Betöltés…</div></div></div>
           </div>`;
         }
 
@@ -6254,7 +6274,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
             <div class="dstat-card" style="grid-column:1/-1;"><div class="dstat-label">Büntetések oka${okOsszes ? ' · összesen ' + okOsszes + ' szabálysértés' : ''}</div>${okLista.length ? okErtek : `<div class="dstat-val dstat-green">${okErtek}</div>`}</div>
             ${card('Átlagsebesség', atlagSeb != null ? atlagSeb + ' km/h' : '–', 'fuvarok átlaga', 'dstat-blue')}
             ${card('Határidő pontosság', hataridoErtek, hataridoNote)}
-            <div class="dstat-card dstat-missing"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div class="dstat-note">Ez fuvaronként/sofőrönként nem nyerhető ki megbízhatóan. A cég ÖSSZESÍTETT saját/céges aránya a „Teljesítmény” mutatóknál látható.</div></div>
+            <div class="dstat-card" id="dstat-potkocsi-card"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div id="dstat-potkocsi-body"><div class="dstat-note">Betöltés…</div></div></div>
           </div>`;
       }
 
@@ -8692,6 +8712,8 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       const box = document.getElementById('teljesitmeny-box');
       if (!box) return;
       const t = snapshot.val();
+      window.__teljesitmeny = t;
+      if (window.srtPotkocsiKartya) window.srtPotkocsiKartya();
       if (!t) { box.style.display = 'none'; return; }
       box.style.display = 'block';
       const mp = (sec) => sec ? `${Math.round(sec / 60)} perc` : '–';
