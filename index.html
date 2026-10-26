@@ -11576,6 +11576,14 @@ function openJobInfo(game, driverName, index, datum) {
     html += srtCard('Büntetés', fine);
     // ── ÚJ (launcher SHM v3): büntetés oka (magyarítva) ──
     html += srtCard('Büntetés oka', j.buntetesOka ? String(j.buntetesOka).split(',').map(function (r) { var mm = r.trim().match(/^(.*?)\s*×\s*(\d+)$/); return srtEsc(srtBuntetesOka(mm ? mm[1] : r.trim()) + (mm ? ' ×' + mm[2] : '')); }).join('<br>') : '-', true);
+    // ── Trucky összegző extra adatok — csak ha van adat (régi fuvaroknál nincs) ──
+    var _perc = function (m) { m = Number(m); if (!(m > 0)) return '-'; return m < 1 ? Math.round(m * 60) + ' mp' : (m >= 60 ? Math.floor(m / 60) + ' ó ' + Math.round(m % 60) + ' p' : (Math.round(m * 10) / 10) + ' p'); };
+    if (j.uzemanyagL != null) html += srtCard('Elhasznált üzemanyag', srtEsc(j.uzemanyagL + ' L'));
+    if (j.serulesPct != null) html += srtCard('Sérülés', srtEsc(j.serulesPct + '%'));
+    if (j.xp != null) html += srtCard('Elért XP', srtEsc(j.xp + ' XP'));
+    if (j.egyebKiadasFt != null) html += srtCard('Egyéb kiadások', srtFt(j.egyebKiadasFt));
+    if (j.vezetesPerc != null) html += srtCard('Vezetési idő', srtEsc(_perc(j.vezetesPerc)));
+    if (j.szabadVezetesPerc != null) html += srtCard('Szabad vezetés ideje', srtEsc(_perc(j.szabadVezetesPerc)));
     html += srtCard('Fuvar típusa', srtEsc(jobType));
     html += srtCard('Rögzítés dátuma', srtEsc(j.datum || '-'));
     if (j.truckyUrl) {
