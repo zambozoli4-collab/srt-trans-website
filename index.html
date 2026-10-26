@@ -11582,7 +11582,7 @@ function openJobInfo(game, driverName, index, datum) {
       .replace(/[^a-z0-9_]/g, '') || 'ismeretlen';
     const jobDatum = j.felvetelIdoMs || (j.datum ? new Date(j.datum).getTime() : null);
     html += '<div style="grid-column:1/-1;margin-top:10px;">' +
-      '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\', ' + (Number(j.maxSebesseg) || 0) + ')" ' +
+      '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\', ' + (Number(j.maxSebesseg) || 0) + ', ' + (j.felvetelIdoMs ? 1 : 0) + ')" ' +
       'style="width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
       '🗺️ Útvonal visszajátszása' +
       '</button></div>';
@@ -13009,9 +13009,22 @@ function tulsebessegLimit(game) {
 }
 let routeSpeedMarkers = [];
 
-// Térkép HELYETT üzenetet mutat (pl. ha nem történt gyorshajtás)
+// Térkép HELYETT üzenetet mutat (pl. ha nem történt gyorshajtás).
+// A térképet teljesen megsemmisítjük és a vezérlősávokat is elrejtjük, hogy
+// SEMMI ne maradjon az előző fuvar adataiból.
+function routeControlRows() {
+  return [document.getElementById('route-seek-slider'), document.getElementById('route-play-btn')]
+    .map(el => el && el.parentElement).filter(Boolean);
+}
 function showRouteMapMessage(icon, cim, szoveg) {
+  stopRouteAnimation();
+  if (routeMap) { try { routeMap.remove(); } catch(e) {} }
+  routeMap = null; routeMapInit = false;
+  routeMarker = routePolyline = routeStartMarker = routeEndMarker = null;
+  routeSpeedMarkers = [];
+  routePoints = []; routeAllLatLngs = [];
   const mapEl = document.getElementById('route-map');
+  mapEl.className = '';
   mapEl.innerHTML = `
     <div style="height:100%;display:flex;align-items:center;justify-content:center;background:rgba(7,13,24,1);">
       <div style="text-align:center;padding:32px 24px;max-width:420px;">
@@ -13020,22 +13033,54 @@ function showRouteMapMessage(icon, cim, szoveg) {
         <div style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.6;">${szoveg}</div>
       </div>
     </div>`;
+  routeControlRows().forEach(r => r.style.display = 'none');
   document.getElementById('route-seek-slider').disabled = true;
   document.getElementById('route-play-btn').disabled = true;
+  document.getElementById('route-progress-label').textContent = '';
+  document.getElementById('route-speed-cur').textContent = '';
 }
 function resetRouteMapArea() {
-  // Ha előzőleg üzenet volt a térkép helyén, a Leaflet konténert újra kell építeni
+  // Ha előzőleg üzenet volt a térkép helyén, a konténert tisztára építjük újra
   const mapEl = document.getElementById('route-map');
-  if (mapEl.querySelector('.leaflet-container') === null && routeMapInit) {
-    try { routeMap.remove(); } catch(e) {}
+  if (mapEl.querySelector('.leaflet-pane') === null) {
+    if (routeMap) { try { routeMap.remove(); } catch(e) {} }
     routeMap = null; routeMapInit = false;
     mapEl.innerHTML = '';
   }
+  routeControlRows().forEach(r => r.style.display = '');
   document.getElementById('route-seek-slider').disabled = false;
   document.getElementById('route-play-btn').disabled = false;
+  document.getElementById('route-play-btn').textContent = '▶ Lejátszás';
+  document.getElementById('route-speed-cur').textContent = '';
+}
+// Sebesség-felirat színezése: piros a limit fölött, különben semleges (nem zöld!)
+function setRouteSpeedLabel(kmh) {
+  const el = document.getElementById('route-speed-cur');
+  const v = Math.round(kmh || 0);
+  el.textContent = v + ' km/h';
+  el.style.color = v >= tulsebessegLimit(routeGame) ? '#ef4444' : '#cbd5e1';
+  el.style.fontWeight = v >= tulsebessegLimit(routeGame) ? '800' : '400';
+}
+// Egységes üzenet: nincs gyors hajtás (tudjuk, hogy lassú volt)
+function showNoFastMessage(maxSeb, limit) {
+  showRouteMapMessage('🐢', 'Nem volt gyors hajtás',
+    (maxSeb > 0 ? `A legnagyobb sebesség <strong style="color:#fff;">${maxSeb} km/h</strong> volt, ` : 'A sebesség ')
+    + `nem érte el a <strong style="color:#f97316;">${limit} km/h</strong> határt, ezért nincs mit megjeleníteni a térképen.`);
+}
+// Nincs rögzített útvonal — NEM állítjuk, hogy nem volt gyorshajtás, ha nem tudjuk
+function showNoRouteMessage(maxSeb, limit) {
+  if (maxSeb >= limit) {
+    showRouteMapMessage('🗺️', 'Útvonal nem rögzült',
+      `Ennél a fuvarnál a maximális sebesség <strong style="color:#f97316;">${maxSeb} km/h</strong> volt `
+      + `(átlépte a <strong style="color:#f97316;">${limit} km/h</strong> határt), de a launcher nem rögzített útvonalat, `
+      + `ezért a térképes visszajátszás nem elérhető.`);
+  } else {
+    showRouteMapMessage('ℹ️', 'Nincs rögzített útvonal',
+      'Ehhez a fuvarhoz nincs mentett útvonal (útvonalat csak gyors hajtás esetén mentünk, vagy nem futott a launcher).');
+  }
 }
 
-async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo, fuvarMaxSeb) {
+async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, fallbackTo, fallbackCargo, fuvarMaxSeb, jobExact) {
   routeGame = (game === 'ats') ? 'ats' : 'ets2';
   const modal = document.getElementById('route-playback-modal');
   modal.style.display = 'flex';
@@ -13077,8 +13122,21 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
 
   resetRouteMapArea();
 
+  // ── Ha a fuvar ismert max sebessége a limit alatt van: NINCS gyors hajtás,
+  // nem keresünk útvonalat (így nem ragadhat be egy másik fuvar térképe). ──
+  {
+    const _lim0 = tulsebessegLimit(routeGame);
+    const _max0 = Math.round(Number(fuvarMaxSeb) || 0);
+    if (_max0 > 0 && _max0 < _lim0) {
+      document.getElementById('route-playback-title').textContent = `${fallbackFrom || '?'} → ${fallbackTo || '?'}${fallbackCargo ? ' · ' + fallbackCargo : ''}`;
+      showNoFastMessage(_max0, _lim0);
+      return;
+    }
+  }
+
   // Térkép inicializálás
   if (!routeMapInit) {
+    document.getElementById('route-map').innerHTML = '';
     if (typeof L === 'undefined') {
       document.getElementById('route-playback-title').textContent = '❌ Térkép betöltési hiba';
       return;
@@ -13107,59 +13165,51 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
 
     if (!allRoutes || typeof allRoutes !== 'object') {
       document.getElementById('route-playback-title').textContent = `${fallbackFrom || '?'} → ${fallbackTo || '?'}`;
-      showRouteMapMessage('✅', 'Nem történt gyorshajtás!', 'Ehhez a fuvarhoz nincs rögzített útvonal (útvonalat csak gyorshajtás esetén mentünk, vagy nem futott a launcher).');
+      showNoRouteMessage(Math.round(Number(fuvarMaxSeb) || 0), tulsebessegLimit(routeGame));
       return;
     }
 
-    // Megkeressük a jobTimestamp-hoz legközelebb eső útvonalat
+    // ── Útvonal egyeztetés (szigorú) ──
+    // Csak olyan útvonalat fogadunk el, ami időben ÉS (lehetőleg) városra is
+    // egyezik a fuvarral. Eddig a "legközelebbi" útvonalat akkor is betöltöttük,
+    // ha az egy teljesen másik (régebbi) fuvaré volt → ez ragadt be a térképre.
+    const _norm = x => (x || '').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+    const fFrom = _norm(fallbackFrom), fTo = _norm(fallbackTo);
+    const WINDOW_EXACT_MS = 15 * 60 * 1000;        // pontos indulási időnél
+    const WINDOW_LOOSE_MS = 20 * 60 * 60 * 1000;   // csak leadási időnél (régi rekord)
     let bestJobId = null;
     let bestDiff = Infinity;
-
-    Object.keys(allRoutes).forEach(jobId => {
-      if (jobId === '_meta') return;
-      const meta = allRoutes[jobId]?._meta;
-      if (meta && meta.startTime) {
-        // Ha van felvetelIdoMs (indulás ideje), azzal hasonlítunk
-        // Ha csak datum (leadás ideje) van, a startTime-hoz is illesztjük
-        // és a leadástól visszafelé max 4 órát engedünk (hosszú fuvaroknál)
-        const diffStart = jobTimestamp ? Math.abs(meta.startTime - jobTimestamp) : Infinity;
-        const diff = diffStart;
-        if (diff < bestDiff) { bestDiff = diff; bestJobId = jobId; }
-      } else {
-        if (!bestJobId) bestJobId = jobId;
-      }
-    });
-
-    // Ha jobTimestamp=0 (nincs felvetelIdoMs), válasszuk a legutóbbi útvonalat
-    if (!jobTimestamp || jobTimestamp === 0) {
-      let latestTime = -1;
+    function keresUtvonal(varosEgyezes) {
+      bestJobId = null; bestDiff = Infinity;
       Object.keys(allRoutes).forEach(jobId => {
         if (jobId === '_meta') return;
-        const meta = allRoutes[jobId]?._meta;
-        const t = meta?.startTime || 0;
-        if (t > latestTime) { latestTime = t; bestJobId = jobId; bestDiff = 0; }
+        const meta = allRoutes[jobId] && allRoutes[jobId]._meta;
+        if (!meta || !meta.startTime) return;
+        if (varosEgyezes) {
+          if (fFrom && meta.from && _norm(meta.from) !== fFrom) return;
+          if (fTo && meta.to && _norm(meta.to) !== fTo) return;
+        }
+        let diff;
+        if (!jobTimestamp) {
+          diff = -meta.startTime;                         // nincs időbélyeg → legutóbbi
+        } else if (jobExact) {
+          diff = Math.abs(meta.startTime - jobTimestamp);
+          if (diff > WINDOW_EXACT_MS) return;
+        } else {
+          // jobTimestamp = leadás ideje → az útvonalnak ELŐTTE kellett indulnia
+          diff = jobTimestamp - meta.startTime;
+          if (diff < -2 * 60 * 1000 || diff > WINDOW_LOOSE_MS) return;
+          diff = Math.abs(diff);
+        }
+        if (diff < bestDiff) { bestDiff = diff; bestJobId = jobId; }
       });
     }
+    keresUtvonal(true);
+    if (!bestJobId) keresUtvonal(false);
 
-    // Ha a legközelebbi találat is túl messze esik, ne mutassunk semmit.
-    // JAVÍTVA: 4 óra túl szűk volt hosszabb (távolsági) fuvaroknál, mert az
-    // egyeztetés régi rekordoknál a LEADÁS idejéhez (j.datum) hasonlít, nem az
-    // INDULÁS idejéhez — egy sok órás fuvarnál ez a különbség simán meghaladta
-    // a 4 órát, és a valóban rögzített útvonalat is "nincs launcher"-nek jelezte.
-    const MAX_MATCH_DIFF_MS = 20 * 60 * 60 * 1000; // 4 óra helyett 20 óra
-    const routeJobIds = Object.keys(allRoutes).filter(k => k !== '_meta');
-
-    // Ha csak EGY rögzített útvonal van ennél a sofőrnél, azt használjuk akkor is,
-    // ha az időbélyeg-egyeztetés bizonytalan (pl. régi rekord felvetelIdoMs nélkül) —
-    // nincs mivel összetéveszteni, szóval feleslegesen ne dobjunk hamis hibaüzenetet.
-    if (!bestJobId && routeJobIds.length === 1) {
-      bestJobId = routeJobIds[0];
-      bestDiff = 0;
-    }
-
-    if (!bestJobId || !allRoutes[bestJobId] || (bestDiff !== Infinity && bestDiff > MAX_MATCH_DIFF_MS)) {
+    if (!bestJobId || !allRoutes[bestJobId]) {
       document.getElementById('route-playback-title').textContent = `${fallbackFrom || '?'} → ${fallbackTo || '?'}`;
-      showRouteMapMessage('✅', 'Nem történt gyorshajtás!', 'Ehhez a fuvarhoz nincs rögzített útvonal (útvonalat csak gyorshajtás esetén mentünk, vagy nem futott a launcher).');
+      showNoRouteMessage(Math.round(Number(fuvarMaxSeb) || 0), tulsebessegLimit(routeGame));
       return;
     }
 
@@ -13198,14 +13248,11 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       const gyorsVolt = valosMax >= limitS;
 
       if (gyorsVolt) {
-        showRouteMapMessage('🗺️', 'Útvonal nem rögzült',
-          `Ennél a fuvarnál a maximális sebesség <strong style="color:#f97316;">${maxSeb} km/h</strong> volt `
-          + `(átlépte a <strong style="color:#f97316;">${limitS} km/h</strong> határt), de a launcher nem rögzített útvonalpontokat, `
-          + `ezért a térképes visszajátszás nem elérhető.`);
+        showNoRouteMessage(maxSeb, limitS);
+      } else if (maxSeb > 0) {
+        showNoFastMessage(maxSeb, limitS);
       } else {
-        showRouteMapMessage('✅', 'Nem történt gyorshajtás!',
-          `A legnagyobb sebesség <strong style="color:#4ade80;">${maxSeb} km/h</strong> volt `
-          + `(határ: ${limitS} km/h).`);
+        showNoRouteMessage(0, limitS);
       }
       return;
     }
@@ -13235,10 +13282,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
       const _lim = tulsebessegLimit(routeGame);
       const _voltGyors = routePoints.some(p => Math.round(p.s || 0) >= _lim);
       if (!_voltGyors) {
-        showRouteMapMessage('✅', 'Nem történt gyorshajtás!',
-          `A legnagyobb sebesség nem érte el a <strong style="color:#f97316;">${_lim} km/h</strong> határt.`);
-        document.getElementById('route-progress-label').textContent = '';
-        document.getElementById('route-speed-cur').textContent = '';
+        showNoFastMessage(Math.round(Math.max(...routePoints.map(p => p.s || 0))), _lim);
         return;
       }
     }
@@ -13357,8 +13401,7 @@ function startRouteAnimation() {
 
     document.getElementById('route-progress-label').textContent =
       `${routeCurrentIdx + 1} / ${routePoints.length} pont`;
-    document.getElementById('route-speed-cur').textContent =
-      (pt.s || 0) + ' km/h';
+    setRouteSpeedLabel(pt.s);
     document.getElementById('route-seek-slider').value = routeCurrentIdx;
 
     // Kamera követés — csak ha az ablak közepe közelében van
@@ -13425,8 +13468,7 @@ function drawRouteUpTo(idx) {
   const pt = routePoints[idx];
   document.getElementById('route-progress-label').textContent =
     `${idx + 1} / ${routePoints.length} pont`;
-  document.getElementById('route-speed-cur').textContent =
-    ((pt && pt.s) || 0) + ' km/h';
+  setRouteSpeedLabel(pt && pt.s);
   document.getElementById('route-seek-slider').value = idx;
 }
 </script>
