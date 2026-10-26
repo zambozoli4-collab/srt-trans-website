@@ -6189,9 +6189,24 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         };
         const okMagyar = (ok) => ok ? (okMap[String(ok).trim().toLowerCase()] || String(ok).trim()) : null;
 
+        // A buntetesOka lehet: "A ×2, B" (új), "A" (DLL), vagy a régi "A (+1 egyéb)".
         const okStat = {};
-        jobs.forEach(j => { const o = okMagyar(j.buntetesOka); if (o) okStat[o] = (okStat[o] || 0) + 1; });
+        let okEgyebDb = 0;
+        jobs.forEach(j => {
+          if (!j.buntetesOka) return;
+          let txt = String(j.buntetesOka);
+          const m = txt.match(/\(\+(\d+) egyéb\)/);
+          if (m) { okEgyebDb += Number(m[1]); txt = txt.replace(m[0], ''); }
+          txt.split(',').forEach(reszlet => {
+            const mm = reszlet.trim().match(/^(.*?)\s*×\s*(\d+)$/);
+            const nyers = mm ? mm[1] : reszlet.trim();
+            const db = mm ? Number(mm[2]) : 1;
+            const nev = okMagyar(nyers);
+            if (nev) okStat[nev] = (okStat[nev] || 0) + db;
+          });
+        });
         const okLista = Object.entries(okStat).sort((a,b) => b[1]-a[1]);
+        const okOsszes = okLista.reduce((s, e) => s + e[1], 0);
 
         // Átlagsebesség (a Trucky adja; a minimumot kivettük, mert a DLL
         // rövid/belvárosi fuvaroknál 0 km miatt nem méri, a Trucky pedig nem
@@ -6215,8 +6230,16 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
           </div>`;
         }
 
+        const okMax = okLista.length ? okLista[0][1] : 1;
         const okErtek = okLista.length
-          ? okLista.map(([n,c]) => `${esc2(n)}: ${c}×`).join('<br>')
+          ? `<div style="font-size:14px;font-weight:600;color:var(--text,#222);margin-top:6px;">`
+            + okLista.map(([n,c]) =>
+                `<div style="display:grid;grid-template-columns:minmax(150px,1.2fr) 2fr 44px;align-items:center;gap:10px;padding:5px 0;">`
+                + `<span>${esc2(n)}</span>`
+                + `<span style="height:8px;border-radius:4px;background:rgba(220,38,38,0.12);overflow:hidden;"><i style="display:block;height:100%;width:${Math.max(6, Math.round(c / okMax * 100))}%;background:#dc2626;border-radius:4px;"></i></span>`
+                + `<b style="color:#dc2626;text-align:right;">${c}×</b></div>`).join('')
+            + (okEgyebDb ? `<div style="font-size:12px;font-weight:400;color:#888;padding-top:4px;">+ ${okEgyebDb} további szabálysértés (régi rekord, részletei nem ismertek)</div>` : '')
+            + `</div>`
           : 'Nincs büntetés 👏';
         const hataridoErtek = hataridosFuvarok.length
           ? `✅ Időben: ${idobenDb} · ⏰ Késett: ${kesettDb}`
@@ -6228,7 +6251,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         return `
           <div class="dstat-h">DLL plugin statisztika (új launcher)</div>
           <div class="dstat-grid">
-            ${card('Büntetések oka', okErtek, okLista.length ? 'szabálysértés-típusonként' : null, okLista.length ? 'dstat-red' : 'dstat-green')}
+            <div class="dstat-card" style="grid-column:1/-1;"><div class="dstat-label">Büntetések oka${okOsszes ? ' · összesen ' + okOsszes + ' szabálysértés' : ''}</div>${okLista.length ? okErtek : `<div class="dstat-val dstat-green">${okErtek}</div>`}</div>
             ${card('Átlagsebesség', atlagSeb != null ? atlagSeb + ' km/h' : '–', 'fuvarok átlaga', 'dstat-blue')}
             ${card('Határidő pontosság', hataridoErtek, hataridoNote)}
             <div class="dstat-card dstat-missing"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div class="dstat-note">Ez fuvaronként/sofőrönként nem nyerhető ki megbízhatóan. A cég ÖSSZESÍTETT saját/céges aránya a „Teljesítmény” mutatóknál látható.</div></div>
@@ -11552,7 +11575,7 @@ function openJobInfo(game, driverName, index, datum) {
     html += srtCard('Bevétel', srtFt(j.bevételFt));
     html += srtCard('Büntetés', fine);
     // ── ÚJ (launcher SHM v3): büntetés oka (magyarítva) ──
-    html += srtCard('Büntetés oka', j.buntetesOka ? srtEsc(srtBuntetesOka(j.buntetesOka)) : '-');
+    html += srtCard('Büntetés oka', j.buntetesOka ? String(j.buntetesOka).split(',').map(function (r) { var mm = r.trim().match(/^(.*?)\s*×\s*(\d+)$/); return srtEsc(srtBuntetesOka(mm ? mm[1] : r.trim()) + (mm ? ' ×' + mm[2] : '')); }).join('<br>') : '-', true);
     html += srtCard('Fuvar típusa', srtEsc(jobType));
     html += srtCard('Rögzítés dátuma', srtEsc(j.datum || '-'));
     if (j.truckyUrl) {
