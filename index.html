@@ -6231,8 +6231,10 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         // Átlagsebesség (a Trucky adja; a minimumot kivettük, mert a DLL
         // rövid/belvárosi fuvaroknál 0 km miatt nem méri, a Trucky pedig nem
         // adja — így az örökös "–" helyett nem jelenítjük meg).
-        const atlSebek = jobs.map(j => Number(j.atlagSebesseg)).filter(v => v > 0);
-        const atlagSeb = atlSebek.length ? Math.round(atlSebek.reduce((s,v)=>s+v,0)/atlSebek.length) : null;
+        // Az UTOLSÓ fuvar átlagsebessége (a jobs tömb időrendben van, az újabb a végén).
+        const utolsoFuvar = jobs.length ? jobs[jobs.length - 1] : null;
+        const utolsoSeb = utolsoFuvar ? Number(utolsoFuvar.atlagSebesseg) : 0;
+        const atlagSeb = utolsoSeb > 0 ? Math.round(utolsoSeb) : null;
 
         // Határidő: hány fuvar van kesett adattal, ebből hány késett
         const hataridosFuvarok = jobs.filter(j => j.kesett === true || j.kesett === false);
@@ -6272,7 +6274,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
           <div class="dstat-h">DLL plugin statisztika (új launcher)</div>
           <div class="dstat-grid">
             <div class="dstat-card" style="grid-column:1/-1;"><div class="dstat-label">Büntetések oka${okOsszes ? ' · összesen ' + okOsszes + ' szabálysértés' : ''}</div>${okLista.length ? okErtek : `<div class="dstat-val dstat-green">${okErtek}</div>`}</div>
-            ${card('Átlagsebesség', atlagSeb != null ? atlagSeb + ' km/h' : '–', 'fuvarok átlaga', 'dstat-blue')}
+            ${card('Átlagsebesség', atlagSeb != null ? atlagSeb + ' km/h' : '–', 'utolsó fuvar átlaga', 'dstat-blue')}
             ${card('Határidő pontosság', hataridoErtek, hataridoNote)}
             <div class="dstat-card" id="dstat-potkocsi-card"><div class="dstat-label">Saját pótkocsi vs vállalkozói</div><div id="dstat-potkocsi-body"><div class="dstat-note">Betöltés…</div></div></div>
           </div>`;
