@@ -10208,7 +10208,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         const res = await fetch(`${FIREBASE_URL}/srtdata/data.json`);
         const data = await res.json() || {};
         const lista = Object.entries(data)
-          .filter(([id]) => !id.startsWith('_'))
+          .filter(([id, u]) => !id.startsWith('_') && u && typeof u === 'object' && u.truckyName)
           .sort(([,ua],[,ub]) => (ua.truckyName||'').localeCompare(ub.truckyName||'', 'hu', { sensitivity: 'base' }));
         osszesenEl.textContent = `Összesen ${lista.length} Trucky tag`;
         if (!lista.length) {
@@ -10260,7 +10260,14 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
       if (!isFullAdminUser()) return;
       if (!confirm(`Biztosan törlöd ${name} Trucky tagot a listából?`)) return;
       try {
-        await fetch(`${FIREBASE_URL}/srtdata/data/${id}.json`, { method: 'DELETE' });
+        // A törlést a bot végzi (memóriából + Firebase-ből), különben a bot
+        // a következő mentésnél visszaírná a közvetlenül törölt tagot.
+        const res = await fetch('https://bot.srt-trans.hu/trucky-tag-torles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+          body: JSON.stringify({ id })
+        });
+        if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error || `Bot hiba (${res.status})`); }
         await window.toltiTruckyTagokat();
       } catch (e) {
         alert('❌ Hiba a törlés során: ' + e.message);
@@ -10275,7 +10282,8 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
           method: 'POST',
           headers: { 'X-Upload-Secret': 'srt-trans-upload-2024' }
         });
-        if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error || `Bot hiba (${res.status})`); }
+        const eredmeny = await res.json().catch(()=>({}));
+        if (!res.ok || eredmeny.ok === false) throw new Error(eredmeny.error || `Bot hiba (${res.status})`);
         await window.toltiTruckyTagokat();
       } catch (e) {
         alert('❌ Hiba: ' + e.message);
