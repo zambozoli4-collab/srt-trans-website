@@ -3932,6 +3932,7 @@ body { font-size: 15px; }
                 <button class="jatek-szuro-btn" data-szuro="osszes" onclick="valtJatekSzuro('osszes')" style="padding:8px 16px;border-radius:8px;background:var(--orange);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;">🎮 Összes Játék</button>
                 <button class="jatek-szuro-btn" data-szuro="ets2" onclick="valtJatekSzuro('ets2')" style="padding:8px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;">🚛 ETS2</button>
                 <button class="jatek-szuro-btn" data-szuro="ats" onclick="valtJatekSzuro('ats')" style="padding:8px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;">🚚 ATS</button>
+                <button class="jatek-szuro-btn" data-szuro="bus" onclick="valtJatekSzuro('bus')" style="padding:8px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;">🚌 BUSZ</button>
               </div>
               <div style="display:flex; align-items:center; gap:10px;">
                 <button onclick="lepHonap(-1)" style="width:32px;height:32px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:#fff;cursor:pointer;font-size:14px;">◀</button>
@@ -5836,9 +5837,10 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       }
 
       const honapSzurve = honapAktiv ? osszesFuvar.filter(j => j.datum && String(j.datum).startsWith(ha.kulcs)) : osszesFuvar;
-      const ets2Honap = honapSzurve.filter(j => !srtJobIsATS(j));
+      const ets2Honap = honapSzurve.filter(j => !srtJobIsATS(j) && (j.gameType || 'ets2') !== 'bus');
       const atsHonap = honapSzurve.filter(j => srtJobIsATS(j));
-      let tablaFuvarok = aktivJatekSzuro === 'ets2' ? ets2Honap : (aktivJatekSzuro === 'ats' ? atsHonap : honapSzurve);
+      const buszHonap = honapSzurve.filter(j => (j.gameType === 'bus') || ((j.aru || '').toLowerCase().includes('passenger')));
+      let tablaFuvarok = aktivJatekSzuro === 'ets2' ? ets2Honap : (aktivJatekSzuro === 'ats' ? atsHonap : (aktivJatekSzuro === 'bus' ? buszHonap : honapSzurve));
 
       window.__aktivFuvarLista = tablaFuvarok;
       window.__aktivFuvarSofor = driverName;
@@ -5867,6 +5869,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         let panelHtml = '';
         if (aktivJatekSzuro === 'osszes' || aktivJatekSzuro === 'ets2') panelHtml += osszegzesPanel('ETS2', ets2Honap);
         if (aktivJatekSzuro === 'osszes' || aktivJatekSzuro === 'ats') panelHtml += osszegzesPanel('ATS', atsHonap);
+        if (aktivJatekSzuro === 'osszes' || aktivJatekSzuro === 'bus') panelHtml += osszegzesPanel('BUSZ', buszHonap);
         wrap.innerHTML = panelHtml;
       }
 
