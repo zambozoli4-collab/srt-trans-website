@@ -5987,7 +5987,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
       }
       const sortedJobs = [...tablaFuvarok];
       list.innerHTML = sortedJobs.map(function(j, i) {
-        var isVerseny = (j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 100);
+        var isVerseny = (j.sebessegTipus||j.sebességTípus) === 'verseny' || (j.maxSebesseg && j.maxSebesseg > 110);
         var adminCol = isAdminMode() ? ' 50px' : '';
         var cols = '40px 180px 180px minmax(220px,1fr) 90px' + adminCol;
         var rowBg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015);';
@@ -6013,7 +6013,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         var sebBg = isVerseny ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.12)';
         var sebColor = isVerseny ? '#f87171' : '#4ade80';
         var sebSzoveg = isVerseny ? '🏁 verseny' : '✅ valós';
-        var maxColor = (j.maxSebesseg && j.maxSebesseg > 100) ? '#f87171' : j.maxSebesseg ? '#c084fc' : 'var(--muted)';
+        var maxColor = (j.maxSebesseg && j.maxSebesseg > 110) ? '#f87171' : j.maxSebesseg ? '#c084fc' : 'var(--muted)';
         var maxSeb = j.maxSebesseg ? j.maxSebesseg + ' km/h' : '-';
         var bunt = j.büntFt > 0 ? '-' + formatNum(j.büntFt) + ' Ft' : '-';
         var buntColor = j.büntFt > 0 ? '#f87171' : 'var(--muted)';
@@ -6127,7 +6127,7 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         const gyors = maxBy(jobs, j => j.maxSebesseg);
         const sebesek = jobs.filter(j => Number(j.maxSebesseg) > 0);
         const atlagMax = sebesek.length ? Math.round(sebesek.reduce((s, j) => s + Number(j.maxSebesseg), 0) / sebesek.length) : null;
-        const versenyN = jobs.filter(j => (j.sebessegTipus || j.sebességTípus) === 'verseny' || Number(j.maxSebesseg) > 100).length;
+        const versenyN = jobs.filter(j => (j.sebessegTipus || j.sebességTípus) === 'verseny' || Number(j.maxSebesseg) > 110).length;
 
         const topHova = top(jobs, j => j.hova, 8);
         const topHonnan = top(jobs, j => j.honnan, 8);
@@ -6152,8 +6152,8 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
             ${legjobbBev ? card('Legnagyobb bevétel (1 fuvar)', fnum(Math.round(legjobbBev.v)) + ' Ft', esc(route(legjobbBev.j)), 'dstat-green') : card('Legnagyobb bevétel', '–')}
             ${leghosszabb ? card('Leghosszabb fuvar', fnum(Math.round(leghosszabb.v)) + ' km', esc(route(leghosszabb.j))) : card('Leghosszabb fuvar', '–')}
             ${legtobbBunt ? card('Legnagyobb büntetés (1 fuvar)', fnum(Math.round(legtobbBunt.v)) + ' Ft', esc(route(legtobbBunt.j)), 'dstat-red') : card('Legnagyobb büntetés', '0 Ft', 'Még nem kapott büntetést 👏', 'dstat-green')}
-            ${gyors ? card('Legnagyobb sebesség', fnum(gyors.v) + ' km/h', esc(route(gyors.j)) + (atlagMax ? '<br>átlagos csúcssebesség: ' + atlagMax + ' km/h' : ''), gyors.v > 100 ? 'dstat-red' : 'dstat-blue') : card('Legnagyobb sebesség', '–', 'Nincs rögzített sebesség')}
-            ${card('Gyors hajtású fuvarok', versenyN + ' db', 'verseny módú / 100 km/h feletti csúcs')}
+            ${gyors ? card('Legnagyobb sebesség', fnum(gyors.v) + ' km/h', esc(route(gyors.j)) + (atlagMax ? '<br>átlagos csúcssebesség: ' + atlagMax + ' km/h' : ''), gyors.v > 110 ? 'dstat-red' : 'dstat-blue') : card('Legnagyobb sebesség', '–', 'Nincs rögzített sebesség')}
+            ${card('Gyors hajtású fuvarok', versenyN + ' db', 'verseny módú / 110 km/h feletti csúcs')}
           </div>
 
           <div class="dstat-h">Városok, kamionok, rakományok</div>
@@ -11569,8 +11569,8 @@ function openJobInfo(game, driverName, index, datum) {
 
     let fuel = j.avgFuelJob ? j.avgFuelJob + ' L/100 km' : (j.üzemanyag != null ? j.üzemanyag + ' L' : '-');
     // A gyorshajtást a launcher/DLL által mért tényleges max sebesség dönti el,
-    // ugyanúgy mint a fuvar-táblázatban: ETS2 100 km/h, ATS 130 km/h felett verseny.
-    var speedKuszob = game === 'ats' ? 130 : 100;
+    // ugyanúgy mint a fuvar-táblázatban: ETS2 110 km/h, ATS 130 km/h felett verseny.
+    var speedKuszob = game === 'ats' ? 130 : 110;
     var isVersenyReszlet = (j.sebessegTipus || j.sebességTípus) === 'verseny'
       || (j.maxSebesseg && j.maxSebesseg > speedKuszob);
     let speedType = isVersenyReszlet ? '🏁 Verseny' : '✅ Valós';
@@ -13062,10 +13062,10 @@ const FIREBASE_RT_URL = 'https://srt-trans-reply-default-rtdb.europe-west1.fireb
 // játékonként eltérő a limit (ugyanaz, mint amit a launcher használ az
 // útvonal rögzítésének eldöntésénél, lásd MainForm.cs
 // ROUTE_SEBESSEG_KUSZOB_ETS2_KMH / ROUTE_SEBESSEG_KUSZOB_ATS_KMH) — eddig ez
-// a weboldalon mindkét játéknál egységesen 100 km/h volt, ami ATS-nél
+// a weboldalon mindkét játéknál egységesen 110 km/h volt, ami ATS-nél
 // (130 km/h fölötti autópálya-sebességek is simán normálisak) rengeteg
 // hamis "sebességtúllépés"-jelölőt rakott volna ki.
-const TULSEBESSEG_LIMIT_ETS2_KMH = 100;
+const TULSEBESSEG_LIMIT_ETS2_KMH = 110;
 const TULSEBESSEG_LIMIT_ATS_KMH  = 130;
 function tulsebessegLimit(game) {
   return game === 'ats' ? TULSEBESSEG_LIMIT_ATS_KMH : TULSEBESSEG_LIMIT_ETS2_KMH;
@@ -13379,7 +13379,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     }).addTo(routeMap).bindPopup(`🔴 Cél: ${to}`);
 
     // ÚJ: sebességtúllépés jelölése — minden rögzített pontot megjelölünk,
-    // ahol a sofőr TULSEBESSEG_LIMIT_KMH (100 km/h) fölött ment. Kattintva
+    // ahol a sofőr TULSEBESSEG_LIMIT_KMH (110 km/h) fölött ment. Kattintva
     // a pontra kiírja a pontos, aznapi rögzített sebességet.
     // ── SEBESSÉGTÚLLÉPÉS JELÖLÉSE ──
     // Piros pont minden olyan helyre, ahol a sofőr átlépte a határt. A km/h
