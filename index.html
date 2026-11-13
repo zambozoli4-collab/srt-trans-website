@@ -6012,6 +6012,13 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
             case 'quick_job': fuvarTipusLabel = '⚡ Gyors'; fuvarTipusColor = '#f87171'; break;
             case 'pickup': fuvarTipusLabel = '📦 Pickup'; fuvarTipusColor = '#a78bfa'; break;
             case 'external_contracts': case 'external_market': case 'world_of_trucks': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
+            case 'bus': fuvarTipusLabel = '🚌 Busz'; fuvarTipusColor = '#f97316'; break;
+            case 'dll': {
+              var isBuszDllLabel = String(j.aru || '').toLowerCase().includes('passenger') || String(j.aru || '').toLowerCase().includes('utas');
+              fuvarTipusLabel = isBuszDllLabel ? '🚌 Busz' : '🔌 Plugin';
+              fuvarTipusColor = isBuszDllLabel ? '#f97316' : 'rgba(255,255,255,0.5)';
+              break;
+            }
             default: fuvarTipusLabel = '📋 ' + j.fuvarTipus;
           }
         }
@@ -6109,7 +6116,11 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
           case 'quick_job': return '⚡ Gyors fuvar';
           case 'pickup': return '📦 Pickup';
           case 'external_contracts': case 'external_market': case 'world_of_trucks': return '🌍 WoT (World of Trucks)';
-          case 'dll': return '🔌 Plugin (típus nem rögzített)';
+          case 'bus': return '🚌 Busz (utasszállítás)';
+          case 'dll': {
+            const isBuszDll = String(j.aru || '').toLowerCase().includes('passenger') || String(j.aru || '').toLowerCase().includes('utas');
+            return isBuszDll ? '🚌 Busz (utasszállítás)' : '🔌 Plugin (típus nem rögzített)';
+          }
           default: return j.fuvarTipus ? '📋 ' + j.fuvarTipus : '❔ Ismeretlen';
         }
       }
@@ -6213,7 +6224,8 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
           'red_light':'Piros lámpán áthajtás','no_lights':'Világítás hiánya',
           'illegal_trailer':'Tiltott pótkocsi','avoid_sleeping':'Pihenő kihagyása',
           'wrong_lane':'Rossz sáv / leállósáv','hard_shoulder':'Leállósávon haladás',
-          'illegal_border_crossing':'Tiltott határátlépés','generic':'Egyéb szabálysértés'
+          'illegal_border_crossing':'Tiltott határátlépés','generic':'Egyéb szabálysértés',
+          'avoid_weighing':'Mérlegelőállomás megkerülése'
         };
         const okMagyar = (ok) => ok ? (okMap[String(ok).trim().toLowerCase()] || String(ok).trim()) : null;
 
@@ -7542,6 +7554,13 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
             case 'external_contracts': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
             case 'external_market': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
             case 'world_of_trucks': fuvarTipusLabel = '🌍 WoT'; fuvarTipusColor = '#34d399'; break;
+            case 'bus': fuvarTipusLabel = '🚌 Busz'; fuvarTipusColor = '#f97316'; break;
+            case 'dll': {
+              var isBuszDllLabel2 = String(j.aru || '').toLowerCase().includes('passenger') || String(j.aru || '').toLowerCase().includes('utas');
+              fuvarTipusLabel = isBuszDllLabel2 ? '🚌 Busz' : '🔌 Plugin';
+              fuvarTipusColor = isBuszDllLabel2 ? '#f97316' : 'rgba(255,255,255,0.5)';
+              break;
+            }
             default: fuvarTipusLabel = '📋 ' + j.piacTipus; fuvarTipusColor = 'rgba(255,255,255,0.5)';
           }
         }
@@ -11645,6 +11664,9 @@ function openJobInfo(game, driverName, index, datum) {
         html += srtCard('Utasok elégedettsége', '<span style="color:' + elegSzin + ';font-weight:700">' + elegEmoji + ' ' + eleg + '%</span>', true);
       }
       if (j.busXp != null) html += srtCard('Szerzett XP', srtEsc(j.busXp + ' XP'));
+      if (j.busSzakaszok != null && j.busSzakaszok > 1) {
+        html += srtCard('Megállók száma', srtEsc(j.busSzakaszok + ' megálló'));
+      }
       if (j.busErkTervezett != null || j.busErkTenyleges != null) {
         // Késés kiszámítása játékpercből
         var erkTerv = j.busErkTervezett;
@@ -13107,9 +13129,12 @@ const FIREBASE_RT_URL = 'https://srt-trans-reply-default-rtdb.europe-west1.fireb
 // a weboldalon mindkét játéknál egységesen 100 km/h volt, ami ATS-nél
 // (130 km/h fölötti autópálya-sebességek is simán normálisak) rengeteg
 // hamis "sebességtúllépés"-jelölőt rakott volna ki.
-const TULSEBESSEG_LIMIT_ETS2_KMH = 100;
+const TULSEBESSEG_LIMIT_ETS2_KMH = 101;
 const TULSEBESSEG_LIMIT_ATS_KMH  = 130;
-function tulsebessegLimit(game) {
+const TULSEBESSEG_LIMIT_BUSZ_KMH = 110;
+function tulsebessegLimit(game, cargo) {
+  if (cargo && (String(cargo).toLowerCase().includes('passenger') || String(cargo).toLowerCase().includes('utas')))
+    return TULSEBESSEG_LIMIT_BUSZ_KMH;
   return game === 'ats' ? TULSEBESSEG_LIMIT_ATS_KMH : TULSEBESSEG_LIMIT_ETS2_KMH;
 }
 let routeSpeedMarkers = [];
@@ -13163,8 +13188,8 @@ function setRouteSpeedLabel(kmh) {
   const el = document.getElementById('route-speed-cur');
   const v = Math.round(kmh || 0);
   el.textContent = v + ' km/h';
-  el.style.color = v >= tulsebessegLimit(routeGame) ? '#ef4444' : '#cbd5e1';
-  el.style.fontWeight = v >= tulsebessegLimit(routeGame) ? '800' : '400';
+  el.style.color = v >= tulsebessegLimit(routeGame, fallbackCargo) ? '#ef4444' : '#cbd5e1';
+  el.style.fontWeight = v >= tulsebessegLimit(routeGame, fallbackCargo) ? '800' : '400';
 }
 // Egységes üzenet: nincs gyors hajtás (tudjuk, hogy lassú volt)
 function showNoFastMessage(maxSeb, limit) {
@@ -13230,7 +13255,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
   // ── Ha a fuvar ismert max sebessége a limit alatt van: NINCS gyors hajtás,
   // nem keresünk útvonalat (így nem ragadhat be egy másik fuvar térképe). ──
   {
-    const _lim0 = tulsebessegLimit(routeGame);
+    const _lim0 = tulsebessegLimit(routeGame, fallbackCargo);
     const _max0 = Math.round(Number(fuvarMaxSeb) || 0);
     if (_max0 > 0 && _max0 < _lim0) {
       document.getElementById('route-playback-title').textContent = `${fallbackFrom || '?'} → ${fallbackTo || '?'}${fallbackCargo ? ' · ' + fallbackCargo : ''}`;
@@ -13270,7 +13295,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
 
     if (!allRoutes || typeof allRoutes !== 'object') {
       document.getElementById('route-playback-title').textContent = `${fallbackFrom || '?'} → ${fallbackTo || '?'}`;
-      showNoRouteMessage(Math.round(Number(fuvarMaxSeb) || 0), tulsebessegLimit(routeGame));
+      showNoRouteMessage(Math.round(Number(fuvarMaxSeb) || 0), tulsebessegLimit(routeGame, fallbackCargo));
       return;
     }
 
@@ -13314,7 +13339,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
 
     if (!bestJobId || !allRoutes[bestJobId]) {
       document.getElementById('route-playback-title').textContent = `${fallbackFrom || '?'} → ${fallbackTo || '?'}`;
-      showNoRouteMessage(Math.round(Number(fuvarMaxSeb) || 0), tulsebessegLimit(routeGame));
+      showNoRouteMessage(Math.round(Number(fuvarMaxSeb) || 0), tulsebessegLimit(routeGame, fallbackCargo));
       return;
     }
 
@@ -13333,7 +13358,7 @@ async function openRoutePlayback(driverKulcs, game, jobTimestamp, fallbackFrom, 
     if (meta.skipped && valodiPontokSzama < 2) {
       const fromS = meta.from || fallbackFrom || '?';
       const toS   = meta.to   || fallbackTo   || '?';
-      const limitS = tulsebessegLimit((meta.game || routeGame || '').toLowerCase() === 'ats' ? 'ats' : 'ets2');
+      const limitS = tulsebessegLimit((meta.game || routeGame || '').toLowerCase() === 'ats' ? 'ats' : 'ets2', meta.cargo || fallbackCargo);
       // A route-pont meta max sebessége (a DLL méréséből). Ez 0 lehet, ha a
       // launcher a fuvar alatt 0 km-t mért (rövid/belvárosi fuvar, vagy a
       // launcher menet közben indult) — ilyenkor a fuvar TÉNYLEGES max
