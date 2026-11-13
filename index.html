@@ -11629,7 +11629,24 @@ function openJobInfo(game, driverName, index, datum) {
     html += srtCard('Felvétel ideje', srtEsc(j.felvételIdeje || j.datumFormazva || '-'));
     html += srtCard('Leadás ideje', srtEsc(j.leadásIdeje || '-'));
     // ── ÚJ (launcher SHM v3): határidő-pontosság (késett-e) ──
-    if (j.kesett === true) {
+    // Határidő kártya: normál fuvarnál kesett mező, buszos fuvarnál érkezési időkből
+    var _isBuszHatarido = (j.gameType === 'bus' || (String(j.aru || '').toLowerCase().includes('passenger') || String(j.aru || '').toLowerCase().includes('utas')));
+    if (_isBuszHatarido && (j.busErkTervezett != null || j.busErkTenyleges != null)) {
+      var _erkTerv = j.busErkTervezett;
+      var _erkTeny = j.busErkTenyleges;
+      if (_erkTerv && _erkTeny) {
+        var _keses = _erkTeny - _erkTerv;
+        if (_keses <= 0) {
+          html += srtCard('Határidő', '✅ Pontosan érkezett');
+        } else {
+          html += srtCard('Határidő', '⏰ Késett (' + _keses + ' perc)');
+        }
+      } else if (_erkTerv && !_erkTeny) {
+        html += srtCard('Határidő', '✅ Pontosan érkezett');
+      } else {
+        html += srtCard('Határidő', '-');
+      }
+    } else if (j.kesett === true) {
       html += srtCard('Határidő', '⏰ Késett' + (j.kesesPerc ? ' (' + j.kesesPerc + ' perc)' : ''));
     } else if (j.kesett === false) {
       html += srtCard('Határidő', '✅ Időben');
