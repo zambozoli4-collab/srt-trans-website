@@ -11708,7 +11708,15 @@ function openJobInfo(game, driverName, index, datum) {
       .replace(/[.#$/\[\]\s]/g, '_')
       .replace(/[^a-z0-9_]/g, '') || 'ismeretlen';
     const jobDatum = j.felvetelIdoMs || (j.datum ? new Date(j.datum).getTime() : null);
-    html += '<div style="grid-column:1/-1;margin-top:10px;">' +
+    // Extra statisztika gomb: navigál a sofőr statisztika oldalára
+    const extraStatOnclick = (game === 'ats')
+      ? "closeJobInfo(); showPage('fuvarok', true); switchGameTab('ats',true); switchATSView('statisztika');"
+      : "closeJobInfo(); goFuvarok('ets','statisztika');";
+    html += '<div style="grid-column:1/-1;margin-top:10px;display:flex;flex-direction:column;gap:8px;">' +
+      '<button onclick="' + extraStatOnclick + '" ' +
+      'style="width:100%;padding:12px;background:linear-gradient(135deg,#0f4c2a,#16a34a);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
+      '📊 Extra statisztika' +
+      '</button>' +
       '<button onclick="closeJobInfo(); openRoutePlayback(\'' + srtEsc(driverKulcs) + '\', \'' + srtEsc(game) + '\', ' + (jobDatum || 0) + ', \'' + srtEsc(j.honnan || '') + '\', \'' + srtEsc(j.hova || '') + '\', \'' + srtEsc(srtCargoHu(j.aru) || '') + '\', ' + (Number(j.maxSebesseg) || 0) + ', ' + (j.felvetelIdoMs ? 1 : 0) + ')" ' +
       'style="width:100%;padding:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;">' +
       '🗺️ Útvonal visszajátszása' +
