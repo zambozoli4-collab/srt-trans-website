@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="hu">
 <head>
   <meta charset="utf-8" />
@@ -6000,8 +6000,8 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         var rowBg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015);';
         var num = i + 1;
         var isBuszFuvar = j.gameType === 'bus' || (String(j.aru || '').toLowerCase().includes('passenger'));
-        var honnan = (j.honnan && j.honnan !== 'Ismeretlen') ? j.honnan : (isBuszFuvar ? 'đźšŚ BuszĂˇllomĂˇs' : '?');
-        var hova = (j.hova && j.hova !== 'Ismeretlen') ? j.hova : (isBuszFuvar ? 'đźšŚ BuszĂˇllomĂˇs' : '?');
+        var honnan = (j.honnan && j.honnan !== 'Ismeretlen') ? j.honnan : (isBuszFuvar ? '🚌 Buszállomás' : '?');
+        var hova = (j.hova && j.hova !== 'Ismeretlen') ? j.hova : (isBuszFuvar ? '🚌 Buszállomás' : '?');
         var aru = j.aru || '-';
         var kamion = srtJobTruckName(j);
         var fuvarTipusLabel = '-';
@@ -7527,8 +7527,8 @@ videokGrid.innerHTML = osszesVideo.map((v, i) => `
         var rowBg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015);';
         var num = i + 1;
         var isBuszFuvar = j.gameType === 'bus' || (String(j.aru || '').toLowerCase().includes('passenger'));
-        var honnan = (j.honnan && j.honnan !== 'Ismeretlen') ? j.honnan : (isBuszFuvar ? 'đźšŚ BuszĂˇllomĂˇs' : '?');
-        var hova = (j.hova && j.hova !== 'Ismeretlen') ? j.hova : (isBuszFuvar ? 'đźšŚ BuszĂˇllomĂˇs' : '?');
+        var honnan = (j.honnan && j.honnan !== 'Ismeretlen') ? j.honnan : (isBuszFuvar ? '🚌 Buszállomás' : '?');
+        var hova = (j.hova && j.hova !== 'Ismeretlen') ? j.hova : (isBuszFuvar ? '🚌 Buszállomás' : '?');
         var aru = j.aru || '-';
         var kamion = srtJobTruckName(j);
         var fuvarTipusLabel = '-';
@@ -11629,6 +11629,35 @@ function openJobInfo(game, driverName, index, datum) {
     if (j.egyebKiadasFt != null) html += srtCard('Egyéb kiadások', srtFt(j.egyebKiadasFt));
     if (j.vezetesPerc != null) html += srtCard('Vezetési idő', srtEsc(_perc(j.vezetesPerc)));
     if (j.szabadVezetesPerc != null) html += srtCard('Szabad vezetés ideje', srtEsc(_perc(j.szabadVezetesPerc)));
+    // ── BUSZOS FUVAR adatok (SHM v4 / gameType=bus) ──
+    var isBuszReszlet = j.gameType === 'bus' || (String(j.aru || '').toLowerCase().includes('passenger') || String(j.aru || '').toLowerCase().includes('utas'));
+    if (isBuszReszlet) {
+      html += '<div style="grid-column:1/-1;border-top:1px solid rgba(255,255,255,0.1);margin:8px 0 4px;padding-top:8px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#f97316;">🚌 Buszos fuvar adatok</div>';
+      if (j.busUtasokTervezett != null || j.busUtasokTenyleges != null) {
+        var utasSzam = (j.busUtasokTenyleges != null ? j.busUtasokTenyleges : (j.busUtasokTervezett != null ? j.busUtasokTervezett : '-'));
+        var utasTervezett = j.busUtasokTervezett != null ? ' (tervezett: ' + j.busUtasokTervezett + ')' : '';
+        html += srtCard('Szállított utasok', srtEsc(utasSzam + ' fő' + utasTervezett));
+      }
+      if (j.busElegedettseg != null) {
+        var eleg = j.busElegedettseg;
+        var elegSzin = eleg >= 80 ? '#4ade80' : eleg >= 50 ? '#fbbf24' : '#f87171';
+        var elegEmoji = eleg >= 80 ? '😊' : eleg >= 50 ? '😐' : '😞';
+        html += srtCard('Utasok elégedettsége', '<span style="color:' + elegSzin + ';font-weight:700">' + elegEmoji + ' ' + eleg + '%</span>', true);
+      }
+      if (j.busXp != null) html += srtCard('Szerzett XP', srtEsc(j.busXp + ' XP'));
+      if (j.busErkTervezett != null || j.busErkTenyleges != null) {
+        // Késés kiszámítása játékpercből
+        var erkTerv = j.busErkTervezett;
+        var erkTeny = j.busErkTenyleges;
+        if (erkTerv && erkTeny) {
+          var keses = erkTeny - erkTerv;
+          var kesStr = keses <= 0 ? '✅ Időben érkezett' : '⏰ ' + keses + ' perces késéssel érkezett';
+          html += srtCard('Menetrend szerinti érkezés', srtEsc(kesStr));
+        } else if (erkTerv) {
+          html += srtCard('Tervezett érkezés (játékperc)', srtEsc(erkTerv + ' p'));
+        }
+      }
+    }
     html += srtCard('Fuvar típusa', srtEsc(jobType));
     html += srtCard('Rögzítés dátuma', srtEsc(j.datum || '-'));
     if (j.truckyUrl) {
