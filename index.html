@@ -350,6 +350,11 @@
     .video-thumb img { width: 100%; height: 210px; object-fit: cover; display: block; }
     .video-thumb-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.6); border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; font-size: 24px; pointer-events: none; transition: background 0.2s; }
     .video-thumb:hover .video-thumb-play { background: rgba(249,115,22,0.85); }
+    @keyframes srtLauncherVillog {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.75); transform: scale(1); filter: brightness(1); }
+      50%      { box-shadow: 0 0 0 10px rgba(34,197,94,0); transform: scale(1.03); filter: brightness(1.25); }
+    }
+    .srt-launcher-villog { animation: srtLauncherVillog 1.4s ease-in-out infinite; }
   </style>
 
 <style id="srt-modern-dashboard-theme">
@@ -10397,7 +10402,23 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
           el.style.opacity = modId === 'srt-launcher' && id.endsWith('-home') ? '1' : '';
         }
       });
+      frissitLauncherVillogas();
     };
+
+    // Villogó SRT-Trans mód letöltő gomb: addig villog, amíg az adott
+    // felhasználó (uid) ezen az eszközön még nem töltötte le. Letöltés után leáll.
+    function launcherLetoltveKulcs() {
+      return 'srtLauncherLetoltve_' + (currentUser ? currentUser.uid : 'vendeg');
+    }
+    window.frissitLauncherVillogas = function() {
+      let letoltve = false;
+      try { letoltve = localStorage.getItem(launcherLetoltveKulcs()) === '1'; } catch (e) {}
+      ['dl-srt-launcher', 'dl-srt-launcher-home'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('srt-launcher-villog', !letoltve);
+      });
+    };
+    document.addEventListener('DOMContentLoaded', () => frissitLauncherVillogas());
 
     // Védett mod-fájl böngésző: a backend minden lépésnél ellenőrzi a
     // bejelentkezést, mielőtt bármilyen mappa- vagy fájlelérést adna —
@@ -10426,6 +10447,9 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
     // A bot név alapján megkeresi a fájlt a Drive-on, és bejelentkezés-ellenőrzéssel streameli.
     window.letoltiLauncher = async function(gomb) {
       if (!currentUser) { openAuthModal(); return; }
+      // Fájlböngésző megnyitása a VPS "SRT-Letöltő program" mappájával
+      // (mindent letölthet, ami abban a mappában van, almappákkal együtt).
+      return letoltiVedettModot('srt-launcher');
       const eredeti = gomb ? gomb.textContent : '';
       if (gomb) { gomb.style.pointerEvents = 'none'; gomb.textContent = '⏳ Letöltés...'; }
       try {
@@ -10441,6 +10465,8 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         if (!fajl) throw new Error('A launcher fájl nem található.');
         // attachment fejléc → a böngésző letölti, az oldal nem navigál el
         window.location.href = `https://bot.srt-trans.hu/mod-fajl/${encodeURIComponent(fajl.id)}?token=${encodeURIComponent(token)}`;
+        try { localStorage.setItem(launcherLetoltveKulcs(), '1'); } catch (e) {}
+        frissitLauncherVillogas();
       } catch (e) {
         alert('❌ Hiba a launcher letöltésekor: ' + e.message);
       } finally {
@@ -10541,6 +10567,10 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         const win = window.open(url, '_blank', 'noopener');
         if (!win) {
           throw new Error('A böngésző blokkolta az új ablakot.');
+        }
+        if (modfajlGyokerModId === 'srt-launcher') {
+          try { localStorage.setItem(launcherLetoltveKulcs(), '1'); } catch (e) {}
+          frissitLauncherVillogas();
         }
         if (statuszEl) {
           statuszEl.textContent = '✓ A letöltés elindításához szükséges fájl megnyílt.';
