@@ -11699,6 +11699,11 @@ function openJobInfo(game, driverName, index, datum) {
       if (j.busSzakaszok != null && j.busSzakaszok > 1) {
         html += srtCard('Megállók száma', srtEsc(j.busSzakaszok + ' megálló'));
       }
+      // Útvonal megállók: ha van busMegallok tömb, kiírjuk nyíllal elválasztva
+      if (Array.isArray(j.busMegallok) && j.busMegallok.length > 1) {
+        var megallokSzoveg = j.busMegallok.map(function(m) { return srtEsc(m); }).join(' → ');
+        html += '<div style="grid-column:1/-1;">' + srtCard('Útvonal megállói', megallokSzoveg, true) + '</div>';
+      }
       if (j.busErkTervezett != null || j.busErkTenyleges != null) {
         // Késés kiszámítása játékpercből
         var erkTerv = j.busErkTervezett;
