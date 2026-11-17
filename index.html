@@ -10137,7 +10137,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
               ${statuszBadge(r.statusz)}
             </div>
             <div id="jelentkezo-view-${r.uid}" style="font-size:13.5px;color:var(--text);line-height:1.9;">
-              📧 ${(r.email||'').replace(/</g,'&lt;')}<br>
+              📧 <span id="jelentkezo-email-txt-${r.uid}">${(r.email||'').replace(/</g,'&lt;')}</span><br>
               💬 Discord: <span id="jelentkezo-discord-txt-${r.uid}">${(r.discordNev||'').replace(/</g,'&lt;')}</span><br>
               🚛 Trucky: <span id="jelentkezo-trucky-txt-${r.uid}">${(r.truckyNev||'').replace(/</g,'&lt;')}</span><br>
               🎂 ${r.eletkor||'?'} év · 🎮 ${r.otaJatszol||'?'}<br>
@@ -10145,7 +10145,9 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
               📅 ${formazDatum(r.letrehozva)}
             </div>
             <div id="jelentkezo-edit-${r.uid}" style="display:none;margin-top:8px;flex-direction:column;gap:6px;">
-              <label style="font-size:12.5px;color:var(--text);">Discord név (pontosan, ahogy Discordon szerepel)</label>
+              <label style="font-size:12.5px;color:var(--text);">Email cím (a bejelentkezési fiók email címe is átíródik)</label>
+              <input id="jelentkezo-edit-email-${r.uid}" type="email" data-eredeti="${escAttr(r.email)}" value="${escAttr(r.email)}" style="padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;">
+              <label style="font-size:12.5px;color:var(--text);margin-top:4px;">Discord név (pontosan, ahogy Discordon szerepel)</label>
               <input id="jelentkezo-edit-discord-${r.uid}" value="${escAttr(r.discordNev)}" style="padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;">
               <label style="font-size:12.5px;color:var(--text);margin-top:4px;">Trucky felhasználónév</label>
               <input id="jelentkezo-edit-trucky-${r.uid}" value="${escAttr(r.truckyNev)}" style="padding:9px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;">
@@ -10157,7 +10159,7 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
             </div>
             ${r.egyeb ? `<div style="font-size:13.5px;color:var(--text);line-height:1.7;margin-top:10px;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;">${r.egyeb.replace(/</g,'&lt;')}</div>` : ''}
             <div style="display:flex;gap:8px;margin-top:10px;">
-              <button id="jelentkezo-szerkeszt-btn-${r.uid}" onclick="szerkesztJelentkezoNeveket('${r.uid}')" style="flex:1;padding:8px;background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">✏️ Nevek szerkesztése</button>
+              <button id="jelentkezo-szerkeszt-btn-${r.uid}" onclick="szerkesztJelentkezoNeveket('${r.uid}')" style="flex:1;padding:8px;background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">✏️ Adatok szerkesztése</button>
             </div>
             ${r.statusz === 'fuggoben' ? `
             <div style="display:flex;gap:8px;margin-top:10px;">
@@ -10191,8 +10193,28 @@ onValue(ref(db, 'flottaValos'), (snapshot) => {
         if (statuszEl) { statuszEl.textContent = '❌ A Discord név nem lehet üres.'; statuszEl.style.color = '#f87171'; }
         return;
       }
+      const emailInput = document.getElementById(`jelentkezo-edit-email-${uid}`);
+      const ujEmail = (emailInput?.value || '').trim();
+      const eredetiEmail = (emailInput?.dataset.eredeti || '').trim();
+      const emailValtozott = !!emailInput && ujEmail !== eredetiEmail;
+      if (emailValtozott && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ujEmail)) {
+        if (statuszEl) { statuszEl.textContent = '❌ Érvénytelen email cím.'; statuszEl.style.color = '#f87171'; }
+        return;
+      }
       if (statuszEl) { statuszEl.textContent = '⏳ Mentés...'; statuszEl.style.color = 'var(--muted)'; }
       try {
+        if (emailValtozott) {
+          // A bot (Admin SDK) átírja a Firebase Auth fiókot ÉS a regisztrációs rekord email mezőjét is
+          const er = await fetch('https://bot.srt-trans.hu/modosit-auth-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Upload-Secret': 'srt-trans-upload-2024' },
+            body: JSON.stringify({ uid, ujEmail })
+          });
+          if (!er.ok) { const eb = await er.json().catch(() => ({})); throw new Error(eb.error || 'Az email módosítás sikertelen'); }
+          emailInput.dataset.eredeti = ujEmail;
+          const emailTxt = document.getElementById(`jelentkezo-email-txt-${uid}`);
+          if (emailTxt) emailTxt.textContent = ujEmail;
+        }
         const res = await fetch(`${DB_URL}/regisztraciok/${uid}.json${await regAuthQS()}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
